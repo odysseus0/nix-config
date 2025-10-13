@@ -1,0 +1,7 @@
+theme = dark:Catppuccin Frappe,light:Catppuccin Latte
+keybind = shift+enter=text:\n
+macos-option-as-alt = true
+
+# Font configuration (from Mitchell's setup)
+font-family = JetBrains Mono Nerd Font
+font-size = 14
