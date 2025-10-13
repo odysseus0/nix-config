@@ -51,7 +51,7 @@ This config follows patterns from [mitchellh/nixos-config](https://github.com/mi
 
 2. **Clone this repo:**
    ```bash
-   git clone https://github.com/tengjizhang/nix-config.git ~/.config/nix-config
+   git clone https://github.com/odysseus0/nix-config.git ~/.config/nix-config
    cd ~/.config/nix-config
    ```
 
