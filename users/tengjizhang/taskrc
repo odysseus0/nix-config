@@ -1,0 +1,8 @@
+# Minimal TaskWarrior Configuration
+data.location=/Users/tengjizhang/.task
+news.version=3.4.1
+
+# Basic settings
+dateformat=Y-M-D
+
+confirmation=off
