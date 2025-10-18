@@ -25,7 +25,10 @@
       # Required for trusted users
       trusted-users = ["@admin"];
 
-      # Binary caches for faster builds
+      # Binary caches for pre-built packages (avoid building from source)
+      # cache.nixos.org: Official cache, covers most standard packages
+      # nix-community.cachix.org: Community packages (covers most of our tools)
+      # Note: Avoid adding niche overlays without checking if they have caches!
       substituters = [
         "https://cache.nixos.org"
         "https://nix-community.cachix.org"

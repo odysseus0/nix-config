@@ -1,15 +1,20 @@
 { pkgs, ... }:
 
 {
+  # Homebrew for GUI apps - Why not Nix?
+  # 1. Nix doesn't support Mac App Store apps well
+  # 2. Many GUI apps aren't packaged in nixpkgs or are outdated/broken on macOS
+  # 3. Homebrew casks work great and we still manage them declaratively here
+  # Trade-off: Not pure Nix, but pragmatic for macOS GUI apps
   homebrew = {
     enable = true;
-    
+
     # Additional taps for specialized apps
     taps = [
       "mrkai77/cask"  # For Loop window manager
     ];
-    
-    # GUI Applications via Homebrew casks - Mitchell's approach
+
+    # GUI Applications via Homebrew casks
     casks = [
       # Browsers & Communication  
       "google-chrome"
