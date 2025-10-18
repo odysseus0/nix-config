@@ -1,180 +1,98 @@
 # nix-config
 
-My declarative macOS development environment, managed entirely through Nix. One repo to rule them all.
+Declarative macOS development environment using nix-darwin and home-manager.
 
-> *"Why click through System Preferences when you can version control your entire computer?"*
+## Quick Reference
 
-## What's Inside
+```bash
+make switch    # Apply configuration changes
+make update    # Update flake inputs
+make test      # Test without activating
+```
 
-This configuration manages my entire development setup through nix-darwin and home-manager:
+## What This Manages
 
-- **~100 packages** - Development tools, CLI utilities, and cloud SDKs
-- **50+ GUI apps** - Browsers, editors, productivity tools (via Homebrew)
-- **Shell environment** - Fish shell with plugins, aliases, and tool integrations
-- **Dotfiles** - Git, SSH, terminal configs, and more
-- **System preferences** - Touch ID for sudo, shell configuration, environment variables
+- **~100 CLI packages** - Dev tools, modern CLI utilities, cloud SDKs
+- **50+ GUI apps** - Managed declaratively via Homebrew
+- **Shell environment** - Fish with plugins and custom config
+- **Dotfiles** - Git, terminal, tool configs
+- **System settings** - Touch ID for sudo, shells, environment variables
 
-Everything is declarative, reproducible, and version controlled. If my laptop dies, I can rebuild this exact environment in ~30 minutes.
+## Key Packages
 
-## Features
+**Development:**
+- Languages: Go, Node.js (pnpm), Python (uv)
+- Cloud: AWS CLI, Google Cloud SDK, Terraform
+- Tools: Neovim, Zellij, direnv, Docker (OrbStack)
 
-### Modern CLI Tools
-All the Rust rewrites: `bat`, `eza`, `fd`, `ripgrep`, `delta`, `zoxide`, `atuin`
+**Modern CLI:**
+- `bat` (cat), `eza` (ls), `fd` (find), `ripgrep` (grep), `delta` (git diff)
+- `zoxide` (cd), `atuin` (history), `fzf` (fuzzy finder)
 
-### Development Stack
-- **Languages**: Go, Node.js (with pnpm), Python (with uv)
-- **Cloud**: AWS CLI, Google Cloud SDK, Terraform
-- **Tools**: Docker (OrbStack), Neovim, Zellij, direnv
-- **AI**: Claude Code, latest LLM CLI tools
+**AI Tools:**
+- Claude Code, Codex
 
-### Smart Package Management
-- **Stable packages** from nixpkgs (25.05 release branch)
-- **Cutting-edge tools** from nixpkgs-unstable
-- **GUI apps** via Homebrew casks (managed declaratively)
-- **Binary caches** configured for instant downloads
+## Fresh Install Setup
 
-### Mitchell Hashimoto's Patterns
-This config follows patterns from [mitchellh/nixos-config](https://github.com/mitchellh/nixos-config):
-- Modular system builder in `lib/mksystem.nix`
-- Separation of machine config, OS config, and home-manager config
-- Simple overlays for accessing unstable packages
-- Direct config files over program options when appropriate
-
-## Quick Start
-
-### Prerequisites
-
-1. **Install Nix** using the Determinate Systems installer:
+1. **Install Nix:**
    ```bash
    curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
    ```
 
-2. **Clone this repo:**
+2. **Clone and customize:**
    ```bash
    git clone https://github.com/odysseus0/nix-config.git ~/.config/nix-config
    cd ~/.config/nix-config
+   # Edit flake.nix, machines/, and users/ to match your setup
    ```
 
-3. **Update the configuration** for your machine:
-   - Edit `flake.nix` - change `macbook-m4-max` to your hostname
-   - Edit `machines/macbook-m4-max.nix` - rename file to your hostname
-   - Edit `users/tengjizhang/` - rename to your username and update personal info
-
-### Deploy
-
-```bash
-# Build and activate the configuration
-make switch
-
-# Or use darwin-rebuild directly
-darwin-rebuild switch --flake .#your-hostname
-```
-
-### Common Operations
-
-```bash
-make switch    # Apply configuration changes
-make test      # Test without activating
-make update    # Update flake inputs (nixpkgs, home-manager, etc)
-make build     # Build without activating
-make clean     # Remove build artifacts
-```
+3. **Apply:**
+   ```bash
+   make switch
+   ```
 
 ## Structure
 
 ```
-.
 ├── flake.nix                    # Flake inputs and outputs
-├── flake.lock                   # Locked versions of dependencies
-├── Makefile                     # Convenience commands
-│
-├── lib/
-│   └── mksystem.nix             # System builder (creates darwin/nixos systems)
-│
-├── machines/
-│   └── macbook-m4-max.nix       # Machine-specific config (hardware, system settings)
-│
-└── users/
-    └── tengjizhang/
-        ├── darwin.nix           # macOS-specific config (homebrew, system prefs)
-        ├── home-manager.nix     # User packages and programs
-        ├── config.fish          # Fish shell configuration
-        ├── taskrc               # Taskwarrior config
-        └── ...                  # Other dotfiles
+├── machines/macbook-m4-max.nix  # Machine-specific config
+└── users/tengjizhang/
+    ├── darwin.nix               # macOS system config (homebrew, etc)
+    ├── home-manager.nix         # User packages and programs
+    └── config.fish              # Fish shell config
 ```
 
-### Configuration Layers
+**Configuration layers:**
+1. `machines/` - System-level settings, Nix configuration, binary caches
+2. `users/*/darwin.nix` - OS-level config (Homebrew, activation scripts)
+3. `users/*/home-manager.nix` - User packages, programs, dotfiles
 
-1. **`machines/`** - Hardware and low-level system config (nix settings, state version)
-2. **`users/*/darwin.nix`** - OS-level config (homebrew, system activation scripts)
-3. **`users/*/home-manager.nix`** - User packages, programs, and dotfiles
+## Important Notes
 
-## Philosophy
-
-**"Every configuration has a documented source"**
-
-No mysterious config files. No manual `cp` commands. Everything either:
-- Lives in this repo
-- Is generated by Nix
-- Is explicitly documented as external (work configs, runtime data)
-
-### What's Not in Nix
-
-**Work-specific configs** - Managed by employer scripts:
-```bash
-# AWS SSO configuration (example)
-cd ~/projects/work/devops && ./tools/aws_configure_sso.sh
-```
-
-**Auto-generated on first use:**
-- Shell history (atuin)
-- Cloud SDK auth (gcloud, 1Password)
-- App preferences (Ghostty, etc.)
-
-## Key Decisions
-
-### Why nixpkgs-unstable for some packages?
-- Stable (25.05) for system-critical stuff
-- Unstable for dev tools where we want latest features
-- Always prefer cached builds over building from source
-
-### Why Homebrew for GUI apps?
-- Nix doesn't support Mac App Store apps
-- Many GUI apps aren't in nixpkgs
-- Homebrew casks work great and we manage them declaratively
-
-### Why neovim-unwrapped from unstable?
-- Previously used neovim-nightly-overlay (built from source, slow updates)
-- Switched to stable neovim from unstable channel (always cached, fast)
-- Still recent (updated ~weekly), but 100x faster to install
-
-## Performance Notes
+### Package Strategy
+- **Stable** (nixpkgs 25.05): System-critical packages
+- **Unstable** (nixpkgs-unstable): Dev tools where we want recent versions
+- **Homebrew**: GUI apps and Mac App Store apps
 
 ### Binary Caches
-Two caches configured for pre-built binaries:
+Pre-configured caches for fast downloads:
 - `cache.nixos.org` - Official Nix cache
 - `nix-community.cachix.org` - Community packages
 
-Most updates download ~100-500MB instead of building everything from source.
+Most updates: ~100-500MB downloads, ~5-10 minutes.
 
-### Update Strategy
-```bash
-make update    # Updates all flake inputs
-make switch    # Applies changes
-```
-
-Typical update: ~5-10 minutes (was 30+ min with neovim-nightly building from source).
+### Neovim Decision
+Switched from `neovim-nightly-overlay` to stable neovim from nixpkgs-unstable:
+- **Before**: 2-3GB downloads, 30+ min builds (nightly often not cached)
+- **After**: ~20MB download, always cached
+- Still gets updates ~weekly from unstable channel
 
 ## Inspiration
 
-- [mitchellh/nixos-config](https://github.com/mitchellh/nixos-config) - System structure and patterns
+- [mitchellh/nixos-config](https://github.com/mitchellh/nixos-config) - Structure and patterns
 - [LnL7/nix-darwin](https://github.com/LnL7/nix-darwin) - macOS support
-- [nix-community/home-manager](https://github.com/nix-community/home-manager) - User environment management
+- [nix-community/home-manager](https://github.com/nix-community/home-manager) - User environment
 
 ## License
 
-MIT - Feel free to use this as inspiration for your own config!
-
-## Contributing
-
-This is my personal config, but issues and PRs are welcome if you spot bugs or have suggestions for improvements.
+MIT
