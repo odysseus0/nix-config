@@ -245,7 +245,11 @@ in {
     };
   };
   
-  # Neovim - using unstable for latest stable version (always cached)
+  # Neovim - using stable neovim from unstable channel
+  # Why unstable instead of nightly: Switched from neovim-nightly-overlay (Oct 2025)
+  # because nightly builds caused 2-3GB downloads and 30+ min build times when the
+  # cache didn't have fresh builds yet. Unstable updates ~weekly and is always cached.
+  # Trade-off: Lost bleeding-edge features, gained reliability and 100x faster updates.
   programs.neovim = {
     enable = true;
     package = pkgs.unstable.neovim-unwrapped;

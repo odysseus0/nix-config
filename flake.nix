@@ -28,7 +28,9 @@
   };
 
   outputs = { self, nixpkgs, home-manager, darwin, ... }@inputs: let
-    # Overlay to expose unstable packages
+    # Overlay to expose unstable packages as pkgs.unstable.*
+    # Why: Stable (25.05) for system-critical packages, unstable for dev tools
+    # where we want recent versions but still want cached builds (not nightly).
     overlays = [
       (final: prev: {
         unstable = import inputs.nixpkgs-unstable {
