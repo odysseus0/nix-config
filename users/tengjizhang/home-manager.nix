@@ -166,24 +166,21 @@ in {
   
   programs.git = {
     enable = true;
-    userName = "tengjizhang";
-    userEmail = "georgezhangtj97@gmail.com";
-    
-    # Mitchell's excellent aliases
-    aliases = {
-      cleanup = "!git branch --merged | grep -v '\\*\\|main\\|master\\|develop' | xargs -n 1 -r git branch -d";
-      prettylog = "log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative";
-      root = "rev-parse --show-toplevel";
-    };
-    
-    extraConfig = {
+
+    settings = {
+      # User configuration
+      user = {
+        name = "tengjizhang";
+        email = "georgezhangtj97@gmail.com";
+      };
+
       # Basic settings
       init.defaultBranch = "main";
       push.default = "simple";             # Keep your preference
       pull.rebase = false;
       branch.autosetuprebase = "always";   # Linear history from Mitchell
       color.ui = true;                     # Colorized output
-      
+
       # Delta - minimal config with auto light/dark detection
       core.pager = "delta";
       interactive.diffFilter = "delta --color-only";
@@ -191,7 +188,7 @@ in {
         detect-dark-light = "auto";  # automatically detect light/dark mode
         navigate = true;
       };
-      
+
       # SSH signing with local key
       credential.helper = "osxkeychain";
       gpg = {
