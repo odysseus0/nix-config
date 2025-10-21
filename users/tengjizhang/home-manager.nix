@@ -82,14 +82,13 @@ in {
     pnpm        # for accessing latest npm packages efficiently
     
     # AI CLI tools (from nixpkgs cache)
-    claude-code
     codex
 
     # Latest AI tools (cutting-edge via npm)
     (writeShellScriptBin "codex-latest" ''
       exec ${pnpm}/bin/pnpm dlx @openai/codex@latest "$@"
     '')
-    (writeShellScriptBin "claude-latest" ''
+    (writeShellScriptBin "claude" ''
       exec ${pnpm}/bin/pnpm dlx @anthropic-ai/claude-code@latest "$@"
     '')
     

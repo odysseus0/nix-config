@@ -176,7 +176,6 @@ end
 
 # Custom complex aliases that need shell logic
 alias code cursor
-# Claude is now managed by Nix as 'claude' binary (no alias needed)
 
 # =============================================================================
 # PATH Configuration (Mitchell's approach)  
