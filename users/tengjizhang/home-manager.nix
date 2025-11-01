@@ -81,11 +81,8 @@ in {
     nodejs      # for editor integration and basic needs
     pnpm        # for accessing latest npm packages efficiently
     
-    # AI CLI tools (from nixpkgs cache)
-    codex
-
-    # Latest AI tools (cutting-edge via npm)
-    (writeShellScriptBin "codex-latest" ''
+    # AI CLI tools (latest via npm)
+    (writeShellScriptBin "codex" ''
       exec ${pnpm}/bin/pnpm dlx @openai/codex@latest "$@"
     '')
     (writeShellScriptBin "claude" ''
