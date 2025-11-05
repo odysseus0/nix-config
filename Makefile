@@ -4,7 +4,7 @@
 NIXNAME = macbook-m4-max
 NIXPKGS_ALLOW_UNFREE = 1
 
-.PHONY: help switch test build clean
+.PHONY: help switch test build clean update update-commit
 
 # Default target - full system switch
 switch:
@@ -27,15 +27,28 @@ clean:
 update:
 	nix flake update
 
+# Update flake inputs and auto-commit
+update-commit:
+	@echo "Updating flake inputs..."
+	nix flake update
+	@if git diff --quiet --exit-code flake.lock; then \
+		echo "No changes to commit"; \
+	else \
+		echo "Committing flake.lock update..."; \
+		git add flake.lock; \
+		git commit -m "Update flake.lock: dependency version bumps"; \
+	fi
+
 # Show help
 help:
 	@echo "Available targets:"
-	@echo "  switch  - Build and activate the system configuration (default)"
-	@echo "  test    - Build and test configuration without activation"  
-	@echo "  build   - Build configuration only"
-	@echo "  update  - Update flake inputs"
-	@echo "  clean   - Remove build artifacts"
-	@echo "  help    - Show this help message"
+	@echo "  switch         - Build and activate the system configuration (default)"
+	@echo "  test           - Build and test configuration without activation"
+	@echo "  build          - Build configuration only"
+	@echo "  update         - Update flake inputs"
+	@echo "  update-commit  - Update flake inputs and auto-commit changes"
+	@echo "  clean          - Remove build artifacts"
+	@echo "  help           - Show this help message"
 
 # Make 'switch' the default target
 .DEFAULT_GOAL := switch

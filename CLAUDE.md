@@ -23,6 +23,9 @@ make build
 make update
 # or: nix flake update
 
+# Update flake inputs and auto-commit changes
+make update-commit
+
 # Clean build artifacts
 make clean
 ```
