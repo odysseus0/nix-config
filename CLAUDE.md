@@ -26,6 +26,9 @@ make update
 # Update flake inputs and auto-commit changes
 make update-commit
 
+# Update, commit, and push to remote
+make update-commit-push
+
 # Clean build artifacts
 make clean
 ```

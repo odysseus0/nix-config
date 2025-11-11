@@ -4,7 +4,7 @@
 NIXNAME = macbook-m4-max
 NIXPKGS_ALLOW_UNFREE = 1
 
-.PHONY: help switch test build clean update update-commit
+.PHONY: help switch test build clean update update-commit update-commit-push
 
 # Default target - full system switch
 switch:
@@ -28,9 +28,7 @@ update:
 	nix flake update
 
 # Update flake inputs and auto-commit
-update-commit:
-	@echo "Updating flake inputs..."
-	nix flake update
+update-commit: update
 	@if git diff --quiet --exit-code flake.lock; then \
 		echo "No changes to commit"; \
 	else \
@@ -39,16 +37,26 @@ update-commit:
 		git commit -m "Update flake.lock: dependency version bumps"; \
 	fi
 
+# Update, commit, and push to remote
+update-commit-push: update-commit
+	@if [ -n "$$(git log origin/main..HEAD 2>/dev/null)" ]; then \
+		echo "Pushing to remote..."; \
+		git push; \
+	else \
+		echo "No new commits to push"; \
+	fi
+
 # Show help
 help:
 	@echo "Available targets:"
-	@echo "  switch         - Build and activate the system configuration (default)"
-	@echo "  test           - Build and test configuration without activation"
-	@echo "  build          - Build configuration only"
-	@echo "  update         - Update flake inputs"
-	@echo "  update-commit  - Update flake inputs and auto-commit changes"
-	@echo "  clean          - Remove build artifacts"
-	@echo "  help           - Show this help message"
+	@echo "  switch              - Build and activate the system configuration (default)"
+	@echo "  test                - Build and test configuration without activation"
+	@echo "  build               - Build configuration only"
+	@echo "  update              - Update flake inputs"
+	@echo "  update-commit       - Update flake inputs and auto-commit changes"
+	@echo "  update-commit-push  - Update, commit, and push to remote"
+	@echo "  clean               - Remove build artifacts"
+	@echo "  help                - Show this help message"
 
 # Make 'switch' the default target
 .DEFAULT_GOAL := switch
