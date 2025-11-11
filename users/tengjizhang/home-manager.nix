@@ -91,7 +91,10 @@ in {
     
     # Programming languages
     go              # Go programming language
-    
+
+    # Blockchain development tools
+    foundry         # Foundry toolchain (forge, cast, anvil, chisel)
+
     # Infrastructure tools
     terraform       # Infrastructure as code
     
