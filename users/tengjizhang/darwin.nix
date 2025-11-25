@@ -41,8 +41,7 @@
       "proxyman"
       "sublime-merge"
       "rapidapi"
-      "miniforge"
-      
+
       # Network & Security
       "tailscale-app"
       
@@ -101,9 +100,8 @@
       "mas"  # Mac App Store CLI
     ];
 
-    # Cleanup old versions automatically  
     onActivation = {
-      cleanup = "uninstall";  # Remove formulas but preserve user data
+      cleanup = "zap";
       autoUpdate = true;
       upgrade = true;
     };
