@@ -74,28 +74,8 @@ set -gx FZF_DEFAULT_OPTS "--ansi --layout=reverse --color=$color_scheme"
 # Ctrl+Alt+S - Search git status         | Ctrl+R     - Atuin history
 
 # =============================================================================
-# Tool Integration
-# =============================================================================
-
-# Interactive shell tools
-if status is-interactive
-    # Directory navigation
-    zoxide init fish | source
-
-    # Environment management
-    direnv hook fish | source
-end
-
-# =============================================================================
-# Load Additional Configuration
-# =============================================================================
-
-# Note: Simple aliases (ls, cat, git shortcuts) are now managed by Nix
-# Complex aliases and functions that need shell logic stay here
-
-#-------------------------------------------------------------------------------
 # Custom Functions
-#-------------------------------------------------------------------------------
+# =============================================================================
 
 # Package manager overview (Nix pro style)
 function managed -d "List packages managed by various package managers (Nix pro style)"
