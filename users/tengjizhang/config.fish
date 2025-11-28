@@ -180,9 +180,12 @@ if test -d "/Applications/Hammerspoon.app"
     set -gx PATH "/Applications/Hammerspoon.app/Contents/Frameworks/hs" $PATH
 end
 
-# Personal scripts directory (matches Mitchell's pattern)  
+# Personal scripts directory (matches Mitchell's pattern)
 set -q PATH; or set PATH ''
 set -gx PATH "$HOME/.local/bin" $PATH
+
+# Go binaries (go install'd tools)
+set -gx PATH "$HOME/go/bin" $PATH
 
 # =============================================================================
 # Auto-Generated Tool Configuration
