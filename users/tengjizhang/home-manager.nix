@@ -9,6 +9,7 @@
     ./home/shell.nix
     ./home/dotfiles.nix
     ./home/environment.nix
+    ./home/services.nix
   ];
 
   # Make inputs available to all imported modules
