@@ -9,6 +9,7 @@
   # See darwin.nix masApps section for WeChat version pinning details
   #
   # Runs as a background HTTP server on localhost:5030
+  # Config file: ~/.chatlog/chatlog-server.json (not managed by nix - contains keys)
   launchd.agents.chatlog = {
     enable = true;
     config = {
@@ -16,7 +17,6 @@
       ProgramArguments = [
         "${config.home.homeDirectory}/go/bin/chatlog"
         "server"
-        "--auto-decrypt"
       ];
       RunAtLoad = true;
       KeepAlive = true;
