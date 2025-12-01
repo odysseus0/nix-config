@@ -127,7 +127,11 @@
       "Amphetamine" = 937984704;
       "Drafts" = 1435957248;
       "Things" = 904280696;
-      # "WeChat" = 836500024;  # Manually managed - pinned to 4.0.3.80 for chatlog compatibility
+      # "WeChat" = 836500024;
+      # ^ Manually managed - pinned to 4.0.3.80 for chatlog compatibility
+      # Newer versions changed DB schema, breaking chatlog export tool
+      # Download: https://github.com/zsbai/wechat-versions/releases/download/v4.0.3.80/WeChatMac-4.0.3.80.dmg
+      # Backup:   ~/Backups/WeChatMac-4.0.3.80.dmg
       
       # Specialized Tools
       "Flighty" = 1358823008;
