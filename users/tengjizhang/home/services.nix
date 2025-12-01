@@ -2,6 +2,12 @@
 
 {
   # Chatlog - WeChat chat history export tool
+  # https://github.com/sjzar/chatlog (original, taken down by Tencent)
+  # https://github.com/imldy/chatlog (active fork)
+  #
+  # Requires WeChat 4.0.3.80 - newer versions have incompatible DB schema
+  # See darwin.nix masApps section for WeChat version pinning details
+  #
   # Runs as a background HTTP server on localhost:5030
   launchd.agents.chatlog = {
     enable = true;
