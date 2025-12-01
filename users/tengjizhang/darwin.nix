@@ -127,7 +127,7 @@
       "Amphetamine" = 937984704;
       "Drafts" = 1435957248;
       "Things" = 904280696;
-      "WeChat" = 836500024;
+      # "WeChat" = 836500024;  # Manually managed - pinned to 4.0.3.80 for chatlog compatibility
       
       # Specialized Tools
       "Flighty" = 1358823008;
