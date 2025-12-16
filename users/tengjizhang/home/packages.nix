@@ -55,6 +55,9 @@ in {
     (writeShellScriptBin "claude" ''
       exec ${pnpm}/bin/pnpm dlx @anthropic-ai/claude-code@latest "$@"
     '')
+    (writeShellScriptBin "gemini" ''
+      exec ${pnpm}/bin/pnpm dlx @google/gemini-cli@latest "$@"
+    '')
 
     # Programming languages
     go              # Go programming language
