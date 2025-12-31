@@ -17,6 +17,10 @@ let
 
     # Task management
     t = "task";
+
+    # AI CLI tools
+    cc = "claude --dangerously-skip-permissions";
+    cx = "codex --yolo --search";
   };
 in {
   #---------------------------------------------------------------------
