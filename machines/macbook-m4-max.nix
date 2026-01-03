@@ -64,6 +64,8 @@
   environment.systemPackages = with pkgs; [
     # Basic system utilities (Mitchell's pattern)
     cachix
+    mosh  # system-level so non-interactive SSH can find mosh-server
   ];
+
 
 }
