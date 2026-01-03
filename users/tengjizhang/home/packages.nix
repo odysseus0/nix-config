@@ -59,7 +59,7 @@ in {
       exec ${pnpm}/bin/pnpm dlx @google/gemini-cli@latest "$@"
     '')
     (writeShellScriptBin "happy" ''
-      exec ${pnpm}/bin/pnpm dlx happy-coder@latest "$@"
+      exec ${pnpm}/bin/pnpm --package=happy-coder@latest dlx happy "$@"
     '')
 
     # Programming languages
