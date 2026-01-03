@@ -58,6 +58,9 @@ in {
     (writeShellScriptBin "gemini" ''
       exec ${pnpm}/bin/pnpm dlx @google/gemini-cli@latest "$@"
     '')
+    (writeShellScriptBin "happy" ''
+      exec ${pnpm}/bin/pnpm dlx happy-coder@latest "$@"
+    '')
 
     # Programming languages
     go              # Go programming language
