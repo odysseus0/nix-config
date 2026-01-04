@@ -10,6 +10,7 @@
     ./home/dotfiles.nix
     ./home/environment.nix
     ./home/services.nix
+    ./home/claudecode.nix
   ];
 
   # Make inputs available to all imported modules
