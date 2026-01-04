@@ -1,30 +1,38 @@
 ---
 name: evergreen
-description: Evergreen note creation for Obsidian vault. Use when creating evergreen notes, processing content into notes, writing to 2_Knowledge/0_Evergreen/, or when user mentions evergreen notes.
+description: Principles for creating evergreen notes - atomic, lasting insights that compound over time. Use when discussing note quality, what makes a good evergreen note, or the "only what was explored" principle. Tool-agnostic concepts that apply regardless of note-taking app.
 ---
 
 # Evergreen Notes
 
-Atomic, lasting insights for the knowledge graph.
+Atomic insights that remain true and useful over time.
 
-## Format
+## Atomicity
 
-- YAML frontmatter with 3-7 specific tags
-- Title: complete statement (Andy Matuschak style), not topic labels
-- Inline wikilinks `[[Note Title]]` - no separate "Related Notes" section
-- Sources section with (Author, Year) for claims
+One claim per note. The title states the claim. If you can't write a complete statement title, decompose.
+
+- Good: "Spaced repetition works because forgetting is desirable difficulty"
+- Bad: "Spaced repetition"
 
 ## Quality Bar
 
 **Include:** Genuinely grasped, non-obvious, atomic, lasting value
+
 **Reject:** Surface observations, vague generalizations, obvious statements, current-event descriptions
 
-## Core Principle
+## Core Principles
 
-Only what was explored. The note reads "here's what you discovered, explained expertly."
-- Track grasped vs merely mentioned
+**Only what was explored** - The note reads "here's what you discovered, explained expertly."
 - If something would illuminate understanding → stop and discuss first
 - Deepen, don't expand
+
+**Self-contained** - Makes sense when you've forgotten the original context.
+
+**Notes evolve** - Not final artifacts. Revise as understanding deepens.
+
+**Concept-oriented** - "How spaced repetition works" not "Notes from Make It Stick"
+
+**Links over folders** - Connections create value; associative beats hierarchical.
 
 ## Multiple Notes
 
