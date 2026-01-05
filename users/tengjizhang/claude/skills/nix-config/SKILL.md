@@ -23,6 +23,11 @@ home.packages = with pkgs; [
 homebrew.casks = [ "raycast" "obsidian" ];
 ```
 
+**Third-party taps** → Use full `tap/cask` path:
+```nix
+homebrew.casks = [ "steipete/tap/codexbar" ];
+```
+
 **Mac App Store** → `users/tengjizhang/darwin.nix`
 ```nix
 homebrew.masApps = { "Things" = 904280696; };
@@ -50,8 +55,9 @@ cd ~/nix-config && make switch
 ## Workflow
 
 1. Edit the appropriate .nix file
-2. `make switch` to rebuild and activate
-3. Commit and push changes
+2. Commit changes (keeps git clean before rebuild)
+3. `make switch` to rebuild and activate
+4. Push changes
 
 ## Key Files
 
