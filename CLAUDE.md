@@ -138,6 +138,14 @@ This config assumes the Determinate Nix installer:
 
 Typical update cycle: ~100-500MB downloads, ~5-10 minutes (varies by cache freshness).
 
+## Claude Skills
+
+Claude Code skills are managed declaratively in this repo and symlinked to `~/.claude/skills/` via home-manager.
+
+**Location:** `users/tengjizhang/claude/skills/{skill-name}/SKILL.md`
+
+To edit a skill, modify the source here and rebuild. The `~/.claude/skills/` directory is read-only (Nix-managed).
+
 ## Development Notes
 
 - **NIXPKGS_ALLOW_UNFREE=1** is required because many packages (VSCode, Chrome, etc.) are unfree
