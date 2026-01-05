@@ -12,6 +12,7 @@
     # Additional taps for specialized apps
     taps = [
       "mrkai77/cask"  # For Loop window manager
+      "steipete/tap"  # For CodexBar
     ];
 
     # GUI Applications via Homebrew casks
@@ -48,6 +49,7 @@
       # AI Tools
       "chatgpt"
       "lm-studio"
+      "steipete/tap/codexbar"
       
       # Productivity
       "1password"
