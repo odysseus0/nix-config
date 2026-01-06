@@ -61,6 +61,9 @@ in {
     (writeShellScriptBin "gccli" ''
       exec ${pnpm}/bin/pnpm dlx @mariozechner/gccli@latest "$@"
     '')
+    (writeShellScriptBin "bird" ''
+      exec ${pnpm}/bin/pnpm --silent dlx github:odysseus0/bird#personal "$@"
+    '')
 
     # Programming languages
     go              # Go programming language
