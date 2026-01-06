@@ -7,7 +7,7 @@ description: X/Twitter via bird CLI. Use when user mentions Twitter, X, tweeting
 
 `bird` CLI for X/Twitter. Account: @odysseus0z
 
-Runs via `pnpm dlx` from personal fork — auto-updates on new commits.
+Runs from local `~/projects/bird` (personal branch). Update: `cd ~/projects/bird && git pull && npm run build`
 
 ## Quick Reference
 
