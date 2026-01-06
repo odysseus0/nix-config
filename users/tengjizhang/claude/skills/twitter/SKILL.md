@@ -32,7 +32,7 @@ Curated feed that filters the home timeline, protecting attention from algorithm
 
 ### Process
 
-1. **Fetch**: `bird home -n 40 --json`
+1. **Fetch**: `bird home -n 40`
 
 2. **Filter each tweet** by:
    - Signal vs noise (insight vs engagement bait)
