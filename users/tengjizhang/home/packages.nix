@@ -47,6 +47,7 @@ in {
     # Node.js runtime (for editor integration)
     nodejs      # for editor integration and basic needs
     pnpm        # for accessing latest npm packages efficiently
+    bun         # fast JS runtime & bundler
 
     # AI CLI tools (latest via npm)
     (writeShellScriptBin "codex" ''
@@ -61,9 +62,10 @@ in {
     (writeShellScriptBin "gccli" ''
       exec ${pnpm}/bin/pnpm dlx @mariozechner/gccli@latest "$@"
     '')
-    # bird: run from local personal branch (update: git pull && npm run build)
+    # bird: run compiled binary from local personal branch
+    # update: cd ~/projects/bird && npm run build
     (writeShellScriptBin "bird" ''
-      exec ${nodejs}/bin/node "$HOME/projects/bird/dist/cli.js" "$@"
+      exec "$HOME/projects/bird/bird" "$@"
     '')
 
     # Programming languages
