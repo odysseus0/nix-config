@@ -48,8 +48,7 @@ Examples in packages.nix: `claude`, `codex`, `gemini`, `gccli`
 ## Rebuild
 
 ```bash
-cd ~/nix-config && make switch
-# or: sudo darwin-rebuild switch --flake .#macbook-m4-max
+cd ~/nix-config && make switch > /tmp/nix-switch.log 2>&1 && echo "✓ Switch succeeded" || echo "✗ Switch failed (see /tmp/nix-switch.log)"
 ```
 
 ## Workflow
