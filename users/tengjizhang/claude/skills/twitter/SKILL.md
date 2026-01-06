@@ -57,7 +57,7 @@ Curated feed that filters the home timeline, protecting attention from algorithm
 <details>
 <summary>Review what I filtered</summary>
 
-- **@user**: "preview..." — *reason*
+- **@user**: "preview..." — *reason* [→ link]
 - ...
 </details>
 
