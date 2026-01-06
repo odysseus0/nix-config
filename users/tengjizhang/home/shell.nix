@@ -22,8 +22,6 @@ let
     ccc = "claude --dangerously-skip-permissions";
     cx = "codex --yolo --search";
 
-    # Social
-    bird = "command bird --cookie-source chrome";
   };
 in {
   #---------------------------------------------------------------------
