@@ -12,7 +12,7 @@
     # Additional taps for specialized apps
     taps = [
       "mrkai77/cask"  # For Loop window manager
-      "steipete/tap"  # For CodexBar
+      "steipete/tap"  # For CodexBar, bird
     ];
 
     # GUI Applications via Homebrew casks
@@ -100,6 +100,7 @@
     # Command line tools that aren't in nixpkgs or need macOS-specific versions
     brews = [
       "mas"  # Mac App Store CLI
+      "steipete/tap/bird"  # X/Twitter CLI
     ];
 
     onActivation = {
