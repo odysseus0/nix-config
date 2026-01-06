@@ -100,7 +100,7 @@
     # Command line tools that aren't in nixpkgs or need macOS-specific versions
     brews = [
       "mas"  # Mac App Store CLI
-      "steipete/tap/bird"  # X/Twitter CLI
+      # bird: installed from personal fork via activation script below
     ];
 
     onActivation = {
@@ -145,6 +145,9 @@
     };
   };
 
+
+  # bird CLI: installed via pnpm dlx alias in shell.nix
+  # Using alias instead of global install - auto-updates on new commits
 
   # Helpful warning if not signed into App Store
   system.activationScripts.masLoginCheck.text = ''

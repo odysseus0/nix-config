@@ -22,6 +22,9 @@ let
     ccc = "claude --dangerously-skip-permissions";
     cx = "codex --yolo --search";
 
+    # Twitter CLI (personal fork with unreleased features)
+    bird = "pnpm --silent dlx github:odysseus0/bird#personal";
+
   };
 in {
   #---------------------------------------------------------------------
