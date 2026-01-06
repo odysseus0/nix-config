@@ -61,9 +61,9 @@ in {
     (writeShellScriptBin "gccli" ''
       exec ${pnpm}/bin/pnpm dlx @mariozechner/gccli@latest "$@"
     '')
-    # bird: run from local personal branch (auto-updates when you pull/rebase)
+    # bird: run from local personal branch (update: git pull && npm run build)
     (writeShellScriptBin "bird" ''
-      exec ${nodejs}/bin/node ~/projects/bird/dist/cli.js "$@"
+      exec ${nodejs}/bin/node "$HOME/projects/bird/dist/cli.js" "$@"
     '')
 
     # Programming languages
