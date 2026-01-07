@@ -9,6 +9,6 @@
     ".claude/skills".source = ../claude/skills;
     ".claude/commands".source = ../claude/commands;
     ".claude/output-styles".source = ../claude/output-styles;
-    ".claude/settings.json".source = ../claude/settings.json;
+    # settings.json intentionally not managed - Claude CLI needs to mutate it
   };
 }
