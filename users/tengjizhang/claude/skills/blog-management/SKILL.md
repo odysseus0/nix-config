@@ -15,45 +15,29 @@ Eleventy static blog hosted on Cloudflare Workers.
 
 ## Content Creation Workflow
 
-### From Obsidian to Blog
+Blog posts live in `4_Writing/blog/` in Obsidian (symlinked to the blog repo). Write directly there in blog format.
 
-1. **Write in Obsidian** with full markdown structure:
-   ```markdown
-   # Article Title
-
-   Tagline or subtitle
-
-   Content...
-   ```
-
-2. **Copy to blog:**
-   ```bash
-   cp "obsidian/article.md" ~/projects/tj-zhang-blog/content/blog/new-post.md
-   ```
-
-3. **Edit for blog format:**
-   - Add frontmatter with title, description, date, tags
-   - **Remove H1 header** (template handles title display)
-   - Keep tagline and content
-
-4. **Final format:**
+1. **Create post** in `4_Writing/blog/` with frontmatter:
    ```markdown
    ---
    title: "Article Title"
    description: "Brief description"
-   date: 2025-09-04
+   date: 2025-01-07
    tags: ["tag1", "tag2"]
    ---
-
-   Tagline or subtitle
 
    Content...
    ```
 
-5. **Deploy:**
+   - **No H1 header** — title comes from frontmatter
+   - **All code blocks need language hints** (e.g., \`\`\`bash) — required for rendering
+
+2. **Deploy:**
    ```bash
    cd ~/projects/tj-zhang-blog && pnpm ship
    ```
+
+3. **Verify** — Check the live URL to confirm the post is up.
 
 ## Why No H1 in Markdown
 
