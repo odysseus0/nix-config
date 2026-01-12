@@ -30,6 +30,7 @@ in {
     sd          # modern sed replacement
     yq          # YAML processor
     clickhouse  # ClickHouse database client
+    ffmpeg      # media processing
 
     # Additional tools
     taskwarrior3
