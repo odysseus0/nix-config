@@ -1,6 +1,6 @@
 ---
 name: nix-config
-description: Declarative macOS environment via Nix. Manages CLI packages, GUI apps (Homebrew/MAS), system settings, program configs, dotfiles, and services. Use when: (1) Adding packages, tools, or apps, (2) Configuring programs (Git, SSH, shells, etc.), (3) Modifying dotfiles or system settings, (4) Permission denied on config files (indicates Nix-managed), (5) Rebuilding system.
+description: "Declarative macOS config via Nix (packages, apps, dotfiles, system settings). Use when: (1) Permission denied or root-owned on config/dotfiles (indicates Nix-managed), (2) Adding packages or apps, (3) Configuring programs, (4) Rebuilding system (make switch)."
 ---
 
 # Nix Config
