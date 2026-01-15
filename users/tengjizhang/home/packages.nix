@@ -2,6 +2,20 @@
 
 let
   isDarwin = pkgs.stdenv.isDarwin;
+
+  # Declarative list of npm packages to install globally via bun
+  # Run `update-ai-tools` to install/update all of them
+  npmGlobalPackages = [
+    { pkg = "@anthropic-ai/claude-code"; bin = "claude"; }
+    { pkg = "@openai/codex"; bin = "codex"; }
+    { pkg = "@google/gemini-cli"; bin = "gemini"; }
+    { pkg = "agent-browser"; bin = "agent-browser"; }
+    { pkg = "@steipete/bird"; bin = "bird"; }
+    { pkg = "@mariozechner/gccli"; bin = "gccli"; }
+  ];
+
+  npmInstallArgs = lib.concatStringsSep " " (map (p: p.pkg + "@latest") npmGlobalPackages);
+  npmBinNames = lib.concatStringsSep ", " (map (p: p.bin) npmGlobalPackages);
 in {
   home.packages = with pkgs; [
     # Version control & GitHub
@@ -50,23 +64,13 @@ in {
     pnpm        # for accessing latest npm packages efficiently
     bun         # fast JS runtime & bundler
 
-    # AI CLI tools (latest via npm)
-    (writeShellScriptBin "codex" ''
-      exec ${pnpm}/bin/pnpm dlx @openai/codex@latest "$@"
-    '')
-    (writeShellScriptBin "claude" ''
-      exec ${pnpm}/bin/pnpm dlx @anthropic-ai/claude-code@latest "$@"
-    '')
-    (writeShellScriptBin "gemini" ''
-      exec ${pnpm}/bin/pnpm dlx @google/gemini-cli@latest "$@"
-    '')
-    (writeShellScriptBin "gccli" ''
-      exec ${pnpm}/bin/pnpm dlx @mariozechner/gccli@latest "$@"
-    '')
-    # bird: run compiled binary from local personal branch
-    # update: cd ~/projects/bird && npm run build
-    (writeShellScriptBin "bird" ''
-      exec "$HOME/projects/bird/bird" "$@"
+    # AI CLI tools - installed globally via bun (see npmGlobalPackages list above)
+    # Run `update-ai-tools` to install/update all packages
+    # Binaries available in ~/.bun/bin (added to PATH via home.sessionPath)
+    (writeShellScriptBin "update-ai-tools" ''
+      echo "Installing/updating AI CLI tools via bun..."
+      ${bun}/bin/bun install -g ${npmInstallArgs}
+      echo "Done! Available: ${npmBinNames}"
     '')
 
     # Programming languages
