@@ -34,7 +34,7 @@
       
       # Development
       "cursor"
-      "ghostty" 
+      "ghostty@tip" 
       "visual-studio-code@insiders"
       "orbstack"
       "tableplus"
@@ -103,6 +103,7 @@
     # Command line tools that aren't in nixpkgs or need macOS-specific versions
     brews = [
       "mas"  # Mac App Store CLI
+      "mole"  # Mac system optimization (mo command)
       # bird: installed from personal fork via activation script below
     ];
 
