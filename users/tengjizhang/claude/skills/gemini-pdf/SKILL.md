@@ -7,6 +7,17 @@ description: Process multimodal documents using Gemini CLI, leveraging Gemini's 
 
 Delegate document processing to Gemini CLI for superior multimodal understanding. Use when documents have visual complexity - layouts, tables, diagrams, scans, mixed content.
 
+## Workspace Restriction
+
+Gemini CLI sandboxes file access to the current working directory. For files outside the vault, run from the file's directory:
+
+```bash
+# Use subshell to preserve cwd
+(cd /path/to/files && gemini "Summarize: ./document.pdf")
+```
+
+The `--include-directories` flag exists but doesn't work reliably. Running from the target directory is the workaround.
+
 ## Basic Usage
 
 Reference file paths directly in your prompt - Gemini reads them via its file system tools:
