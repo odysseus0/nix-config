@@ -41,6 +41,7 @@ in {
     ast-grep    # code searching tool
     fx          # JSON explorer
     pandoc      # document converter
+    typst       # modern typesetting system
     sd          # modern sed replacement
     yq          # YAML processor
     clickhouse  # ClickHouse database client
