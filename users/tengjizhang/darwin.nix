@@ -110,6 +110,7 @@
       # Clawdbot skill dependencies
       "steipete/tap/gogcli"  # Google Workspace CLI (gog)
       "yakitrak/yakitrak/obsidian-cli"  # Obsidian vault CLI
+      "openai-whisper"  # Local speech-to-text
     ];
 
     onActivation = {
