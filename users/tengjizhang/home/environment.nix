@@ -1,8 +1,8 @@
 { pkgs, ... }:
 
 let
-  # Explicitly set to bun's XDG-compliant default
-  bunInstallDir = "$HOME/.cache/.bun";
+  # Bun's actual default global install location
+  bunInstallDir = "$HOME/.bun";
   # pnpm global directory (macOS default)
   pnpmHome = if pkgs.stdenv.isDarwin then "$HOME/Library/pnpm" else "$HOME/.local/share/pnpm";
 in {
@@ -15,6 +15,6 @@ in {
     PNPM_HOME = pnpmHome;
   };
 
-  # Add global bin paths (pnpm for AI CLI tools, bun kept for compatibility)
+  # Add global bin paths (pnpm for AI CLI tools, bun for qmd)
   home.sessionPath = [ pnpmHome "${bunInstallDir}/bin" ];
 }
