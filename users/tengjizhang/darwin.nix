@@ -12,7 +12,8 @@
     # Additional taps for specialized apps
     taps = [
       "mrkai77/cask"  # For Loop window manager
-      "steipete/tap"  # For CodexBar, bird
+      "steipete/tap"  # For CodexBar, bird, gogcli
+      "yakitrak/yakitrak"  # For obsidian-cli
       # lbjlaq/antigravity-manager: managed via activation script below
       # (nix-darwin's clone_target generates wrong Brewfile syntax)
     ];
@@ -105,6 +106,10 @@
       "mas"  # Mac App Store CLI
       "mole"  # Mac system optimization (mo command)
       # bird: installed from personal fork via activation script below
+
+      # Clawdbot skill dependencies
+      "steipete/tap/gogcli"  # Google Workspace CLI (gog)
+      "yakitrak/yakitrak/obsidian-cli"  # Obsidian vault CLI
     ];
 
     onActivation = {
@@ -164,6 +169,12 @@
         sudo --user=tengjizhang --set-home /opt/homebrew/bin/brew tap lbjlaq/antigravity-manager https://github.com/lbjlaq/Antigravity-Manager || true
       fi
     fi
+  '';
+
+  # Go packages not in Homebrew - install/update on activation
+  system.activationScripts.goPackages.text = ''
+    echo "Updating Go packages..."
+    GOBIN="$HOME/.bun/bin" ${pkgs.go}/bin/go install github.com/ossianhempel/things3-cli/cmd/things@latest 2>/dev/null || true
   '';
 
   # Helpful warning if not signed into App Store
