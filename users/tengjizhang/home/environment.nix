@@ -1,8 +1,10 @@
-{ ... }:
+{ pkgs, ... }:
 
 let
   # Explicitly set to bun's XDG-compliant default
   bunInstallDir = "$HOME/.cache/.bun";
+  # pnpm global directory (macOS default)
+  pnpmHome = if pkgs.stdenv.isDarwin then "$HOME/Library/pnpm" else "$HOME/.local/share/pnpm";
 in {
   home.sessionVariables = {
     EDITOR = "nvim";
@@ -10,8 +12,9 @@ in {
     GOPATH = "$HOME/go";
     OP_ACCOUNT = "my.1password.com";
     BUN_INSTALL = bunInstallDir;
+    PNPM_HOME = pnpmHome;
   };
 
-  # Add bun global bin to PATH (for AI CLI tools installed via update-ai-tools)
-  home.sessionPath = [ "${bunInstallDir}/bin" ];
+  # Add global bin paths (pnpm for AI CLI tools, bun kept for compatibility)
+  home.sessionPath = [ pnpmHome "${bunInstallDir}/bin" ];
 }
