@@ -3,7 +3,7 @@
 let
   isDarwin = pkgs.stdenv.isDarwin;
 
-  # Declarative list of npm packages to install globally via bun
+  # Declarative list of npm packages to install globally via pnpm
   # Auto-updated on every `make switch`
   npmGlobalPackages = [
     { pkg = "@anthropic-ai/claude-code"; bin = "claude"; }
@@ -19,8 +19,8 @@ let
 in {
   # Auto-update AI CLI tools on every activation (make switch)
   home.activation.updateAiTools = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    echo "Updating AI CLI tools via bun..."
-    ${pkgs.bun}/bin/bun install -g ${npmInstallArgs} 2>/dev/null || true
+    echo "Updating AI CLI tools via pnpm..."
+    ${pkgs.pnpm}/bin/pnpm add -g ${npmInstallArgs} 2>/dev/null || true
   '';
 
   home.packages = with pkgs; [
@@ -71,9 +71,9 @@ in {
     pnpm        # for accessing latest npm packages efficiently
     bun         # fast JS runtime & bundler
 
-    # AI CLI tools - installed globally via bun (see npmGlobalPackages list above)
+    # AI CLI tools - installed globally via pnpm (see npmGlobalPackages list above)
     # Auto-updated on `make switch` via home.activation.updateAiTools
-    # Binaries: ~/.bun/bin
+    # Binaries: ~/Library/pnpm (macOS) or ~/.local/share/pnpm (Linux)
 
     # Programming languages
     go              # Go programming language
