@@ -20,6 +20,11 @@ let
   # pnpm global directory (relative to $HOME, expanded at runtime)
   pnpmSubdir = if isDarwin then "Library/pnpm" else ".local/share/pnpm";
 
+  # Bun global packages (installed from git repos)
+  bunGlobalPackages = [
+    "https://github.com/tobi/qmd"  # Quick Markdown search for Obsidian
+  ];
+
 in {
   # Auto-update AI CLI tools on every activation (make switch)
   home.activation.updateAiTools = lib.hm.dag.entryAfter ["writeBoundary"] ''
@@ -28,6 +33,12 @@ in {
     export PATH="$PNPM_HOME:$PATH"
     mkdir -p "$PNPM_HOME"
     ${pkgs.pnpm}/bin/pnpm add -g ${npmInstallArgs} || echo "pnpm install failed, continuing..."
+  '';
+
+  # Install bun global packages (from git repos)
+  home.activation.updateBunTools = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    echo "Updating bun global packages..."
+    ${lib.concatMapStringsSep "\n    " (pkg: ''${pkgs.bun}/bin/bun install -g ${pkg} || echo "bun install ${pkg} failed, continuing..."'') bunGlobalPackages}
   '';
 
   home.packages = with pkgs; [
