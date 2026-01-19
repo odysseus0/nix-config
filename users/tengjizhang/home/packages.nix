@@ -17,15 +17,17 @@ let
 
   npmInstallArgs = lib.concatStringsSep " " (map (p: p.pkg + "@latest") npmGlobalPackages);
 
-  # pnpm global directory
-  pnpmHome = if isDarwin then "$HOME/Library/pnpm" else "$HOME/.local/share/pnpm";
+  # pnpm global directory (relative to $HOME, expanded at runtime)
+  pnpmSubdir = if isDarwin then "Library/pnpm" else ".local/share/pnpm";
+
 in {
   # Auto-update AI CLI tools on every activation (make switch)
   home.activation.updateAiTools = lib.hm.dag.entryAfter ["writeBoundary"] ''
     echo "Updating AI CLI tools via pnpm..."
-    export PNPM_HOME="${pnpmHome}"
+    export PNPM_HOME="$HOME/${pnpmSubdir}"
+    export PATH="$PNPM_HOME:$PATH"
     mkdir -p "$PNPM_HOME"
-    ${pkgs.pnpm}/bin/pnpm add -g ${npmInstallArgs} 2>/dev/null || true
+    ${pkgs.pnpm}/bin/pnpm add -g ${npmInstallArgs} || echo "pnpm install failed, continuing..."
   '';
 
   home.packages = with pkgs; [
