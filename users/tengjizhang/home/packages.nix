@@ -12,6 +12,7 @@ let
     { pkg = "agent-browser"; bin = "agent-browser"; }
     { pkg = "@steipete/bird"; bin = "bird"; }
     { pkg = "@mariozechner/gccli"; bin = "gccli"; }
+    { pkg = "clawdbot"; bin = "clawdbot"; }
   ];
 
   npmInstallArgs = lib.concatStringsSep " " (map (p: p.pkg + "@latest") npmGlobalPackages);
