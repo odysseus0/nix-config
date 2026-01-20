@@ -12,10 +12,9 @@ OpenAI's Codex CLI for web search and reviews. All commands are non-interactive.
 ChatGPT-tuned agentic search. Default: `gpt-5.2` with medium reasoning.
 
 ```bash
-codex exec "your question" --enable web_search_request -m gpt-5.2 -c model_reasoning_effort="medium" 2>/dev/null
+codex exec "your question" -c 'tools.web_search=true' -m gpt-5.2 -c model_reasoning_effort="medium" \
+  --output-last-message /tmp/codex-result.txt >/dev/null 2>&1 && cat /tmp/codex-result.txt
 ```
-
-Note: `2>/dev/null` suppresses metadata and reasoning traces, returning only the answer.
 
 ## Code Review (Git Changes)
 
@@ -40,7 +39,8 @@ codex review --uncommitted "Focus on security issues" -c model="gpt-5.2-codex" -
 Review a file for clarity, density, and fluff removal.
 
 ```bash
-codex exec "Review the writing at <filepath>. Provide an improved version in full, then explain each change. Prioritize: removing fluff, increasing information density, improving clarity. No stylistic preferences." --skip-git-repo-check 2>/dev/null
+codex exec "Review the writing at <filepath>. Provide an improved version in full, then explain each change. Prioritize: removing fluff, increasing information density, improving clarity. No stylistic preferences." \
+  --skip-git-repo-check --output-last-message /tmp/codex-result.txt >/dev/null 2>&1 && cat /tmp/codex-result.txt
 ```
 
 Use your judgment to incorporate high-value changes directly. Briefly summarize what you changed and why.
