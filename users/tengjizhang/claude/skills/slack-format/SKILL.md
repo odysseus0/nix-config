@@ -5,35 +5,23 @@ description: "Format messages for Slack using mrkdwn syntax. Use when: (1) Writi
 
 # Slack mrkdwn Format
 
-Slack uses "mrkdwn" - NOT standard markdown.
+Slack uses "mrkdwn" - NOT standard markdown. Only differences listed below.
 
-## Quick Reference
+## Key Differences
 
 | Element | Slack mrkdwn | NOT this |
 |---------|--------------|----------|
 | Bold | `*text*` | `**text**` |
 | Italic | `_text_` | `*text*` |
 | Strike | `~text~` | `~~text~~` |
-| Code | `` `code` `` | same |
-| Block | ` ```code``` ` | same |
 | Link | `<url\|text>` | `[text](url)` |
-| Quote | `> text` | same |
 
-## No Support
+## Not Supported
 
-- Headers (`#`, `##`, etc.) - just use *bold*
+- Headers (`#`, `##`, etc.) - use *bold* instead
 - Nested lists
 - Tables
 - Images (use file uploads)
-
-## Links
-
-```
-<https://example.com|Click here>
-<mailto:hi@example.com|Email>
-```
-
-URLs auto-link: `https://example.com` works without formatting.
 
 ## Mentions
 
@@ -42,34 +30,12 @@ URLs auto-link: `https://example.com` works without formatting.
 <#C123ABC456>       Channel (by ID)
 <!here>             @here
 <!channel>          @channel
-<!everyone>         @everyone
 ```
 
 ## Escaping
 
-Escape `&`, `<`, `>` in user content:
-
-| Char | Escape |
-|------|--------|
-| `&` | `&amp;` |
-| `<` | `&lt;` |
-| `>` | `&gt;` |
-
-## Lists
-
-No special syntax - use plain text:
-
-```
-• Item one
-• Item two
-• Item three
-```
-
-Or with dashes: `- Item one`
+Escape `&`, `<`, `>` in user content as `&amp;` `&lt;` `&gt;`
 
 ## Output
 
-When formatting for Slack, write directly to clipboard via:
-```bash
-cat /tmp/slack-msg.md | pbcopy
-```
+Write to clipboard: `cat /tmp/slack-msg.md | pbcopy`
