@@ -172,12 +172,6 @@
     fi
   '';
 
-  # Go packages not in Homebrew - install/update on activation
-  system.activationScripts.goPackages.text = ''
-    echo "Updating Go packages..."
-    GOBIN="$HOME/.bun/bin" ${pkgs.go}/bin/go install github.com/ossianhempel/things3-cli/cmd/things@latest 2>/dev/null || true
-  '';
-
   # Helpful warning if not signed into App Store
   system.activationScripts.masLoginCheck.text = ''
     if ! ${pkgs.mas}/bin/mas account >/dev/null 2>&1; then
