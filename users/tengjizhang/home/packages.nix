@@ -70,6 +70,7 @@ in {
     yq          # YAML processor
     clickhouse  # ClickHouse database client
     ffmpeg      # media processing
+    d2          # diagram-as-code tool
 
     # Additional tools
     taskwarrior3
