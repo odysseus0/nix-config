@@ -12,7 +12,7 @@
       # User configuration
       user = {
         name = "tengjizhang";
-        email = "georgezhangtj97@gmail.com";
+        email = "odysseus0@users.noreply.github.com";
       };
 
       # Basic settings
@@ -128,7 +128,7 @@
     settings = {
       user = {
         name = "tengjizhang";
-        email = "georgezhangtj97@gmail.com";
+        email = "odysseus0@users.noreply.github.com";
       };
     };
   };

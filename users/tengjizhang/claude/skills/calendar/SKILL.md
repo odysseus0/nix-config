@@ -9,47 +9,45 @@ Google Calendar access via `gccli` CLI.
 
 ## Account
 
-```
-georgezhangtj97@gmail.com
-```
+Get the account email by running: `gccli accounts`
 
 ## Essential Commands
 
 ```bash
 # List calendars
-gccli georgezhangtj97@gmail.com calendars
+gccli <account> calendars
 
 # List upcoming events (default: next week)
-gccli georgezhangtj97@gmail.com events primary
+gccli <account> events primary
 
 # Events with date range
-gccli georgezhangtj97@gmail.com events primary --from 2026-01-15T00:00:00 --to 2026-01-20T00:00:00
+gccli <account> events primary --from 2026-01-15T00:00:00 --to 2026-01-20T00:00:00
 
 # Search events
-gccli georgezhangtj97@gmail.com events primary --query "meeting"
+gccli <account> events primary --query "meeting"
 
 # Get event details
-gccli georgezhangtj97@gmail.com event primary <eventId>
+gccli <account> event primary <eventId>
 ```
 
 ## Creating Events
 
 ```bash
 # Standard event
-gccli georgezhangtj97@gmail.com create primary \
+gccli <account> create primary \
   --summary "Meeting" \
   --start 2026-01-15T10:00:00 \
   --end 2026-01-15T11:00:00
 
 # All-day event
-gccli georgezhangtj97@gmail.com create primary \
+gccli <account> create primary \
   --summary "Vacation" \
   --start 2026-01-20 \
   --end 2026-01-25 \
   --all-day
 
 # With details
-gccli georgezhangtj97@gmail.com create primary \
+gccli <account> create primary \
   --summary "Team Sync" \
   --start 2026-01-15T14:00:00 \
   --end 2026-01-15T15:00:00 \
@@ -62,16 +60,16 @@ gccli georgezhangtj97@gmail.com create primary \
 
 ```bash
 # Update
-gccli georgezhangtj97@gmail.com update primary <eventId> --summary "New Title"
+gccli <account> update primary <eventId> --summary "New Title"
 
 # Delete
-gccli georgezhangtj97@gmail.com delete primary <eventId>
+gccli <account> delete primary <eventId>
 ```
 
 ## Free/Busy
 
 ```bash
-gccli georgezhangtj97@gmail.com freebusy primary --from 2026-01-15T00:00:00Z --to 2026-01-16T00:00:00Z
+gccli <account> freebusy primary --from 2026-01-15T00:00:00Z --to 2026-01-16T00:00:00Z
 ```
 
 ## Notes
