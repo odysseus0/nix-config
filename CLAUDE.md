@@ -73,9 +73,10 @@ The overlay in flake.nix exposes unstable packages as `pkgs.unstable.*` to get r
 
 ### Binary Caches
 
-Pre-configured for fast downloads:
-- `cache.nixos.org` - Official Nix cache
+Pre-configured for fast downloads (managed via `determinateNix.customSettings` in `machines/*.nix`):
+- `cache.nixos.org` - Official Nix cache (included by default)
 - `nix-community.cachix.org` - Community packages
+- `cache.numtide.com` - LLM/AI tools from numtide/llm-agents.nix (daily builds)
 
 **Important**: Avoid adding overlays without verifying they have active caches. The neovim-nightly-overlay was removed in Oct 2025 because it caused 2-3GB downloads and 30+ min builds when caches were stale. Switched to stable neovim from nixpkgs-unstable instead.
 
@@ -96,11 +97,18 @@ Pre-configured for fast downloads:
 
 ### AI CLI Tools Pattern
 
-Two versions maintained:
-1. **Stable from nixpkgs**: `codex` package
-2. **Latest via npm**: Wrapper scripts using `pnpm dlx` for `@anthropic-ai/claude-code@latest`
+AI CLI tools come from `numtide/llm-agents.nix` flake input (daily automated updates with binary cache):
+- `claude-code` - Anthropic's Claude Code CLI
+- `codex` - OpenAI Codex CLI
+- `gemini-cli` - Google Gemini CLI
+- `agent-browser` - Browser automation
+- `clawdbot` - Claude bot utility
 
-This provides both cached/stable and bleeding-edge access.
+Tools not covered by numtide are installed via pnpm activation script:
+- `bird` - Twitter/X CLI (@steipete/bird)
+- `gccli` - Google Calendar CLI (@mariozechner/gccli)
+
+See `users/tengjizhang/home/packages.nix` for the full configuration.
 
 ## Important Implementation Details
 
@@ -125,10 +133,14 @@ Uses structured `settings` attribute (new format as of home-manager updates):
 
 ### Determinate Nix Installer
 
-This config assumes the Determinate Nix installer:
-- `nix.enable = false` in machine config (installer manages Nix)
+This config uses the Determinate Nix installer with its official nix-darwin module:
+- `determinate` flake input from FlakeHub
+- `inputs.determinate.darwinModules.default` added in `lib/mksystem.nix`
+- `nix.enable = false` in machine config (Determinate manages Nix daemon)
+- `determinateNix.customSettings` for cache configuration (writes to `/etc/nix/nix.custom.conf`)
 - `ids.gids.nixbld = 30000` for compatibility
-- Experimental features enabled via `nix.extraOptions`
+
+**Note**: Do NOT use `nix.settings` for caches when `nix.enable = false` - those settings are ignored. Use `determinateNix.customSettings` instead.
 
 ## Testing Changes
 
