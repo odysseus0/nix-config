@@ -1,18 +1,15 @@
-{ pkgs, lib, ... }:
+{ pkgs, lib, inputs, ... }:
 
 let
   isDarwin = pkgs.stdenv.isDarwin;
 
-  # Declarative list of npm packages to install globally via pnpm
-  # Auto-updated on every `make switch`
+  # LLM/AI tools from numtide/llm-agents.nix (daily updates, binary cache)
+  llmAgents = inputs.llm-agents.packages.${pkgs.system};
+
+  # npm packages NOT covered by numtide - still use pnpm for these
   npmGlobalPackages = [
-    { pkg = "@anthropic-ai/claude-code"; bin = "claude"; }
-    { pkg = "@openai/codex"; bin = "codex"; }
-    { pkg = "@google/gemini-cli"; bin = "gemini"; }
-    { pkg = "agent-browser"; bin = "agent-browser"; }
     { pkg = "@steipete/bird"; bin = "bird"; }
     { pkg = "@mariozechner/gccli"; bin = "gccli"; }
-    { pkg = "clawdbot"; bin = "clawdbot"; }
   ];
 
   npmInstallArgs = lib.concatStringsSep " " (map (p: p.pkg + "@latest") npmGlobalPackages);
@@ -26,9 +23,9 @@ let
   ];
 
 in {
-  # Auto-update AI CLI tools on every activation (make switch)
+  # Install remaining npm packages not in numtide (bird, gccli)
   home.activation.updateAiTools = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    echo "Updating AI CLI tools via pnpm..."
+    echo "Updating remaining npm packages via pnpm (bird, gccli)..."
     export PNPM_HOME="$HOME/${pnpmSubdir}"
     export PATH="$PNPM_HOME:$PATH"
     mkdir -p "$PNPM_HOME"
@@ -87,12 +84,15 @@ in {
 
     # Node.js runtime (for editor integration)
     nodejs      # for editor integration and basic needs
-    pnpm        # for accessing latest npm packages efficiently
+    pnpm        # for remaining npm packages (bird, gccli)
     bun         # fast JS runtime & bundler
 
-    # AI CLI tools - installed globally via pnpm (see npmGlobalPackages list above)
-    # Auto-updated on `make switch` via home.activation.updateAiTools
-    # Binaries: ~/Library/pnpm (macOS) or ~/.local/share/pnpm (Linux)
+    # AI CLI tools from numtide/llm-agents.nix (daily updates, binary cache)
+    llmAgents.claude-code    # Anthropic's Claude Code CLI
+    llmAgents.codex          # OpenAI Codex CLI
+    llmAgents.gemini-cli     # Google Gemini CLI
+    llmAgents.agent-browser  # Browser automation
+    llmAgents.clawdbot       # Claude bot utility
 
     # Programming languages
     go              # Go programming language
