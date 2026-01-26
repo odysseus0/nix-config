@@ -43,6 +43,9 @@ in systemFunc rec {
     # Snapd on Linux
     (if isLinux then inputs.nix-snapd.nixosModules.default else {})
 
+    # Determinate Nix module for darwin (manages /etc/nix/nix.custom.conf)
+    (if darwin then inputs.determinate.darwinModules.default else {})
+
     machineConfig
     userOSConfig
     home-manager.home-manager {

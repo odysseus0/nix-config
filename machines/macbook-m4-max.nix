@@ -8,36 +8,16 @@
   # We use proprietary software on this machine
   nixpkgs.config.allowUnfree = true;
 
-  # Keep in sync with Mitchell's vm-shared.nix pattern
-  nix = {
-    # We use the determinate-nix installer which manages Nix for us,
-    # so we don't want nix-darwin to do it.
-    enable = false;
+  # Determinate Nix manages the nix daemon; nix-darwin should not.
+  nix.enable = false;
 
-    # We need to enable flakes
-    extraOptions = ''
-      experimental-features = nix-command flakes
-      keep-outputs = true
-      keep-derivations = true
-    '';
-
-    settings = {
-      # Required for trusted users
-      trusted-users = ["@admin"];
-
-      # Binary caches for pre-built packages (avoid building from source)
-      # cache.nixos.org: Official cache, covers most standard packages
-      # nix-community.cachix.org: Community packages (covers most of our tools)
-      # Note: Avoid adding niche overlays without checking if they have caches!
-      substituters = [
-        "https://cache.nixos.org"
-        "https://nix-community.cachix.org"
-      ];
-      trusted-public-keys = [
-        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-      ];
-    };
+  # Binary caches for pre-built packages (written to /etc/nix/nix.custom.conf)
+  # - cache.nixos.org: Official cache (included by default)
+  # - nix-community.cachix.org: Community packages
+  # - cache.numtide.com: LLM/AI tools from numtide/llm-agents.nix
+  determinateNix.customSettings = {
+    extra-substituters = "https://nix-community.cachix.org https://cache.numtide.com";
+    extra-trusted-public-keys = "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g=";
   };
 
   # zsh is the default shell on Mac and we want to make sure that we're
