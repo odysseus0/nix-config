@@ -175,6 +175,11 @@ function claude-profile --description "Launch Claude Code with a specific profil
     claude --settings "$profile_path" $extra_args
 end
 
+# Claude Code profile selector (skip permissions - daily driver)
+function ccc-profile --description "Launch Claude Code with profile, skip permissions"
+    claude-profile $argv --dangerously-skip-permissions
+end
+
 # SSH keys are now managed locally at ~/.ssh/id_ed25519
 # No need for 1Password integration - keys are loaded automatically
 
