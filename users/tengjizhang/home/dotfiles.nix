@@ -28,5 +28,17 @@
   xdg.configFile = {
     "gh/config.yml".source = ../gh-config.yml;
     "ghostty/config".source = ../ghostty;
+
+    # pnpm config - allow build scripts only for specific packages
+    # These are native modules needed for AI CLI tools functionality
+    "pnpm/rc".text = ''
+      onlyBuiltDependencies[]=agent-browser
+      onlyBuiltDependencies[]=clawdbot
+      onlyBuiltDependencies[]=keytar
+      onlyBuiltDependencies[]=node-pty
+      onlyBuiltDependencies[]=protobufjs
+      onlyBuiltDependencies[]=sharp
+      onlyBuiltDependencies[]=tree-sitter-bash
+    '';
   };
 }
