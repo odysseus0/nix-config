@@ -136,6 +136,45 @@ function taskai --description "AI-friendly flat output for TaskWarrior"
     task rc.defaultwidth=0 rc.verbose=nothing rc.color=off $argv | tr -s ' '
 end
 
+# Claude Code profile selector
+function claude-profile --description "Launch Claude Code with a specific profile"
+    set -l profiles_dir "$HOME/.claude/profiles"
+
+    if not test -d "$profiles_dir"
+        echo "No profiles directory found at $profiles_dir"
+        return 1
+    end
+
+    set -l profile $argv[1]
+    set -l extra_args $argv[2..-1]
+
+    # If no profile specified, interactive selection
+    if test -z "$profile"
+        if command -q gum
+            set profile (ls "$profiles_dir"/*.json | xargs -n1 basename -s .json | gum choose --header "Select Claude profile:")
+        else if command -q fzf
+            set profile (ls "$profiles_dir"/*.json | xargs -n1 basename -s .json | fzf --prompt="Profile: ")
+        else
+            echo "Usage: claude-profile <profile-name>"
+            echo "Available profiles:"
+            ls "$profiles_dir"/*.json | xargs -n1 basename -s .json | sed 's/^/  /'
+            return 1
+        end
+    end
+
+    if test -z "$profile"
+        return 1
+    end
+
+    set -l profile_path "$profiles_dir/$profile.json"
+    if not test -f "$profile_path"
+        echo "Profile not found: $profile_path"
+        return 1
+    end
+
+    claude --settings "$profile_path" $extra_args
+end
+
 # SSH keys are now managed locally at ~/.ssh/id_ed25519
 # No need for 1Password integration - keys are loaded automatically
 
