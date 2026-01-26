@@ -2,19 +2,16 @@
   description = "tengjizhang's nix-darwin configuration - following Mitchell's structure";
 
   inputs = {
-    # Pin nixpkgs like Mitchell does
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
-    
-    # We use the unstable nixpkgs repo for some packages.
-    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    
-    # nix-darwin
+    # Use unstable for latest packages on personal dev machine
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+
+    # nix-darwin (master follows unstable)
     darwin = {
-      url = "github:nix-darwin/nix-darwin/nix-darwin-25.05";
+      url = "github:nix-darwin/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    
-    # home-manager integration
+
+    # home-manager integration (master follows unstable)
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -25,23 +22,21 @@
       url = "github:jorgebucaran/hydro/75ab7168a35358b3d08eeefad4ff0dd306bd80d4";
       flake = false;
     };
+
+    # Determinate Nix - official nix-darwin integration module
+    determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/3";
+
+    # LLM/AI CLI tools - daily updated packages from Numtide
+    llm-agents = {
+      url = "github:numtide/llm-agents.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = { self, nixpkgs, home-manager, darwin, ... }@inputs: let
-    # Overlay to expose unstable packages as pkgs.unstable.*
-    # Why: Stable (25.05) for system-critical packages, unstable for dev tools
-    # where we want recent versions but still want cached builds (not nightly).
-    overlays = [
-      (final: prev: {
-        unstable = import inputs.nixpkgs-unstable {
-          system = final.system;
-          config.allowUnfree = true;
-        };
-      })
-    ];
-
     mkSystem = import ./lib/mksystem.nix {
-      inherit overlays nixpkgs inputs;
+      inherit nixpkgs inputs;
+      overlays = [];
     };
   in {
     darwinConfigurations.macbook-m4-max = mkSystem "macbook-m4-max" {
