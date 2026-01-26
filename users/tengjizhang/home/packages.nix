@@ -49,6 +49,7 @@ in {
     eza
     fd
     fzf
+    gum         # TUI toolkit for shell scripts (Charm)
     ripgrep
     tree        # directory tree
     btop        # system monitor (better than htop)
