@@ -137,12 +137,8 @@
   # Neovim - Editor
   #---------------------------------------------------------------------
 
-  # Using stable neovim from unstable channel
-  # Why unstable instead of nightly: Switched from neovim-nightly-overlay (Oct 2025)
-  # because nightly builds caused 2-3GB downloads and 30+ min build times when the
-  # cache didn't have fresh builds yet. Unstable updates ~weekly and is always cached.
   programs.neovim = {
     enable = true;
-    package = pkgs.unstable.neovim-unwrapped;
+    package = pkgs.neovim-unwrapped;
   };
 }
