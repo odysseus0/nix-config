@@ -10,7 +10,8 @@
     ./home/dotfiles.nix
     ./home/environment.nix
     ./home/services.nix
-    ./home/claudecode.nix
+    # claudecode.nix removed - ~/.claude/ now git-tracked directly
+    # See: ~/.claude/ for skills, commands, output-styles, profiles
   ];
 
   # Make inputs available to all imported modules
