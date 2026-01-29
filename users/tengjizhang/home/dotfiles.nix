@@ -33,7 +33,6 @@
     # These are native modules needed for AI CLI tools functionality
     "pnpm/rc".text = ''
       onlyBuiltDependencies[]=agent-browser
-      onlyBuiltDependencies[]=clawdbot
       onlyBuiltDependencies[]=keytar
       onlyBuiltDependencies[]=node-pty
       onlyBuiltDependencies[]=protobufjs
