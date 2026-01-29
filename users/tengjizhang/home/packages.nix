@@ -12,7 +12,13 @@ let
     { pkg = "@mariozechner/gccli"; bin = "gccli"; }
   ];
 
-  npmInstallArgs = lib.concatStringsSep " " (map (p: p.pkg + "@latest") npmGlobalPackages);
+  # Only append @latest if package doesn't already have a version specifier
+  # Scoped packages start with @, so check for @ after first char
+  hasVersion = pkg: let
+    afterFirst = builtins.substring 1 (builtins.stringLength pkg) pkg;
+  in lib.hasInfix "@" afterFirst;
+  addLatest = pkg: if hasVersion pkg then pkg else pkg + "@latest";
+  npmInstallArgs = lib.concatStringsSep " " (map (p: addLatest p.pkg) npmGlobalPackages);
 
   # pnpm global directory (relative to $HOME, expanded at runtime)
   pnpmSubdir = if isDarwin then "Library/pnpm" else ".local/share/pnpm";
@@ -93,7 +99,7 @@ in {
     llmAgents.codex          # OpenAI Codex CLI
     llmAgents.gemini-cli     # Google Gemini CLI
     llmAgents.agent-browser  # Browser automation
-    llmAgents.clawdbot       # Claude bot utility
+    llmAgents.moltbot        # WhatsApp/Telegram/Discord AI assistant (formerly clawdbot)
 
     # Programming languages
     go              # Go programming language
