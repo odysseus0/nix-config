@@ -136,48 +136,42 @@ function taskai --description "AI-friendly flat output for TaskWarrior"
     task rc.defaultwidth=0 rc.verbose=nothing rc.color=off $argv | tr -s ' '
 end
 
-# Claude Code profile selector
-function claude-profile --description "Launch Claude Code with a specific profile"
+# Claude Code profile helpers
+function _claude_profile_path
     set -l profiles_dir "$HOME/.claude/profiles"
 
-    if not test -d "$profiles_dir"
-        echo "No profiles directory found at $profiles_dir"
-        return 1
-    end
+    test -d "$profiles_dir"; or echo "No profiles directory at $profiles_dir" >&2 && return 1
 
     set -l profile $argv[1]
-    set -l extra_args $argv[2..-1]
 
-    # If no profile specified, interactive selection
     if test -z "$profile"
         if command -q gum
             set profile (ls "$profiles_dir"/*.json | xargs -n1 basename -s .json | gum choose --header "Select Claude profile:")
         else if command -q fzf
             set profile (ls "$profiles_dir"/*.json | xargs -n1 basename -s .json | fzf --prompt="Profile: ")
         else
-            echo "Usage: claude-profile <profile-name>"
-            echo "Available profiles:"
-            ls "$profiles_dir"/*.json | xargs -n1 basename -s .json | sed 's/^/  /'
+            echo "Usage: claude-profile <profile-name>" >&2
+            ls "$profiles_dir"/*.json | xargs -n1 basename -s .json | sed 's/^/  /' >&2
             return 1
         end
     end
 
-    if test -z "$profile"
-        return 1
-    end
+    test -z "$profile"; and return 1
 
     set -l profile_path "$profiles_dir/$profile.json"
-    if not test -f "$profile_path"
-        echo "Profile not found: $profile_path"
-        return 1
-    end
+    test -f "$profile_path"; or echo "Profile not found: $profile_path" >&2 && return 1
 
-    claude --settings "$profile_path" $extra_args
+    echo $profile_path
 end
 
-# Claude Code profile selector (skip permissions - daily driver)
+function claude-profile --description "Launch Claude Code with a profile"
+    set -l p (_claude_profile_path $argv[1]); or return
+    claude --settings "$p" $argv[2..-1]
+end
+
 function ccc-profile --description "Launch Claude Code with profile, skip permissions"
-    claude-profile $argv --dangerously-skip-permissions
+    set -l p (_claude_profile_path $argv[1]); or return
+    claude --settings "$p" --dangerously-skip-permissions $argv[2..-1]
 end
 
 # SSH keys are now managed locally at ~/.ssh/id_ed25519
