@@ -99,7 +99,7 @@ in {
     llmAgents.codex          # OpenAI Codex CLI
     llmAgents.gemini-cli     # Google Gemini CLI
     llmAgents.agent-browser  # Browser automation
-    llmAgents.moltbot        # WhatsApp/Telegram/Discord AI assistant (formerly clawdbot)
+    llmAgents.moltbot        # WhatsApp/Telegram/Discord AI assistant (clawdbot → moltbot → openclaw)
 
     # Programming languages
     go              # Go programming language
