@@ -100,6 +100,7 @@ in {
     llmAgents.gemini-cli     # Google Gemini CLI
     llmAgents.agent-browser  # Browser automation
     llmAgents.openclaw       # WhatsApp/Telegram/Discord AI assistant (formerly clawdbot → moltbot)
+    llmAgents.pi             # Minimal extensible coding agent (badlogic)
 
     # Programming languages
     go              # Go programming language
