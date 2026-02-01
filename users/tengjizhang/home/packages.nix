@@ -116,4 +116,7 @@ in {
     awscli2          # AWS CLI (latest version)
     _1password-cli
   ];
+
+  # Pi source symlink for easy access to docs/examples
+  home.file.".pi/pi-source".source = "${llmAgents.pi}/lib/node_modules/@mariozechner/pi-coding-agent";
 }
