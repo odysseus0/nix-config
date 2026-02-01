@@ -1,6 +1,6 @@
 # nix-config
 
-Declarative macOS development environment using nix-darwin and home-manager.
+My entire computing environment, version-controlled. Declarative macOS using nix-darwin and home-manager.
 
 ## Quick Reference
 
@@ -12,86 +12,73 @@ make test      # Test without activating
 
 ## What This Manages
 
-- **~100 CLI packages** - Dev tools, modern CLI utilities, cloud SDKs
-- **50+ GUI apps** - Managed declaratively via Homebrew
-- **Shell environment** - Fish with plugins and custom config
-- **Dotfiles** - Git, terminal, tool configs
-- **System settings** - Touch ID for sudo, shells, environment variables
+- **CLI packages** — Dev tools, modern CLI utilities, cloud SDKs
+- **GUI apps** — Managed declaratively via Homebrew
+- **AI tools** — Claude Code, Codex, Gemini CLI via [numtide/llm-agents.nix](https://github.com/numtide/llm-agents.nix)
+- **Shell** — Fish with plugins and custom config
+- **Dotfiles** — Git, terminal, tool configs
+- **System settings** — Touch ID for sudo, shells, environment variables
 
-## Key Packages
+## Architecture
 
-**Development:**
-- Languages: Go, Node.js (pnpm), Python (uv)
-- Cloud: AWS CLI, Google Cloud SDK, Terraform
-- Tools: Neovim, Zellij, direnv, Docker (OrbStack)
+Three-layer configuration system following [mitchellh's patterns](https://github.com/mitchellh/nixos-config):
 
-**Modern CLI:**
-- `bat` (cat), `eza` (ls), `fd` (find), `ripgrep` (grep), `delta` (git diff)
-- `zoxide` (cd), `atuin` (history), `fzf` (fuzzy finder)
+```
+├── flake.nix                    # Flake inputs and outputs
+├── lib/mksystem.nix             # System builder function
+├── machines/macbook-m4-max.nix  # Machine-specific config
+└── users/tengjizhang/
+    ├── darwin.nix               # macOS system config (Homebrew, system settings)
+    ├── home-manager.nix         # User packages and programs
+    ├── home/                    # Modular home-manager configs
+    └── config.fish              # Fish shell config
+```
 
-**AI Tools:**
-- Claude Code, Codex
+**Layers:**
+1. **Machine** (`machines/`) — Nix settings, binary caches, shell enablement
+2. **User OS** (`users/*/darwin.nix`) — Homebrew, macOS settings, activation scripts
+3. **User Home** (`users/*/home-manager.nix`) — Packages, programs, dotfiles
 
-## Fresh Install Setup
+## Fresh Install
 
-1. **Install Nix:**
+1. **Install Nix** (using Determinate installer):
    ```bash
    curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
    ```
 
-2. **Clone and customize:**
+2. **Clone:**
    ```bash
-   git clone https://github.com/odysseus0/nix-config.git ~/.config/nix-config
-   cd ~/.config/nix-config
-   # Edit flake.nix, machines/, and users/ to match your setup
+   git clone https://github.com/odysseus0/nix-config.git ~/nix-config
+   cd ~/nix-config
    ```
 
-3. **Apply:**
+3. **Customize** `flake.nix`, `machines/`, and `users/` to match your setup
+
+4. **Apply:**
    ```bash
    make switch
    ```
 
-## Structure
+## Key Details
 
-```
-├── flake.nix                    # Flake inputs and outputs
-├── machines/macbook-m4-max.nix  # Machine-specific config
-└── users/tengjizhang/
-    ├── darwin.nix               # macOS system config (homebrew, etc)
-    ├── home-manager.nix         # User packages and programs
-    └── config.fish              # Fish shell config
-```
+**Package sources:**
+- **nixpkgs-unstable** — Dev tools, recent versions
+- **Homebrew** — GUI apps and Mac App Store apps
+- **numtide/llm-agents.nix** — AI CLI tools with daily builds and binary cache
 
-**Configuration layers:**
-1. `machines/` - System-level settings, Nix configuration, binary caches
-2. `users/*/darwin.nix` - OS-level config (Homebrew, activation scripts)
-3. `users/*/home-manager.nix` - User packages, programs, dotfiles
+**Binary caches:**
+- `cache.nixos.org` — Official
+- `nix-community.cachix.org` — Community packages
+- `cache.numtide.com` — LLM/AI tools
 
-## Important Notes
-
-### Package Strategy
-- **Stable** (nixpkgs 25.05): System-critical packages
-- **Unstable** (nixpkgs-unstable): Dev tools where we want recent versions
-- **Homebrew**: GUI apps and Mac App Store apps
-
-### Binary Caches
-Pre-configured caches for fast downloads:
-- `cache.nixos.org` - Official Nix cache
-- `nix-community.cachix.org` - Community packages
-
-Most updates: ~100-500MB downloads, ~5-10 minutes.
-
-### Neovim Decision
-Switched from `neovim-nightly-overlay` to stable neovim from nixpkgs-unstable:
-- **Before**: 2-3GB downloads, 30+ min builds (nightly often not cached)
-- **After**: ~20MB download, always cached
-- Still gets updates ~weekly from unstable channel
+**Determinate Nix:** Uses the Determinate installer with its official nix-darwin module for daemon management.
 
 ## Inspiration
 
-- [mitchellh/nixos-config](https://github.com/mitchellh/nixos-config) - Structure and patterns
-- [LnL7/nix-darwin](https://github.com/LnL7/nix-darwin) - macOS support
-- [nix-community/home-manager](https://github.com/nix-community/home-manager) - User environment
+- [mitchellh/nixos-config](https://github.com/mitchellh/nixos-config)
+- [nix-darwin](https://github.com/nix-darwin/nix-darwin)
+- [home-manager](https://github.com/nix-community/home-manager)
+- [numtide/llm-agents.nix](https://github.com/numtide/llm-agents.nix)
 
 ## License
 
