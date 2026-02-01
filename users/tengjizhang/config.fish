@@ -174,6 +174,15 @@ function ccc-profile --description "Launch Claude Code with profile, skip permis
     claude --settings "$p" --dangerously-skip-permissions $argv[2..-1]
 end
 
+# Completions for claude-profile and ccc-profile
+function _claude_profile_completions
+    set -l profiles_dir "$HOME/.claude/profiles"
+    test -d "$profiles_dir"; or return
+    ls "$profiles_dir"/*.json 2>/dev/null | xargs -n1 basename -s .json
+end
+complete -c claude-profile -f -a '(_claude_profile_completions)' -d 'profile'
+complete -c ccc-profile -f -a '(_claude_profile_completions)' -d 'profile'
+
 # SSH keys are now managed locally at ~/.ssh/id_ed25519
 # No need for 1Password integration - keys are loaded automatically
 
