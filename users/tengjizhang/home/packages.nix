@@ -28,6 +28,11 @@ let
     "https://github.com/tobi/qmd"  # Quick Markdown search for Obsidian
   ];
 
+  # uv tool packages (Python CLIs with heavy/ML deps)
+  uvToolPackages = [
+    "mlx-whisper"  # Whisper transcription optimized for Apple Silicon
+  ];
+
 in {
   # Install remaining npm packages not in numtide (bird, gccli)
   home.activation.updateAiTools = lib.hm.dag.entryAfter ["writeBoundary"] ''
@@ -42,6 +47,12 @@ in {
   home.activation.updateBunTools = lib.hm.dag.entryAfter ["writeBoundary"] ''
     echo "Updating bun global packages..."
     ${lib.concatMapStringsSep "\n    " (pkg: ''${pkgs.bun}/bin/bun install -g ${pkg} || echo "bun install ${pkg} failed, continuing..."'') bunGlobalPackages}
+  '';
+
+  # Install uv tool packages (Python CLIs with heavy/ML deps)
+  home.activation.updateUvTools = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    echo "Updating uv tool packages..."
+    ${lib.concatMapStringsSep "\n    " (pkg: ''${pkgs.uv}/bin/uv tool install ${pkg} --native-tls || echo "uv tool install ${pkg} failed, continuing..."'') uvToolPackages}
   '';
 
   home.packages = with pkgs; [
