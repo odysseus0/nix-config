@@ -14,9 +14,13 @@
       "mrkai77/cask"  # For Loop window manager
       "steipete/tap"  # For CodexBar, bird, gogcli
       "yakitrak/yakitrak"  # For obsidian-cli
-      # lbjlaq/antigravity-manager: managed via activation script below
-      # (nix-darwin's clone_target generates wrong Brewfile syntax)
     ];
+
+    # Raw Brewfile content for taps that need custom URLs
+    # (nix-darwin's clone_target generates unquoted syntax which breaks Brewfile parsing)
+    extraConfig = ''
+      tap "lbjlaq/antigravity-manager", "https://github.com/lbjlaq/Antigravity-Manager"
+    '';
 
     # GUI Applications via Homebrew casks
     casks = [
@@ -53,7 +57,7 @@
       "chatgpt"
       "lm-studio"
       "steipete/tap/codexbar"
-      "antigravity-tools"  # AI account proxy (tap manually managed)
+      "antigravity-tools"  # AI account proxy (tap via extraConfig)
       
       # Productivity
       "1password"
@@ -158,19 +162,6 @@
 
   # bird CLI: installed via pnpm dlx alias in shell.nix
   # Using alias instead of global install - auto-updates on new commits
-
-  # Custom taps requiring non-standard URLs (run before homebrew bundle)
-  # Using preActivation because nix-darwin's clone_target generates incorrect Brewfile syntax
-  # Uses same sudo pattern as nix-darwin's homebrew module: --user + --set-home
-  system.activationScripts.preActivation.text = ''
-    # Antigravity Tools - AI account proxy
-    if [ -x /opt/homebrew/bin/brew ]; then
-      if ! sudo --user=tengjizhang --set-home /opt/homebrew/bin/brew tap 2>/dev/null | grep -q "lbjlaq/antigravity-manager"; then
-        echo "Tapping lbjlaq/antigravity-manager (custom URL)..."
-        sudo --user=tengjizhang --set-home /opt/homebrew/bin/brew tap lbjlaq/antigravity-manager https://github.com/lbjlaq/Antigravity-Manager || true
-      fi
-    fi
-  '';
 
   # Helpful warning if not signed into App Store
   system.activationScripts.masLoginCheck.text = ''
