@@ -59,6 +59,7 @@ in {
     # Version control & GitHub
     git
     gh
+    gh-dash     # TUI dashboard for PRs and issues
     lazygit     # TUI git client
 
     # Modern CLI alternatives
