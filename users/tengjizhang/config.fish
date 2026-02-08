@@ -136,52 +136,6 @@ function taskai --description "AI-friendly flat output for TaskWarrior"
     task rc.defaultwidth=0 rc.verbose=nothing rc.color=off $argv | tr -s ' '
 end
 
-# Claude Code profile helpers
-function _claude_profile_path
-    set -l profiles_dir "$HOME/.claude/profiles"
-
-    test -d "$profiles_dir"; or echo "No profiles directory at $profiles_dir" >&2 && return 1
-
-    set -l profile $argv[1]
-
-    if test -z "$profile"
-        if command -q gum
-            set profile (ls "$profiles_dir"/*.json | xargs -n1 basename -s .json | gum choose --header "Select Claude profile:")
-        else if command -q fzf
-            set profile (ls "$profiles_dir"/*.json | xargs -n1 basename -s .json | fzf --prompt="Profile: ")
-        else
-            echo "Usage: claude-profile <profile-name>" >&2
-            ls "$profiles_dir"/*.json | xargs -n1 basename -s .json | sed 's/^/  /' >&2
-            return 1
-        end
-    end
-
-    test -z "$profile"; and return 1
-
-    set -l profile_path "$profiles_dir/$profile.json"
-    test -f "$profile_path"; or echo "Profile not found: $profile_path" >&2 && return 1
-
-    echo $profile_path
-end
-
-function claude-profile --description "Launch Claude Code with a profile"
-    set -l p (_claude_profile_path $argv[1]); or return
-    claude --settings "$p" $argv[2..-1]
-end
-
-function ccc-profile --description "Launch Claude Code with profile, skip permissions"
-    set -l p (_claude_profile_path $argv[1]); or return
-    claude --settings "$p" --dangerously-skip-permissions $argv[2..-1]
-end
-
-# Completions for claude-profile and ccc-profile
-function _claude_profile_completions
-    set -l profiles_dir "$HOME/.claude/profiles"
-    test -d "$profiles_dir"; or return
-    ls "$profiles_dir"/*.json 2>/dev/null | xargs -n1 basename -s .json
-end
-complete -c claude-profile -f -a '(_claude_profile_completions)' -d 'profile'
-complete -c ccc-profile -f -a '(_claude_profile_completions)' -d 'profile'
 
 # SSH keys are now managed locally at ~/.ssh/id_ed25519
 # No need for 1Password integration - keys are loaded automatically
@@ -239,6 +193,9 @@ set -gx PATH "$HOME/.local/bin" $PATH
 
 # Go binaries (go install'd tools)
 set -gx PATH "$HOME/go/bin" $PATH
+
+# Rust/Cargo binaries (rustup-managed)
+set -gx PATH "$HOME/.cargo/bin" $PATH
 
 # =============================================================================
 # Auto-Generated Tool Configuration

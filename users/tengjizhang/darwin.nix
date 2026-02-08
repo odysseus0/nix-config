@@ -110,6 +110,7 @@
       "mas"  # Mac App Store CLI
       "mole"  # Mac system optimization (mo command)
       "sqlite"  # SQLite with extension support (required by qmd)
+      "zk"  # Zettelkasten CLI - backlinks, orphans, link analysis for Obsidian vault
       # bird: installed from personal fork via activation script below
 
       # Clawdbot skill dependencies
