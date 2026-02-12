@@ -142,11 +142,19 @@ This config uses the Determinate Nix installer with its official nix-darwin modu
 
 **Note**: Do NOT use `nix.settings` for caches when `nix.enable = false` - those settings are ignored. Use `determinateNix.customSettings` instead.
 
+## Workflow
+
+**Always commit before `make switch`.** The switch can modify working tree state (Homebrew cleanup, activation scripts), making it hard to separate your intended changes from switch side effects. Commit first so you have a clean rollback point.
+
+```bash
+git add -A && git commit -m "description" && make switch
+```
+
 ## Testing Changes
 
 1. Build first: `make build` (validates syntax, doesn't activate)
 2. Test: `make test` (activates temporarily)
-3. Apply: `make switch` (activates and makes default)
+3. Apply: commit, then `make switch` (activates and makes default)
 
 Typical update cycle: ~100-500MB downloads, ~5-10 minutes (varies by cache freshness).
 
