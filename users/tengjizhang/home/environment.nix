@@ -13,9 +13,37 @@ in {
     OP_ACCOUNT = "my.1password.com";
     BUN_INSTALL = bunInstallDir;
     PNPM_HOME = pnpmHome;
+
+    # Homebrew env vars
+    HOMEBREW_PREFIX = "/opt/homebrew";
+    HOMEBREW_CELLAR = "/opt/homebrew/Cellar";
+    HOMEBREW_REPOSITORY = "/opt/homebrew";
   };
 
-  # Add global bin paths (pnpm for AI CLI tools, bun globals)
-  # Note: ~/.cache/.bun has older installs (claude, codex, etc.), ~/.bun has newer (qmd)
-  home.sessionPath = [ pnpmHome "${bunInstallDir}/bin" "$HOME/.bun/bin" ];
+  # Single source of truth for PATH additions (fish + zsh)
+  # Only MANPATH/INFOPATH remain in config.fish (need prepend, not set)
+  home.sessionPath = [
+    # Homebrew
+    "/opt/homebrew/bin"
+    "/opt/homebrew/sbin"
+
+    # Language toolchain bins
+    "$HOME/go/bin"
+    "$HOME/.cargo/bin"
+
+    # Dev tools
+    "$HOME/.cache/lm-studio/bin"
+
+    # Package manager bins
+    pnpmHome
+    "${bunInstallDir}/bin"
+    "$HOME/.bun/bin"
+
+    # App CLIs
+    "/Applications/Hammerspoon.app/Contents/Frameworks/hs"
+    "/Applications/Obsidian.app/Contents/MacOS"
+
+    # Local scripts
+    "$HOME/.local/bin"
+  ];
 }
