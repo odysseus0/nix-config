@@ -187,6 +187,12 @@ if test -d "/Applications/Hammerspoon.app"
     set -gx PATH "/Applications/Hammerspoon.app/Contents/Frameworks/hs" $PATH
 end
 
+# Obsidian CLI (official, requires Obsidian 1.12+ with CLI enabled)
+if test -d "/Applications/Obsidian.app/Contents/MacOS"
+    set -q PATH; or set PATH ''
+    set -gx PATH "/Applications/Obsidian.app/Contents/MacOS" $PATH
+end
+
 # Personal scripts directory (matches Mitchell's pattern)
 set -q PATH; or set PATH ''
 set -gx PATH "$HOME/.local/bin" $PATH
