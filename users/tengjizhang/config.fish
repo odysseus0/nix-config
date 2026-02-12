@@ -39,12 +39,6 @@ else
     set -gx EDITOR nvim
 end
 
-# Application-specific paths
-set -gx GOPATH $HOME/go
-
-# Claude Code settings
-set -gx ENABLE_BACKGROUND_TASKS 1
-set -gx FORCE_AUTO_BACKGROUND_TASKS 1
 
 # Bat (better cat) theme configuration - session-based (auto theme has issues in v0.25.0
 set -gx BAT_THEME (test "$color_scheme" = "dark" && echo "Monokai Extended" || echo "GitHub")
@@ -168,40 +162,15 @@ end
 # PATH Configuration (Mitchell's approach)  
 # =============================================================================
 
-# Homebrew integration (critical for Homebrew/Nix coexistence)
-if test -d /opt/homebrew
-    set -gx HOMEBREW_PREFIX /opt/homebrew
-    set -gx HOMEBREW_CELLAR /opt/homebrew/Cellar
-    set -gx HOMEBREW_REPOSITORY /opt/homebrew
-    set -q PATH; or set PATH ''
-    set -gx PATH /opt/homebrew/bin /opt/homebrew/sbin $PATH
-    set -q MANPATH; or set MANPATH ''
-    set -gx MANPATH /opt/homebrew/share/man $MANPATH
-    set -q INFOPATH; or set INFOPATH ''
-    set -gx INFOPATH /opt/homebrew/share/info $INFOPATH
-end
+# Homebrew MANPATH/INFOPATH (need prepend semantics, can't go in sessionVariables)
+# PATH, HOMEBREW_PREFIX/CELLAR/REPOSITORY managed in environment.nix
+set -q MANPATH; or set MANPATH ''
+set -gx MANPATH /opt/homebrew/share/man $MANPATH
+set -q INFOPATH; or set INFOPATH ''
+set -gx INFOPATH /opt/homebrew/share/info $INFOPATH
 
-# Hammerspoon CLI integration (you have it installed via darwin.nix)
-if test -d "/Applications/Hammerspoon.app"
-    set -q PATH; or set PATH ''
-    set -gx PATH "/Applications/Hammerspoon.app/Contents/Frameworks/hs" $PATH
-end
-
-# Obsidian CLI (official, requires Obsidian 1.12+ with CLI enabled)
-if test -d "/Applications/Obsidian.app/Contents/MacOS"
-    set -q PATH; or set PATH ''
-    set -gx PATH "/Applications/Obsidian.app/Contents/MacOS" $PATH
-end
-
-# Personal scripts directory (matches Mitchell's pattern)
-set -q PATH; or set PATH ''
-set -gx PATH "$HOME/.local/bin" $PATH
-
-# Go binaries (go install'd tools)
-set -gx PATH "$HOME/go/bin" $PATH
-
-# Rust/Cargo binaries (rustup-managed)
-set -gx PATH "$HOME/.cargo/bin" $PATH
+# PATH for personal, language, and app CLIs managed via home.sessionPath in environment.nix
+# Only Homebrew remains here due to MANPATH/INFOPATH co-setup
 
 # =============================================================================
 # Auto-Generated Tool Configuration

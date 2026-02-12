@@ -37,4 +37,13 @@ in {
       { name = "fzf.fish"; src = pkgs.fishPlugins.fzf-fish.src; }
     ];
   };
+
+  #---------------------------------------------------------------------
+  # Zsh - Secondary shell (Claude Code, macOS compatibility)
+  #---------------------------------------------------------------------
+
+  programs.zsh = {
+    enable = true;
+    shellAliases = shellAliases;
+  };
 }
