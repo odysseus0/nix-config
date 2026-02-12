@@ -127,6 +127,107 @@ in {
     google-cloud-sdk  # Google Cloud Platform CLI
     awscli2          # AWS CLI (latest version)
     _1password-cli
+
+    # RSS — CLI wrapper for Miniflux API (runs via Docker at localhost:8070)
+    (writeShellScriptBin "rss" ''
+      set -euo pipefail
+      MINIFLUX_URL="''${MINIFLUX_URL:-http://localhost:8070}"
+      MINIFLUX_USER="''${MINIFLUX_USER:-admin}"
+      MINIFLUX_PASS="''${MINIFLUX_PASS:-miniflux}"
+      AUTH="-u $MINIFLUX_USER:$MINIFLUX_PASS"
+
+      api() { ${curl}/bin/curl -s $AUTH "$MINIFLUX_URL/v1/$1" "''${@:2}"; }
+
+      case "''${1:-help}" in
+        unread)
+          # List unread entries (default 50, override with rss unread 100)
+          LIMIT="''${2:-50}"
+          api "entries?status=unread&limit=$LIMIT&direction=desc&order=published_at" \
+            | ${jq}/bin/jq -r '.entries[] | "\(.id)\t\(.feed.title)\t\(.title)\t\(.published_at[:10])"' \
+            | column -t -s$'\t'
+          ;;
+        read)
+          # Get full content of an entry: rss read <id>
+          [ -z "''${2:-}" ] && echo "Usage: rss read <entry_id>" && exit 1
+          api "entries/$2" | ${jq}/bin/jq -r '
+            "# \(.title)\n\(.feed.title) — \(.published_at[:10])\n\(.url)\n\n\(.content)"
+          ' | ${pandoc}/bin/pandoc -f html -t plain --wrap=auto --columns=80
+          ;;
+        mark-read)
+          # Mark entry as read: rss mark-read <id>
+          [ -z "''${2:-}" ] && echo "Usage: rss mark-read <entry_id>" && exit 1
+          api "entries" -X PUT -H "Content-Type: application/json" \
+            -d "{\"entry_ids\":[$2],\"status\":\"read\"}"
+          echo "Marked $2 as read"
+          ;;
+        star)
+          # Toggle star on entry: rss star <id>
+          [ -z "''${2:-}" ] && echo "Usage: rss star <entry_id>" && exit 1
+          api "entries/$2/bookmark" -X PUT
+          echo "Toggled star on $2"
+          ;;
+        feeds)
+          # List all feeds with unread counts
+          api "feeds" | ${jq}/bin/jq -r 'sort_by(.title) | .[]
+            | select(.parsing_error_count == 0)
+            | "\(.id)\t\(.title)\t\(.category.title)"' \
+            | column -t -s$'\t'
+          ;;
+        add)
+          # Add a feed: rss add <url>
+          [ -z "''${2:-}" ] && echo "Usage: rss add <feed_url>" && exit 1
+          api "feeds" -X POST -H "Content-Type: application/json" \
+            -d "{\"feed_url\":\"$2\",\"category_id\":1}" \
+            | ${jq}/bin/jq -r '"Added feed ID: \(.feed_id)"'
+          ;;
+        refresh)
+          # Refresh all feeds
+          api "feeds/refresh" -X PUT
+          echo "Refresh triggered"
+          ;;
+        search)
+          # Search entries: rss search <query>
+          [ -z "''${2:-}" ] && echo "Usage: rss search <query>" && exit 1
+          QUERY=$(printf '%s' "$2" | ${jq}/bin/jq -sRr @uri)
+          api "entries?search=$QUERY&limit=20" \
+            | ${jq}/bin/jq -r '.entries[] | "\(.id)\t\(.feed.title)\t\(.title)\t\(.status)"' \
+            | column -t -s$'\t'
+          ;;
+        json)
+          # Raw JSON for an entry: rss json <id> (pipe to jq, fx, etc.)
+          [ -z "''${2:-}" ] && echo "Usage: rss json <entry_id>" && exit 1
+          api "entries/$2"
+          ;;
+        stats)
+          # Show counts
+          UNREAD=$(api "entries?status=unread&limit=1" | ${jq}/bin/jq '.total')
+          READ=$(api "entries?status=read&limit=1" | ${jq}/bin/jq '.total')
+          FEEDS=$(api "feeds" | ${jq}/bin/jq 'length')
+          echo "Feeds: $FEEDS | Unread: $UNREAD | Read: $READ"
+          ;;
+        up)
+          cd "$HOME/services/miniflux" && docker compose up -d
+          ;;
+        down)
+          cd "$HOME/services/miniflux" && docker compose down
+          ;;
+        *)
+          echo "rss — Miniflux CLI"
+          echo ""
+          echo "  unread [n]       List unread entries (default 50)"
+          echo "  read <id>        Read entry as plain text"
+          echo "  mark-read <id>   Mark entry as read"
+          echo "  star <id>        Toggle star"
+          echo "  feeds            List all feeds"
+          echo "  add <url>        Add a feed"
+          echo "  refresh          Refresh all feeds"
+          echo "  search <query>   Search entries"
+          echo "  json <id>        Raw JSON for an entry"
+          echo "  stats            Show counts"
+          echo "  up / down        Start/stop miniflux"
+          ;;
+      esac
+    '')
   ];
 
   # Pi source symlink for easy access to docs/examples
