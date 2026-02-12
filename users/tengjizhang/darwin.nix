@@ -13,7 +13,6 @@
     taps = [
       "mrkai77/cask"  # For Loop window manager
       "steipete/tap"  # For CodexBar, bird, gogcli
-      "yakitrak/yakitrak"  # For obsidian-cli
     ];
 
     # Raw Brewfile content for taps that need custom URLs
@@ -115,7 +114,6 @@
 
       # Clawdbot skill dependencies
       "steipete/tap/gogcli"  # Google Workspace CLI (gog)
-      "yakitrak/yakitrak/obsidian-cli"  # Obsidian vault CLI
     ];
 
     onActivation = {
