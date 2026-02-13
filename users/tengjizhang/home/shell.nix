@@ -10,6 +10,11 @@ let
     gp = "git push";
     gl = "git log --oneline -10";
 
+    # Jujutsu shortcuts
+    js = "jj st";
+    jl = "jj log --limit 10";
+    jd = "jj diff";
+
     # Modern CLI tools
     ls = "eza";
     ll = "eza -la";
