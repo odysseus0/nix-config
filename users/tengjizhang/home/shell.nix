@@ -1,4 +1,4 @@
-{ inputs, pkgs, ... }:
+{ inputs, pkgs, config, ... }:
 
 let
   shellAliases = {
@@ -49,6 +49,7 @@ in {
 
   programs.zsh = {
     enable = true;
+    dotDir = "${config.xdg.configHome}/zsh";
     shellAliases = shellAliases;
   };
 }
