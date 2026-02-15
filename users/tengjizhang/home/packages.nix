@@ -115,6 +115,7 @@ in {
     llmAgents.pi             # Minimal extensible coding agent (badlogic)
 
     # Programming languages
+    deno            # TypeScript/JavaScript runtime
     go              # Go programming language
 
     # Blockchain development tools
