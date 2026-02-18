@@ -58,6 +58,7 @@ in {
   home.packages = with pkgs; [
     # Version control & GitHub
     git
+    git-filter-repo  # History rewriting (remove large files, etc.)
     gh
     gh-dash     # TUI dashboard for PRs and issues
     lazygit     # TUI git client
@@ -113,6 +114,7 @@ in {
     llmAgents.agent-browser  # Browser automation
     llmAgents.openclaw       # WhatsApp/Telegram/Discord AI assistant (formerly clawdbot → moltbot)
     llmAgents.pi             # Minimal extensible coding agent (badlogic)
+    llmAgents.amp            # Sourcegraph's Amp coding agent CLI
 
     # Programming languages
     deno            # TypeScript/JavaScript runtime
