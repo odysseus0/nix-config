@@ -36,19 +36,39 @@
   # CLIProxyAPI - proxy so Amp can use Claude/Gemini/Codex via CLI OAuth sessions
   # Binary from Homebrew (hybrid) until Nix package lands:
   # → https://github.com/numtide/llm-agents.nix/pull/2622
-  # Once merged: replace /opt/homebrew/bin/cliproxyapi with ${llmAgents.cli-proxy-api}/bin/cli-proxy-api
+  # Once merged: use launchd.agents with ${llmAgents.cli-proxy-api}/bin/cli-proxy-api
   # and remove "cliproxyapi" from darwin.nix brews.
-  launchd.agents.cliproxyapi = {
-    enable = true;
-    config = {
-      Label = "com.cliproxyapi";
-      ProgramArguments = [ "/opt/homebrew/bin/cliproxyapi" ];
-      RunAtLoad = true;
-      KeepAlive = true;
-      StandardOutPath = "${config.home.homeDirectory}/Library/Logs/cliproxyapi.log";
-      StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/cliproxyapi.error.log";
-    };
-  };
+  #
+  # Note: using home.file instead of launchd.agents to avoid home-manager's
+  # /bin/sh wrapper (which causes macOS to show "sh" in App Background Activity).
+  # The brew binary doesn't need wait4path /nix/store, so we write the plist directly.
+  home.file."Library/LaunchAgents/com.cliproxyapi.plist".text = ''
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+    <dict>
+      <key>Label</key>
+      <string>com.cliproxyapi</string>
+      <key>ProgramArguments</key>
+      <array>
+        <string>/opt/homebrew/bin/cliproxyapi</string>
+      </array>
+      <key>RunAtLoad</key>
+      <true/>
+      <key>KeepAlive</key>
+      <true/>
+      <key>StandardOutPath</key>
+      <string>${config.home.homeDirectory}/Library/Logs/cliproxyapi.log</string>
+      <key>StandardErrorPath</key>
+      <string>${config.home.homeDirectory}/Library/Logs/cliproxyapi.error.log</string>
+    </dict>
+    </plist>
+  '';
+
+  home.activation.cliproxyapi-reload = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    /bin/launchctl unload ~/Library/LaunchAgents/com.cliproxyapi.plist 2>/dev/null || true
+    /bin/launchctl load ~/Library/LaunchAgents/com.cliproxyapi.plist
+  '';
 
   # Chatlog - WeChat chat history export tool
   # Secrets: 1Password → "chatlog-server.json" (Secure Note)
