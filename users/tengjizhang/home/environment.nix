@@ -14,6 +14,10 @@ in {
     BUN_INSTALL = bunInstallDir;
     PNPM_HOME = pnpmHome;
 
+    # Amp - use local CLIProxyAPI instead of ampcode.com
+    AMP_URL = "http://localhost:8317";
+    AMP_API_KEY = "amp-local-proxy-key";
+
     # Homebrew env vars
     HOMEBREW_PREFIX = "/opt/homebrew";
     HOMEBREW_CELLAR = "/opt/homebrew/Cellar";
