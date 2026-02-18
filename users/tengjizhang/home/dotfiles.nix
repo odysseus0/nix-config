@@ -95,16 +95,6 @@ in
     ".gitignore".source = ../gitignore;  # Global gitignore
     ".tmux.conf".source = ../tmux.conf;  # iOS-optimized (see comments in file)
 
-    # CLIProxyAPI - proxy server so Amp can use Claude/Gemini/Codex via their CLI OAuth sessions
-    # After `make switch`: run `cliproxyapi auth` to log into each provider
-    # Then: `brew services start cliproxyapi`
-    ".cli-proxy-api/config.yaml".text = ''
-      host: ""
-      port: 8317
-      auth-dir: "~/.cli-proxy-api"
-      api-keys:
-        - "amp-local-proxy-key"
-    '';
   };
 
   #---------------------------------------------------------------------

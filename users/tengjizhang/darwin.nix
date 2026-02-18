@@ -164,6 +164,18 @@
   # bird CLI: installed via pnpm dlx alias in shell.nix
   # Using alias instead of global install - auto-updates on new commits
 
+  # CLIProxyAPI - ensure our API key is set in the brew-managed config.
+  # The brew service reads /opt/homebrew/etc/cliproxyapi.conf (not $HOME),
+  # so we patch it here via activation script to keep it declarative.
+  system.activationScripts.cliproxyapiConfig.text = ''
+    CONF="/opt/homebrew/etc/cliproxyapi.conf"
+    KEY="amp-local-proxy-key"
+    if [ -f "$CONF" ] && ! /usr/bin/grep -q "^  - \"$KEY\"" "$CONF"; then
+      /usr/bin/sed -i ''' "s/^  - \"your-api-key-1\"/  - \"$KEY\"/" "$CONF"
+      echo "✓ cliproxyapi: API key configured"
+    fi
+  '';
+
   # Helpful warning if not signed into App Store
   system.activationScripts.masLoginCheck.text = ''
     if ! ${pkgs.mas}/bin/mas account >/dev/null 2>&1; then
