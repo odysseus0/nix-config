@@ -33,6 +33,23 @@
     };
   };
 
+  # CLIProxyAPI - proxy so Amp can use Claude/Gemini/Codex via CLI OAuth sessions
+  # Binary from Homebrew (hybrid) until Nix package lands:
+  # → https://github.com/numtide/llm-agents.nix/pull/2622
+  # Once merged: replace /opt/homebrew/bin/cliproxyapi with ${llmAgents.cli-proxy-api}/bin/cli-proxy-api
+  # and remove "cliproxyapi" from darwin.nix brews.
+  launchd.agents.cliproxyapi = {
+    enable = true;
+    config = {
+      Label = "com.cliproxyapi";
+      ProgramArguments = [ "/opt/homebrew/bin/cliproxyapi" ];
+      RunAtLoad = true;
+      KeepAlive = true;
+      StandardOutPath = "${config.home.homeDirectory}/Library/Logs/cliproxyapi.log";
+      StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/cliproxyapi.error.log";
+    };
+  };
+
   # Chatlog - WeChat chat history export tool
   # Secrets: 1Password → "chatlog-server.json" (Secure Note)
   # API:     http://localhost:5030
