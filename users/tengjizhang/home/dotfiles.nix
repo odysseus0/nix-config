@@ -94,6 +94,17 @@ in
     ".rgignore".source = ../rgignore;
     ".gitignore".source = ../gitignore;  # Global gitignore
     ".tmux.conf".source = ../tmux.conf;  # iOS-optimized (see comments in file)
+
+    # CLIProxyAPI - proxy server so Amp can use Claude/Gemini/Codex via their CLI OAuth sessions
+    # After `make switch`: run `cliproxyapi auth` to log into each provider
+    # Then: `brew services start cliproxyapi`
+    ".cli-proxy-api/config.yaml".text = ''
+      host: ""
+      port: 8317
+      auth-dir: "~/.cli-proxy-api"
+      api-keys:
+        - "amp-local-proxy-key"
+    '';
   };
 
   #---------------------------------------------------------------------
@@ -119,5 +130,16 @@ in
     # gh-dash configs - generated from single source with theme variants
     "gh-dash/config-light.yml".text = toYAML (mkGhDashConfig catppuccinLatte);
     "gh-dash/config-dark.yml".text = toYAML (mkGhDashConfig catppuccinFrappe);
+
+    # Amp - point to local CLIProxyAPI instead of ampcode.com
+    "amp/settings.json".text = builtins.toJSON {
+      "amp.url" = "http://localhost:8317";
+    };
+  };
+
+  # Amp secrets - API key matching CLIProxyAPI's api-keys list
+  # amp login is not needed when using local proxy
+  xdg.dataFile."amp/secrets.json".text = builtins.toJSON {
+    "apiKey@http://localhost:8317" = "amp-local-proxy-key";
   };
 }

@@ -114,6 +114,8 @@
 
       # Clawdbot skill dependencies
       "steipete/tap/gogcli"  # Google Workspace CLI (gog)
+
+      "cliproxyapi"  # Unified proxy for AI coding CLIs (Claude, Gemini, Amp, Codex)
     ];
 
     onActivation = {
