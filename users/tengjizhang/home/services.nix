@@ -38,11 +38,56 @@
   # → https://github.com/numtide/llm-agents.nix/pull/2622
   # Once merged: replace /opt/homebrew/bin/cliproxyapi with ${llmAgents.cli-proxy-api}/bin/cli-proxy-api
   # and remove "cliproxyapi" from darwin.nix brews.
+
+  # Write cliproxyapi config with ampcode token from 1Password.
+  # Secret: 1Password → "cliproxyapi" (Password item, password = ampcode Access Token)
+  home.activation.cliproxyapiConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    if command -v op &> /dev/null; then
+      mkdir -p ~/.cli-proxy-api
+      AMPCODE_TOKEN=$(op read "op://Personal/cliproxyapi/password" --account=my.1password.com 2>/dev/null)
+      if [ -n "$AMPCODE_TOKEN" ]; then
+        cat > ~/.cli-proxy-api/config.yaml << 'YAMLEOF'
+# CLIProxyAPI config - managed by Nix activation script
+# Edit users/tengjizhang/home/services.nix to change this file.
+
+host: ""
+port: 8317
+auth-dir: "~/.cli-proxy-api"
+api-keys:
+  - "amp-local-proxy-key"
+
+routing:
+  strategy: "round-robin"
+
+quota-exceeded:
+  switch-project: true
+  switch-preview-model: true
+
+request-retry: 3
+max-retry-interval: 30
+
+ampcode:
+  upstream-url: "https://ampcode.com"
+  upstream-api-key: "AMPCODE_TOKEN_PLACEHOLDER"
+  restrict-management-to-localhost: true
+YAMLEOF
+        /usr/bin/sed -i "" "s|AMPCODE_TOKEN_PLACEHOLDER|$AMPCODE_TOKEN|" ~/.cli-proxy-api/config.yaml
+        echo "✓ cliproxyapi: config written from 1Password"
+      else
+        echo "⚠ cliproxyapi: could not read token from 1Password (auth needed?)"
+      fi
+    fi
+  '';
+
   launchd.agents.cliproxyapi = {
     enable = true;
     config = {
       Label = "com.cliproxyapi";
-      ProgramArguments = [ "/opt/homebrew/bin/cliproxyapi" ];
+      ProgramArguments = [
+        "/opt/homebrew/bin/cliproxyapi"
+        "-config"
+        "${config.home.homeDirectory}/.cli-proxy-api/config.yaml"
+      ];
       RunAtLoad = true;
       KeepAlive = true;
       StandardOutPath = "${config.home.homeDirectory}/Library/Logs/cliproxyapi.log";
