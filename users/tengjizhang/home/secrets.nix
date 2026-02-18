@@ -1,14 +1,18 @@
 { config, ... }:
 
 {
-  # sops-nix: secrets encrypted in git, decrypted at activation using SSH key.
-  # To add a new secret: sops secrets/secrets.yaml (opens $EDITOR)
+  # sops-nix: secrets encrypted in git, decrypted at activation via age key.
+  # To add/edit secrets: sops ~/nix-config/secrets/secrets.yaml
   # To re-encrypt after key rotation: sops updatekeys secrets/secrets.yaml
+  #
+  # Bootstrap (one-time, after restoring ~/.ssh/id_ed25519 from 1Password):
+  #   mkdir -p ~/.config/sops/age
+  #   ssh-to-age --private-key -i ~/.ssh/id_ed25519 -o ~/.config/sops/age/keys.txt
+  #   chmod 600 ~/.config/sops/age/keys.txt
+
   sops = {
     defaultSopsFile = ../../../secrets/secrets.yaml;
-
-    # Use existing SSH key as age identity — no separate key to manage.
-    age.sshKeyPaths = [ "${config.home.homeDirectory}/.ssh/id_ed25519" ];
+    age.keyFile = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
 
     secrets."cliproxyapi-upstream-api-key" = {};
     secrets."chatlog-data-key" = {};
