@@ -18,8 +18,6 @@ in {
     AMP_URL = "http://localhost:8317";
     AMP_API_KEY = "amp-local-proxy-key";
 
-    # sops CLI: use SSH key as age identity (avoids needing a separate age key file)
-    SOPS_AGE_SSH_PRIVATE_KEY_FILE = "$HOME/.ssh/id_ed25519";
 
     # Homebrew env vars
     HOMEBREW_PREFIX = "/opt/homebrew";
