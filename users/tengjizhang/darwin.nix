@@ -15,12 +15,6 @@
       "steipete/tap"  # For CodexBar, bird, gogcli
     ];
 
-    # Raw Brewfile content for taps that need custom URLs
-    # (nix-darwin's clone_target generates unquoted syntax which breaks Brewfile parsing)
-    extraConfig = ''
-      tap "lbjlaq/antigravity-manager", "https://github.com/lbjlaq/Antigravity-Manager"
-    '';
-
     # GUI Applications via Homebrew casks
     casks = [
       # Browsers & Communication  
@@ -56,8 +50,6 @@
       "chatgpt"
       "lm-studio"
       "steipete/tap/codexbar"
-      "antigravity-tools"  # AI account proxy (tap via extraConfig)
-      
       # Productivity
       "1password"
       "obsidian"
