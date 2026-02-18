@@ -11,6 +11,8 @@
     age.sshKeyPaths = [ "${config.home.homeDirectory}/.ssh/id_ed25519" ];
 
     secrets."cliproxyapi-upstream-api-key" = {};
+    secrets."chatlog-data-key" = {};
+    secrets."chatlog-img-key" = {};
 
     templates."cliproxyapi-config.yaml" = {
       path = "${config.home.homeDirectory}/.cli-proxy-api/config.yaml";
@@ -38,6 +40,24 @@
           upstream-url: "https://ampcode.com"
           upstream-api-key: "${config.sops.placeholder."cliproxyapi-upstream-api-key"}"
           restrict-management-to-localhost: true
+      '';
+    };
+
+    templates."chatlog-server.json" = {
+      path = "${config.home.homeDirectory}/.chatlog/chatlog-server.json";
+      content = ''
+        {
+          "type": "wechat",
+          "platform": "darwin",
+          "version": 4,
+          "full_version": "4.0.3.80",
+          "data_dir": "/Users/tengjizhang/Library/Containers/com.tencent.xinWeChat/Data/Documents/xwechat_files/wxid_a04dcz671ota11_2af6",
+          "data_key": "${config.sops.placeholder."chatlog-data-key"}",
+          "img_key": "${config.sops.placeholder."chatlog-img-key"}",
+          "work_dir": "/Users/tengjizhang/.local/share/chatlog",
+          "http_addr": "127.0.0.1:5030",
+          "auto_decrypt": true
+        }
       '';
     };
   };

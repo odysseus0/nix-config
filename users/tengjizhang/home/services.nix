@@ -56,17 +56,9 @@
   };
 
   # Chatlog - WeChat chat history export tool
-  # Secrets: 1Password → "chatlog-server.json" (Secure Note)
+  # Secrets: sops-nix → secrets/secrets.yaml (chatlog-data-key, chatlog-img-key)
+  # Config written to ~/.chatlog/chatlog-server.json via sops template in secrets.nix
   # API:     http://localhost:5030
-
-  home.activation.chatlog-config = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    if command -v op &> /dev/null; then
-      mkdir -p ~/.chatlog
-      op read "op://Personal/chatlog-server.json/notesPlain" --account=my.1password.com > ~/.chatlog/chatlog-server.json 2>/dev/null \
-        && echo "✓ chatlog config synced from 1Password" \
-        || echo "⚠ chatlog config sync failed (1Password auth needed?)"
-    fi
-  '';
 
   launchd.agents.chatlog = {
     enable = true;
