@@ -75,6 +75,11 @@ in {
     jq          # JSON processor
     delta       # better git diff
 
+    # Secret management
+    sops
+    age
+    ssh-to-age
+
     # Development utilities
     curl
     wget
