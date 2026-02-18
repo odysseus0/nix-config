@@ -52,6 +52,7 @@ in systemFunc rec {
       home-manager.useGlobalPkgs = true;
       home-manager.useUserPackages = true;
       home-manager.backupFileExtension = "backup";
+      home-manager.sharedModules = [ inputs.sops-nix.homeManagerModules.sops ];
       home-manager.users.${user} = import userHMConfig {
         isWSL = isWSL;
         inputs = inputs;
