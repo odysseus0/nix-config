@@ -14,3 +14,6 @@ result-*
 
 # Local development
 .envrc.local
+
+# Local clones of flake inputs
+llm-agents.nix/
