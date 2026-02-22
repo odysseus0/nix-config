@@ -3,6 +3,18 @@
 let
   isDarwin = pkgs.stdenv.isDarwin;
 
+  tg-history-dumper = pkgs.buildGoModule {
+    pname = "tg_history_dumper";
+    version = "unstable-2025-12-26";
+    src = pkgs.fetchFromGitHub {
+      owner = "3bl3gamer";
+      repo = "tg_history_dumper";
+      rev = "0058ab229043fc4af6b1859e0c367b9fd9b10d93";
+      hash = "sha256-boTMFMpgi0zoTwEtoW8PJ00xr7PsTikpYFW+T5f43n0=";
+    };
+    vendorHash = "sha256-fge5KRYaxTSsj9QhqJ6ApvrLT5Bp0R1x1/6PmQyrEcA=";
+  };
+
   # LLM/AI tools from numtide/llm-agents.nix (daily updates, binary cache)
   llmAgents = inputs.llm-agents.packages.${pkgs.system};
 
@@ -127,6 +139,9 @@ in {
 
     # Blockchain development tools
     foundry         # Foundry toolchain (forge, cast, anvil, chisel)
+
+    # Telegram history dumper
+    tg-history-dumper
 
     # Infrastructure tools
     terraform       # Infrastructure as code
