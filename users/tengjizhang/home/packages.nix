@@ -7,10 +7,11 @@ let
     pname = "tg_history_dumper";
     version = "unstable-2025-12-26";
     src = pkgs.fetchFromGitHub {
-      owner = "3bl3gamer";
+      # Fork with TL_messageEmpty fix (upstream PR #41) + cwd log path patch
+      owner = "odysseus0";
       repo = "tg_history_dumper";
-      rev = "0058ab229043fc4af6b1859e0c367b9fd9b10d93";
-      hash = "sha256-boTMFMpgi0zoTwEtoW8PJ00xr7PsTikpYFW+T5f43n0=";
+      rev = "e44458e8c495a9abe7422c1376d7c556a40c39f9";
+      hash = "sha256-ZSwNGoby0LIt3wBMBCegijTbPm9iEIP0GGnnyoi11ys=";
     };
     vendorHash = "sha256-fge5KRYaxTSsj9QhqJ6ApvrLT5Bp0R1x1/6PmQyrEcA=";
     # Patch log files to use cwd instead of binary dir (binary is in read-only Nix store)
