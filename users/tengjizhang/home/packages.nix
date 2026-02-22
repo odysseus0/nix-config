@@ -3,26 +3,6 @@
 let
   isDarwin = pkgs.stdenv.isDarwin;
 
-  tg-history-dumper = pkgs.buildGoModule {
-    pname = "tg_history_dumper";
-    version = "unstable-2025-12-26";
-    src = pkgs.fetchFromGitHub {
-      # Fork with TL_messageEmpty fix (upstream PR #41) + cwd log path patch
-      owner = "odysseus0";
-      repo = "tg_history_dumper";
-      rev = "e44458e8c495a9abe7422c1376d7c556a40c39f9";
-      hash = "sha256-ZSwNGoby0LIt3wBMBCegijTbPm9iEIP0GGnnyoi11ys=";
-    };
-    vendorHash = "sha256-fge5KRYaxTSsj9QhqJ6ApvrLT5Bp0R1x1/6PmQyrEcA=";
-    # Patch log files to use cwd instead of binary dir (binary is in read-only Nix store)
-    postPatch = ''
-      substituteInPlace main.go \
-        --replace-fail \
-          'executablePath, _ := os.Executable()
-	executableDir := filepath.Dir(executablePath)' \
-          'executableDir, _ := os.Getwd()'
-    '';
-  };
 
   # LLM/AI tools from numtide/llm-agents.nix (daily updates, binary cache)
   llmAgents = inputs.llm-agents.packages.${pkgs.system};
@@ -148,9 +128,6 @@ in {
 
     # Blockchain development tools
     foundry         # Foundry toolchain (forge, cast, anvil, chisel)
-
-    # Telegram history dumper
-    tg-history-dumper
 
     # Infrastructure tools
     terraform       # Infrastructure as code
