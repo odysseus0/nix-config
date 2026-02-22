@@ -13,6 +13,14 @@ let
       hash = "sha256-boTMFMpgi0zoTwEtoW8PJ00xr7PsTikpYFW+T5f43n0=";
     };
     vendorHash = "sha256-fge5KRYaxTSsj9QhqJ6ApvrLT5Bp0R1x1/6PmQyrEcA=";
+    # Patch log files to use cwd instead of binary dir (binary is in read-only Nix store)
+    postPatch = ''
+      substituteInPlace main.go \
+        --replace-fail \
+          'executablePath, _ := os.Executable()
+	executableDir := filepath.Dir(executablePath)' \
+          'executableDir, _ := os.Getwd()'
+    '';
   };
 
   # LLM/AI tools from numtide/llm-agents.nix (daily updates, binary cache)
