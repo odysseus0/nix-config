@@ -131,6 +131,7 @@ in {
 
     # Infrastructure tools
     terraform       # Infrastructure as code
+    flyctl          # Fly.io CLI
 
     # Cloud CLIs (work requirements, Nix-managed)
     google-cloud-sdk  # Google Cloud Platform CLI
