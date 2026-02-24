@@ -90,6 +90,7 @@ in {
     fx          # JSON explorer
     pandoc      # document converter
     typst       # modern typesetting system
+    just        # command runner (Makefile alternative)
     sd          # modern sed replacement
     yq          # YAML processor
     clickhouse  # ClickHouse database client
