@@ -48,5 +48,18 @@
     tmux  # better than zellij for iOS terminals (scroll mode works with touch)
   ];
 
+  # PostgreSQL 17 for local development/testing (matches Neon production version)
+  # Passwordless trust auth — local dev only, not exposed externally
+  # Alternative for non-Nix devs: brew install postgresql@17 && brew services start postgresql@17
+  services.postgresql = {
+    enable = true;
+    package = pkgs.postgresql_17;
+    enableTCPIP = true;
+    authentication = pkgs.lib.mkOverride 10 ''
+      local all all trust
+      host  all all 127.0.0.1/32 trust
+      host  all all ::1/128      trust
+    '';
+  };
 
 }
