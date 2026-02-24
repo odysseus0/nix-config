@@ -141,4 +141,14 @@
     enable = true;
     package = pkgs.neovim-unwrapped;
   };
+
+  #---------------------------------------------------------------------
+  # mise - polyglot version manager
+  # Always use prebuilt binaries — never compile from source
+  #---------------------------------------------------------------------
+
+  home.file.".config/mise/config.toml".text = ''
+    [settings]
+    ruby.compile = false
+  '';
 }
