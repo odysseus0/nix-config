@@ -133,6 +133,8 @@ in {
 
     # Infrastructure tools
     terraform       # Infrastructure as code
+    pulumi          # Infrastructure as code (TypeScript)
+    pulumiPackages.pulumi-language-nodejs  # Pulumi TypeScript/JS support
     flyctl          # Fly.io CLI
     mise            # Polyglot version manager (Ruby, Node, etc.)
 

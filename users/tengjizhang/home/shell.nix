@@ -36,7 +36,13 @@ in {
   programs.fish = {
     enable = true;
     shellAliases = shellAliases;
-    interactiveShellInit = builtins.readFile ../config.fish;
+    interactiveShellInit = (builtins.readFile ../config.fish) + ''
+      # Telegram API credentials (sops-nix)
+      if test -r ${config.sops.secrets."tg-app-id".path}
+        set -gx TG_APP_ID (cat ${config.sops.secrets."tg-app-id".path})
+        set -gx TG_APP_HASH (cat ${config.sops.secrets."tg-app-hash".path})
+      end
+    '';
     plugins = [
       { name = "hydro"; src = inputs.fish-hydro; }
       { name = "fzf.fish"; src = pkgs.fishPlugins.fzf-fish.src; }
@@ -51,5 +57,10 @@ in {
     enable = true;
     dotDir = "${config.xdg.configHome}/zsh";
     shellAliases = shellAliases;
+    initExtra = ''
+      # Telegram API credentials (sops-nix)
+      [ -r ${config.sops.secrets."tg-app-id".path} ] && export TG_APP_ID=$(cat ${config.sops.secrets."tg-app-id".path})
+      [ -r ${config.sops.secrets."tg-app-hash".path} ] && export TG_APP_HASH=$(cat ${config.sops.secrets."tg-app-hash".path})
+    '';
   };
 }
