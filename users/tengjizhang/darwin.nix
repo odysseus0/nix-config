@@ -50,6 +50,7 @@
       # AI Tools
       "chatgpt"
       "lm-studio"
+      "superset"  # Terminal for orchestrating multiple AI coding agents in parallel
       "steipete/tap/codexbar"
       "manaflow-ai/cmux/cmux"  # Ghostty-based terminal with AI agent tabs + notifications
       # Productivity
