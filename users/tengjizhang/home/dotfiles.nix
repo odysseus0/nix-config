@@ -4,13 +4,14 @@ let
   # gh-dash base config (theme-agnostic)
   ghDashBase = {
     prSections = [
-      { title = "My PRs"; filters = "is:open author:@me"; }
-      { title = "Needs Review"; filters = "is:open review-requested:@me"; }
-      { title = "My Repos"; filters = "is:open -author:@me repo:flashbots/mev-share-node-pareto repo:flashbots/protect-rpc repo:flashbots/devops repo:flashbots/go-utils repo:flashbots/protect-of-api repo:steipete/bird"; }
+      { title = "Needs My Review"; filters = "is:open review-requested:@me repo:argonavis-labs/orchestrator-electron"; }
+      { title = "Team PRs"; filters = "is:open repo:argonavis-labs/orchestrator-electron"; }
+      { title = "My PRs"; filters = "is:open author:odysseus0"; }
+      { title = "OSS"; filters = "is:open involves:@me -org:argonavis-labs -org:flashbots"; }
     ];
     issuesSections = [
-      { title = "Assigned"; filters = "is:open assignee:@me"; }
-      { title = "Involved"; filters = "is:open involves:@me -assignee:@me"; }
+      { title = "Open Issues"; filters = "is:open repo:argonavis-labs/orchestrator-electron"; }
+      { title = "Assigned to Me"; filters = "is:open assignee:@me repo:argonavis-labs/orchestrator-electron"; }
     ];
     notificationsSections = [
       { title = "All"; filters = ""; }
@@ -19,6 +20,7 @@ let
       { title = "Participating"; filters = "reason:participating"; }
     ];
     repoPaths = {
+      "argonavis-labs/orchestrator-electron" = "~/projects/orchestrator-electron";
       "odysseus0/nix-config" = "~/nix-config";
       "flashbots/mev-share-node-pareto" = "~/projects/mev-share-node-pareto";
       "flashbots/protect-rpc" = "~/projects/protect-rpc";
@@ -49,7 +51,7 @@ let
     pager.diff = "delta";
     confirmQuit = false;
     showAuthorIcons = true;
-    smartFilteringAtLaunch = true;
+    smartFilteringAtLaunch = false;
   };
 
   # Catppuccin Latte (light) - adjusted for better contrast

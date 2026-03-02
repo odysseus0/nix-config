@@ -5,6 +5,9 @@
     # Use unstable for latest packages on personal dev machine
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
 
+    # Stable channel — cherry-pick packages that break on unstable
+    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-25.11";
+
     # nix-darwin (master follows unstable)
     darwin = {
       url = "github:nix-darwin/nix-darwin";
@@ -42,7 +45,22 @@
   outputs = { self, nixpkgs, home-manager, darwin, ... }@inputs: let
     mkSystem = import ./lib/mksystem.nix {
       inherit nixpkgs inputs;
-      overlays = [];
+      overlays = [
+      # Workaround: jeepney check phase fails with exit code 127 (missing test runner)
+      # on nixpkgs-unstable. This breaks yt-dlp -> secretstorage -> jeepney chain.
+      # Remove once upstream nixpkgs fixes python313Packages.jeepney.
+      (final: prev: {
+        pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
+          (pyFinal: pyPrev: {
+            jeepney = pyPrev.jeepney.overridePythonAttrs {
+              doCheck = false;
+              # jeepney.io.trio imports 'outcome' which isn't a runtime dep
+              pythonImportsCheck = [ "jeepney" "jeepney.auth" "jeepney.io" ];
+            };
+          })
+        ];
+      })
+    ];
     };
   in {
     darwinConfigurations.macbook-m4-max = mkSystem "macbook-m4-max" {

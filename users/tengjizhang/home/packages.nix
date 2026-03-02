@@ -2,6 +2,7 @@
 
 let
   isDarwin = pkgs.stdenv.isDarwin;
+  pkgs-stable = inputs.nixpkgs-stable.legacyPackages.${pkgs.system};
 
 
   # LLM/AI tools from numtide/llm-agents.nix (daily updates, binary cache)
@@ -118,7 +119,9 @@ in {
     # AI CLI tools from numtide/llm-agents.nix (daily updates, binary cache)
     llmAgents.claude-code    # Anthropic's Claude Code CLI
     llmAgents.codex          # OpenAI Codex CLI
-    llmAgents.gemini-cli     # Google Gemini CLI
+    # FIXME: gemini-cli 0.30.0 broken — node-pty fails to compile against Node.js 24
+    # Upstream: numtide/llm-agents.nix. Re-enable when fixed.
+    # llmAgents.gemini-cli     # Google Gemini CLI
     llmAgents.agent-browser  # Browser automation
     llmAgents.openclaw       # WhatsApp/Telegram/Discord AI assistant (formerly clawdbot → moltbot)
     llmAgents.pi             # Minimal extensible coding agent (badlogic)
@@ -141,7 +144,7 @@ in {
     # Cloud CLIs (work requirements, Nix-managed)
     google-cloud-sdk  # Google Cloud Platform CLI
     awscli2          # AWS CLI (latest version)
-    _1password-cli
+    pkgs-stable._1password-cli  # Stable: unstable ships beta that breaks Pulumi 1Password provider
 
   ];
 
