@@ -34,6 +34,7 @@ let
   # uv tool packages (Python CLIs with heavy/ML deps)
   uvToolPackages = [
     "mlx-whisper"  # Whisper transcription optimized for Apple Silicon
+    "gam7"         # Google Workspace admin CLI (GAM)
   ];
 
 in {
