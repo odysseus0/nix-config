@@ -27,6 +27,7 @@
       "beeper"
       "element"
       "signal"
+      "whatsapp"
       "telegram"
       "telegram-desktop"
       "zoom"
