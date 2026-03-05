@@ -13,6 +13,7 @@ let
     { pkg = "@steipete/bird"; bin = "bird"; }
     { pkg = "@mariozechner/gccli"; bin = "gccli"; }
     { pkg = "neonctl"; bin = "neonctl"; }
+    { pkg = "@googleworkspace/cli"; bin = "gws"; }
   ];
 
   # Only append @latest if package doesn't already have a version specifier
