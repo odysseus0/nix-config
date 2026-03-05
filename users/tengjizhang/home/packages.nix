@@ -97,6 +97,7 @@ in {
     yq          # YAML processor
     clickhouse  # ClickHouse database client
     ffmpeg      # media processing
+    sox         # audio recording/processing (used by Claude Code /voice)
     d2          # diagram-as-code tool
 
     # Additional tools
