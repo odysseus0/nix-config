@@ -137,6 +137,9 @@ in {
     # Blockchain development tools
     foundry         # Foundry toolchain (forge, cast, anvil, chisel)
 
+    # Agent coordination
+    dolt            # Version-controlled SQL database (Beads backend)
+
     # Infrastructure tools
     terraform       # Infrastructure as code
     pulumi          # Infrastructure as code (TypeScript)
