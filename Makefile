@@ -3,8 +3,9 @@
 
 NIXNAME = macbook-m4-max
 NIXPKGS_ALLOW_UNFREE = 1
+NIXBUILD = NIXPKGS_ALLOW_UNFREE=1 nix build --impure ".#darwinConfigurations.${NIXNAME}.system"
 
-.PHONY: help switch test build clean update update-commit update-commit-push
+.PHONY: help switch test build clean update update-commit update-commit-push dry-run
 
 # Default target - full system switch
 switch:
@@ -12,20 +13,32 @@ switch:
 
 # Test the configuration without switching
 test:
-	NIXPKGS_ALLOW_UNFREE=1 nix build --impure ".#darwinConfigurations.${NIXNAME}.system"
+	${NIXBUILD}
 	sudo NIXPKGS_ALLOW_UNFREE=1 ./result/sw/bin/darwin-rebuild test --impure --flake ".#${NIXNAME}"
 
 # Build only (no activation)
 build:
-	NIXPKGS_ALLOW_UNFREE=1 nix build --impure ".#darwinConfigurations.${NIXNAME}.system"
+	${NIXBUILD}
+
+# Show what needs to be built/downloaded without building
+dry-run:
+	${NIXBUILD} --dry-run 2>&1 | grep -E "will be (built|fetched)" || echo "Everything up to date"
 
 # Clean up build artifacts
 clean:
 	rm -f result
 
-# Update flake inputs
+# Update all flake inputs (use sparingly — prefer selective updates)
 update:
 	nix flake update
+
+# Update only nixpkgs-unstable (most common, least disruptive)
+update-nixpkgs:
+	nix flake update nixpkgs
+
+# Update only llm-agents (AI tools from numtide)
+update-llm:
+	nix flake update llm-agents
 
 # Update flake inputs and auto-commit
 update-commit: update
@@ -52,7 +65,10 @@ help:
 	@echo "  switch              - Build and activate the system configuration (default)"
 	@echo "  test                - Build and test configuration without activation"
 	@echo "  build               - Build configuration only"
-	@echo "  update              - Update flake inputs"
+	@echo "  dry-run             - Show what needs to be built/downloaded"
+	@echo "  update              - Update ALL flake inputs (use sparingly)"
+	@echo "  update-nixpkgs      - Update only nixpkgs-unstable"
+	@echo "  update-llm          - Update only llm-agents (AI tools)"
 	@echo "  update-commit       - Update flake inputs and auto-commit changes"
 	@echo "  update-commit-push  - Update, commit, and push to remote"
 	@echo "  clean               - Remove build artifacts"
