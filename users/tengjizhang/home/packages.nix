@@ -101,6 +101,9 @@ in {
     sox         # audio recording/processing (used by Claude Code /voice)
     d2          # diagram-as-code tool
 
+    # Discord
+    discordchatexporter-cli  # Export Discord chat history (works with user token, no bot needed)
+
     # Additional tools
     taskwarrior3
     rclone

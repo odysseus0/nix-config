@@ -19,6 +19,7 @@
     secrets."chatlog-img-key" = {};
     secrets."tg-app-id" = {};
     secrets."tg-app-hash" = {};
+    secrets."discord-user-token" = {};
 
     templates."cliproxyapi-config.yaml" = {
       path = "${config.home.homeDirectory}/.cli-proxy-api/config.yaml";
