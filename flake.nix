@@ -40,6 +40,12 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Discord channel sync to local SQLite (personal tool)
+    dissync = {
+      url = "github:odysseus0/dissync";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = { self, nixpkgs, home-manager, darwin, ... }@inputs: let

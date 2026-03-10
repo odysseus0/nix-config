@@ -8,6 +8,9 @@ let
   # LLM/AI tools from numtide/llm-agents.nix (daily updates, binary cache)
   llmAgents = inputs.llm-agents.packages.${pkgs.system};
 
+  # Discord channel sync tool
+  dissync = inputs.dissync.packages.${pkgs.system}.default;
+
   # npm packages NOT covered by numtide - still use pnpm for these
   npmGlobalPackages = [
     { pkg = "@steipete/bird"; bin = "bird"; }
@@ -102,7 +105,7 @@ in {
     d2          # diagram-as-code tool
 
     # Discord
-    discordchatexporter-cli  # Export Discord chat history (works with user token, no bot needed)
+    dissync  # Incremental Discord channel sync to local SQLite (~/projects/dissync)
 
     # Additional tools
     taskwarrior3
