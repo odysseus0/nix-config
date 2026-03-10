@@ -47,6 +47,11 @@ in {
       if test -r ${config.sops.secrets."discord-user-token".path}
         set -gx DISCORD_TOKEN (cat ${config.sops.secrets."discord-user-token".path})
       end
+
+      # Discord bot token (sops-nix) — for discrawl
+      if test -r ${config.sops.secrets."discord-bot-token".path}
+        set -gx DISCORD_BOT_TOKEN (cat ${config.sops.secrets."discord-bot-token".path})
+      end
     '';
     plugins = [
       { name = "hydro"; src = inputs.fish-hydro; }
@@ -69,6 +74,9 @@ in {
 
       # Discord user token (sops-nix) — for DiscordChatExporter
       [ -r ${config.sops.secrets."discord-user-token".path} ] && export DISCORD_TOKEN=$(cat ${config.sops.secrets."discord-user-token".path})
+
+      # Discord bot token (sops-nix) — for discrawl
+      [ -r ${config.sops.secrets."discord-bot-token".path} ] && export DISCORD_BOT_TOKEN=$(cat ${config.sops.secrets."discord-bot-token".path})
     '';
   };
 }

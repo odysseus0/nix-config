@@ -20,6 +20,7 @@
     secrets."tg-app-id" = {};
     secrets."tg-app-hash" = {};
     secrets."discord-user-token" = {};
+    secrets."discord-bot-token" = {};
 
     templates."cliproxyapi-config.yaml" = {
       path = "${config.home.homeDirectory}/.cli-proxy-api/config.yaml";

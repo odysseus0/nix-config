@@ -113,6 +113,7 @@
       "steipete/tap/gogcli"  # Google Workspace CLI (gog)
 
       "cliproxyapi"  # Unified proxy for AI coding CLIs (Claude, Gemini, Amp, Codex)
+      "discrawl"     # Discord archive to local SQLite via bot token (steipete/tap)
 
       # Agent coordination
       "beads"  # Git-backed DAG issue tracker for AI agents (installs dolt as dependency)

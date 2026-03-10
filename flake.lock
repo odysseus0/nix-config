@@ -99,26 +99,6 @@
         "url": "https://install.determinate.systems/determinate-nixd/tag/v3.16.3/x86_64-linux"
       }
     },
-    "dissync": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1773107542,
-        "narHash": "sha256-NeuFSBAncsbgv0g/zx7qMelHn3kKNlJe9LMPonlsAg0=",
-        "owner": "odysseus0",
-        "repo": "dissync",
-        "rev": "c4157c0297780178077f49d920a387efeaff3215",
-        "type": "github"
-      },
-      "original": {
-        "owner": "odysseus0",
-        "repo": "dissync",
-        "type": "github"
-      }
-    },
     "fish-hydro": {
       "flake": false,
       "locked": {
@@ -358,7 +338,6 @@
       "inputs": {
         "darwin": "darwin",
         "determinate": "determinate",
-        "dissync": "dissync",
         "fish-hydro": "fish-hydro",
         "home-manager": "home-manager",
         "llm-agents": "llm-agents",
