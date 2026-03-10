@@ -10,6 +10,10 @@
   #   ssh-to-age --private-key -i ~/.ssh/id_ed25519 -o ~/.config/sops/age/keys.txt
   #   chmod 600 ~/.config/sops/age/keys.txt
 
+  home.sessionVariablesExtra = ''
+    source ${config.sops.templates."session-secrets.sh".path}
+  '';
+
   sops = {
     defaultSopsFile = ../../../secrets/secrets.yaml;
     age.keyFile = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
@@ -21,6 +25,17 @@
     secrets."tg-app-hash" = {};
     secrets."discord-user-token" = {};
     secrets."discord-bot-token" = {};
+    secrets."linear-api-key" = {};
+
+    # Shell environment variables — sourced by all shells via home.sessionVariablesExtra.
+    # home-manager runs hm-session-vars.sh through babelfish for fish, sources directly for zsh.
+    templates."session-secrets.sh".content = ''
+      export TG_APP_ID="${config.sops.placeholder."tg-app-id"}"
+      export TG_APP_HASH="${config.sops.placeholder."tg-app-hash"}"
+      export DISCORD_TOKEN="${config.sops.placeholder."discord-user-token"}"
+      export DISCORD_BOT_TOKEN="${config.sops.placeholder."discord-bot-token"}"
+      export LINEAR_API_KEY="${config.sops.placeholder."linear-api-key"}"
+    '';
 
     templates."cliproxyapi-config.yaml" = {
       path = "${config.home.homeDirectory}/.cli-proxy-api/config.yaml";

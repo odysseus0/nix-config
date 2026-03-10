@@ -36,23 +36,7 @@ in {
   programs.fish = {
     enable = true;
     shellAliases = shellAliases;
-    interactiveShellInit = (builtins.readFile ../config.fish) + ''
-      # Telegram API credentials (sops-nix)
-      if test -r ${config.sops.secrets."tg-app-id".path}
-        set -gx TG_APP_ID (cat ${config.sops.secrets."tg-app-id".path})
-        set -gx TG_APP_HASH (cat ${config.sops.secrets."tg-app-hash".path})
-      end
-
-      # Discord user token (sops-nix) — for DiscordChatExporter
-      if test -r ${config.sops.secrets."discord-user-token".path}
-        set -gx DISCORD_TOKEN (cat ${config.sops.secrets."discord-user-token".path})
-      end
-
-      # Discord bot token (sops-nix) — for discrawl
-      if test -r ${config.sops.secrets."discord-bot-token".path}
-        set -gx DISCORD_BOT_TOKEN (cat ${config.sops.secrets."discord-bot-token".path})
-      end
-    '';
+    interactiveShellInit = builtins.readFile ../config.fish;
     plugins = [
       { name = "hydro"; src = inputs.fish-hydro; }
       { name = "fzf.fish"; src = pkgs.fishPlugins.fzf-fish.src; }
@@ -67,16 +51,6 @@ in {
     enable = true;
     dotDir = "${config.xdg.configHome}/zsh";
     shellAliases = shellAliases;
-    initExtra = ''
-      # Telegram API credentials (sops-nix)
-      [ -r ${config.sops.secrets."tg-app-id".path} ] && export TG_APP_ID=$(cat ${config.sops.secrets."tg-app-id".path})
-      [ -r ${config.sops.secrets."tg-app-hash".path} ] && export TG_APP_HASH=$(cat ${config.sops.secrets."tg-app-hash".path})
-
-      # Discord user token (sops-nix) — for DiscordChatExporter
-      [ -r ${config.sops.secrets."discord-user-token".path} ] && export DISCORD_TOKEN=$(cat ${config.sops.secrets."discord-user-token".path})
-
-      # Discord bot token (sops-nix) — for discrawl
-      [ -r ${config.sops.secrets."discord-bot-token".path} ] && export DISCORD_BOT_TOKEN=$(cat ${config.sops.secrets."discord-bot-token".path})
-    '';
+    initExtra = "";
   };
 }
