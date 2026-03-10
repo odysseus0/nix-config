@@ -89,7 +89,7 @@ in {
     curl
     wget
     unzip
-    ast-grep    # code searching tool
+    (ast-grep.overrideAttrs { doCheck = false; })  # test_scan_invalid_rule_id fails in sandbox
     fx          # JSON explorer
     pandoc      # document converter
     typst       # modern typesetting system
