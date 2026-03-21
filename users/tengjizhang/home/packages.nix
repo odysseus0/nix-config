@@ -4,6 +4,23 @@ let
   isDarwin = pkgs.stdenv.isDarwin;
   pkgs-stable = inputs.nixpkgs-stable.legacyPackages.${pkgs.system};
 
+  # DiscordChatExporter CLI — prebuilt binary (nixpkgs version is 2 years stale)
+  discordchatexporter-cli = pkgs.stdenv.mkDerivation rec {
+    pname = "discordchatexporter-cli";
+    version = "2.47";
+    src = pkgs.fetchzip {
+      url = "https://github.com/Tyrrrz/DiscordChatExporter/releases/download/${version}/DiscordChatExporter.Cli.osx-arm64.zip";
+      hash = "sha256-Lq/c7WTV8abxlxZ9LjK8dfN1fGGx8xkduuLBUoSKLSs=";
+      stripRoot = false;
+    };
+    installPhase = ''
+      mkdir -p $out/bin
+      cp -r $src/* $out/bin/
+      chmod +x $out/bin/DiscordChatExporter.Cli
+    '';
+    meta.mainProgram = "DiscordChatExporter.Cli";
+  };
+
 
   # LLM/AI tools from numtide/llm-agents.nix (daily updates, binary cache)
   llmAgents = inputs.llm-agents.packages.${pkgs.system};
@@ -12,8 +29,10 @@ let
   npmGlobalPackages = [
     { pkg = "@steipete/bird"; bin = "bird"; }
     { pkg = "@mariozechner/gccli"; bin = "gccli"; }
+    { pkg = "agent-browser"; bin = "agent-browser"; }
     { pkg = "neonctl"; bin = "neonctl"; }
     { pkg = "@googleworkspace/cli"; bin = "gws"; }
+    { pkg = "ghcrawl"; bin = "ghcrawl"; }
   ];
 
   # Only append @latest if package doesn't already have a version specifier
@@ -101,6 +120,9 @@ in {
     sox         # audio recording/processing (used by Claude Code /voice)
     d2          # diagram-as-code tool
 
+    # Discord archival
+    discordchatexporter-cli
+
     # Additional tools
     taskwarrior3
     rclone
@@ -125,8 +147,9 @@ in {
     # FIXME: gemini-cli 0.30.0 broken — node-pty fails to compile against Node.js 24
     # Upstream: numtide/llm-agents.nix. Re-enable when fixed.
     # llmAgents.gemini-cli     # Google Gemini CLI
-    llmAgents.agent-browser  # Browser automation
-    llmAgents.openclaw       # WhatsApp/Telegram/Discord AI assistant (formerly clawdbot → moltbot)
+    # agent-browser: removed from Nix — no binary cache, compiles Rust from source.
+    # npm ships precompiled binaries. Installed via pnpm below instead.
+    # llmAgents.agent-browser
     llmAgents.pi             # Minimal extensible coding agent (badlogic)
     llmAgents.amp            # Sourcegraph's Amp coding agent CLI
 
