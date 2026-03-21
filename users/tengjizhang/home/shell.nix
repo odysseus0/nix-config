@@ -25,7 +25,7 @@ let
 
     # AI CLI tools
     ccc = "claude --dangerously-skip-permissions";
-    cx = "codex --yolo --search";
+    cx = "codex --dangerously-bypass-approvals-and-sandbox";
 
   };
 in {
@@ -51,6 +51,6 @@ in {
     enable = true;
     dotDir = "${config.xdg.configHome}/zsh";
     shellAliases = shellAliases;
-    initExtra = "";
+    initContent = "";
   };
 }
