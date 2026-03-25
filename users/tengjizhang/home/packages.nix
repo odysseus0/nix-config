@@ -33,6 +33,7 @@ let
     { pkg = "neonctl"; bin = "neonctl"; }
     { pkg = "@googleworkspace/cli"; bin = "gws"; }
     { pkg = "ghcrawl"; bin = "ghcrawl"; }
+    { pkg = "@mariozechner/pi-coding-agent"; bin = "pi"; }
   ];
 
   # Only append @latest if package doesn't already have a version specifier
@@ -150,7 +151,6 @@ in {
     # agent-browser: removed from Nix — no binary cache, compiles Rust from source.
     # npm ships precompiled binaries. Installed via pnpm below instead.
     # llmAgents.agent-browser
-    llmAgents.pi             # Minimal extensible coding agent (badlogic)
     llmAgents.amp            # Sourcegraph's Amp coding agent CLI
 
     # Programming languages
@@ -173,7 +173,4 @@ in {
     pkgs-stable._1password-cli  # Stable: unstable ships beta that breaks Pulumi 1Password provider
 
   ];
-
-  # Pi source symlink for easy access to docs/examples
-  home.file.".pi/pi-source".source = "${llmAgents.pi}/lib/node_modules/@mariozechner/pi-coding-agent";
 }
