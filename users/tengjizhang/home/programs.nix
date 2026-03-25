@@ -75,10 +75,11 @@
   # Direnv - Per-directory environment management
   #---------------------------------------------------------------------
 
-  programs.direnv = {
-    enable = true;
-    nix-direnv.enable = true;
-  };
+  # FIXME: direnv broken — Go 1.26 cgo linkmode bug (nixpkgs #503298)
+  # programs.direnv = {
+  #   enable = true;
+  #   nix-direnv.enable = true;
+  # };
 
   #---------------------------------------------------------------------
   # FZF - Fuzzy finder
