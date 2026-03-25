@@ -165,7 +165,8 @@ in {
     pulumi          # Infrastructure as code (TypeScript)
     pulumiPackages.pulumi-nodejs  # Pulumi TypeScript/JS support
     flyctl          # Fly.io CLI
-    mise            # Polyglot version manager (Ruby, Node, etc.)
+    # FIXME: mise depends on direnv — broken by Go 1.26 cgo bug (nixpkgs #503298)
+    # mise            # Polyglot version manager (Ruby, Node, etc.)
 
     # Cloud CLIs (work requirements, Nix-managed)
     google-cloud-sdk  # Google Cloud Platform CLI
