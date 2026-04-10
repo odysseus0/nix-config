@@ -34,6 +34,8 @@ let
     { pkg = "@googleworkspace/cli"; bin = "gws"; }
     { pkg = "ghcrawl"; bin = "ghcrawl"; }
     { pkg = "@mariozechner/pi-coding-agent"; bin = "pi"; }
+    { pkg = "@jackwener/opencli"; bin = "opencli"; }
+    { pkg = "@opentabs-dev/cli"; bin = "opentabs"; }
   ];
 
   # Only append @latest if package doesn't already have a version specifier
@@ -120,6 +122,8 @@ in {
     ffmpeg      # media processing
     sox         # audio recording/processing (used by Claude Code /voice)
     d2          # diagram-as-code tool
+    actionlint  # GitHub Actions workflow lint
+    shellcheck  # shell lint used by actionlint for run blocks
 
     # Discord archival
     discordchatexporter-cli
