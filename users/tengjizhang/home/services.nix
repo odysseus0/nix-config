@@ -55,18 +55,19 @@
     };
   };
 
-  # Chatlog - WeChat chat history export tool
+  # Chatlog - WeChat chat history sync
   # Secrets: sops-nix → secrets/secrets.yaml (chatlog-data-key, chatlog-img-key)
   # Config written to ~/.chatlog/chatlog-server.json via sops template in secrets.nix
-  # API:     http://localhost:5030
+  # WatchPaths triggers decrypt + normalize into ~/.wechat/wechat.db when WeChat writes new data.
+  # Query: sqlite3 ~/.wechat/wechat.db "..."
 
   launchd.agents.chatlog = {
     enable = true;
     config = {
-      Label = "com.chatlog.server";
-      ProgramArguments = [ "${config.home.homeDirectory}/go/bin/chatlog" "server" ];
-      RunAtLoad = true;
-      KeepAlive = true;
+      Label = "com.chatlog.sync";
+      ProgramArguments = [ "${config.home.homeDirectory}/projects/chatlog/bin/chatlog" "sync" ];
+      WatchPaths = [ "/Users/tengjizhang/Library/Containers/com.tencent.xinWeChat/Data/Documents/xwechat_files/wxid_a04dcz671ota11_2af6/db_storage/message" ];
+      ThrottleInterval = 30;
       StandardOutPath = "${config.home.homeDirectory}/Library/Logs/chatlog.log";
       StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/chatlog.error.log";
     };

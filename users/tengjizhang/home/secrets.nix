@@ -77,9 +77,7 @@
           "data_dir": "/Users/tengjizhang/Library/Containers/com.tencent.xinWeChat/Data/Documents/xwechat_files/wxid_a04dcz671ota11_2af6",
           "data_key": "${config.sops.placeholder."chatlog-data-key"}",
           "img_key": "${config.sops.placeholder."chatlog-img-key"}",
-          "work_dir": "/Users/tengjizhang/.local/share/chatlog",
-          "http_addr": "127.0.0.1:5030",
-          "auto_decrypt": true
+          "work_dir": "/Users/tengjizhang/.local/share/chatlog"
         }
       '';
     };
