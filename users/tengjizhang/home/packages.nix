@@ -176,6 +176,8 @@ in {
     google-cloud-sdk  # Google Cloud Platform CLI
     awscli2          # AWS CLI (latest version)
     pkgs-stable._1password-cli  # Stable: unstable ships beta that breaks Pulumi 1Password provider
+    cloudflared      # Cloudflare Tunnel client (local → public HTTPS via *.trycloudflare.com)
+    wrangler         # Cloudflare Workers CLI (deploy serverless functions)
 
   ];
 }
