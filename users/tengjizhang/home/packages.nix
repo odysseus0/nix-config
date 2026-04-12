@@ -56,8 +56,9 @@ let
 
   # uv tool packages (Python CLIs with heavy/ML deps)
   uvToolPackages = [
-    "mlx-whisper"  # Whisper transcription optimized for Apple Silicon
-    "gam7"         # Google Workspace admin CLI (GAM)
+    "mlx-whisper"      # Whisper transcription optimized for Apple Silicon
+    "mlx-qwen3-asr"   # Qwen3-ASR speech recognition for Apple Silicon
+    "gam7"             # Google Workspace admin CLI (GAM)
   ];
 
 in {
