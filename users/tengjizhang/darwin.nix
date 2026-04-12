@@ -30,6 +30,7 @@
       "whatsapp"
       "telegram"
       "telegram-desktop"
+      "lark"
       "zoom"
       
       # Development
