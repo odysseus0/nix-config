@@ -13,7 +13,6 @@
     taps = [
       "mrkai77/cask"  # For Loop window manager
       "steipete/tap"  # For CodexBar, bird, gogcli
-      "manaflow-ai/cmux"  # For cmux terminal
     ];
 
     # GUI Applications via Homebrew casks
@@ -54,7 +53,6 @@
       "lm-studio"
       "superset"  # Terminal for orchestrating multiple AI coding agents in parallel
       "steipete/tap/codexbar"
-      "manaflow-ai/cmux/cmux"  # Ghostty-based terminal with AI agent tabs + notifications
       # Productivity
       "1password"
       "obsidian"
