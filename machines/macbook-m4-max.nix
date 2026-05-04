@@ -14,10 +14,9 @@
   # Binary caches for pre-built packages (written to /etc/nix/nix.custom.conf)
   # - cache.nixos.org: Official cache (included by default)
   # - nix-community.cachix.org: Community packages
-  # - cache.numtide.com: LLM/AI tools from numtide/llm-agents.nix
   determinateNix.customSettings = {
-    extra-substituters = "https://nix-community.cachix.org https://cache.numtide.com";
-    extra-trusted-public-keys = "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g=";
+    extra-substituters = "https://nix-community.cachix.org";
+    extra-trusted-public-keys = "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=";
   };
 
   # zsh is the default shell on Mac and we want to make sure that we're

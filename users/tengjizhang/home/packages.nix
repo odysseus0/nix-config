@@ -21,12 +21,13 @@ let
     meta.mainProgram = "DiscordChatExporter.Cli";
   };
 
-
-  # LLM/AI tools from numtide/llm-agents.nix (daily updates, binary cache)
-  llmAgents = inputs.llm-agents.packages.${pkgs.system};
-
-  # npm packages NOT covered by numtide - still use pnpm for these
+  # Fast-moving npm CLIs: Nix owns the desired set, pnpm owns freshness.
+  # Use this for vendor-recommended npm installs or tools that should update
+  # without routine flake.lock churn. "bin" documents the expected command and
+  # is checked manually in the command-resolution verification pass.
   npmGlobalPackages = [
+    { pkg = "@openai/codex"; bin = "codex"; }
+    { pkg = "@sourcegraph/amp"; bin = "amp"; }
     { pkg = "@steipete/bird"; bin = "bird"; }
     { pkg = "@mariozechner/gccli"; bin = "gccli"; }
     { pkg = "agent-browser"; bin = "agent-browser"; }
@@ -44,7 +45,10 @@ let
     afterFirst = builtins.substring 1 (builtins.stringLength pkg) pkg;
   in lib.hasInfix "@" afterFirst;
   addLatest = pkg: if hasVersion pkg then pkg else pkg + "@latest";
-  npmInstallArgs = lib.concatStringsSep " " (map (p: addLatest p.pkg) npmGlobalPackages);
+  npmInstallCommands = lib.concatMapStringsSep "\n    " (p: ''
+    echo "  pnpm: ${p.pkg} -> ${p.bin}"
+    ${pkgs.pnpm}/bin/pnpm add -g ${addLatest p.pkg} || echo "pnpm install ${p.pkg} failed, continuing..."
+  '') npmGlobalPackages;
 
   # pnpm global directory (relative to $HOME, expanded at runtime)
   pnpmSubdir = if isDarwin then "Library/pnpm" else ".local/share/pnpm";
@@ -62,13 +66,13 @@ let
   ];
 
 in {
-  # Install remaining npm packages not in numtide (bird, gccli)
+  # Install fast-moving npm CLIs without making darwin-rebuild depend on their package freshness.
   home.activation.updateAiTools = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    echo "Updating remaining npm packages via pnpm (bird, gccli)..."
+    echo "Updating fast-moving npm CLIs via pnpm..."
     export PNPM_HOME="$HOME/${pnpmSubdir}"
     export PATH="$PNPM_HOME:$PATH"
     mkdir -p "$PNPM_HOME"
-    ${pkgs.pnpm}/bin/pnpm add -g ${npmInstallArgs} || echo "pnpm install failed, continuing..."
+    ${npmInstallCommands}
   '';
 
   # Install bun global packages (from git repos)
@@ -144,19 +148,11 @@ in {
 
     # Node.js runtime (for editor integration)
     nodejs      # for editor integration and basic needs
-    pnpm        # for remaining npm packages (bird, gccli)
+    pnpm        # activation-managed npm CLIs
     bun         # fast JS runtime & bundler
 
-    # AI CLI tools from numtide/llm-agents.nix (daily updates, binary cache)
-    llmAgents.claude-code    # Anthropic's Claude Code CLI
-    llmAgents.codex          # OpenAI Codex CLI
-    # FIXME: gemini-cli 0.30.0 broken — node-pty fails to compile against Node.js 24
-    # Upstream: numtide/llm-agents.nix. Re-enable when fixed.
-    # llmAgents.gemini-cli     # Google Gemini CLI
-    # agent-browser: removed from Nix — no binary cache, compiles Rust from source.
-    # npm ships precompiled binaries. Installed via pnpm below instead.
-    # llmAgents.agent-browser
-    llmAgents.amp            # Sourcegraph's Amp coding agent CLI
+    # Fast-moving agent CLIs use vendor package managers above. Claude Code is
+    # intentionally vendor-self-managed in ~/.local/bin via `claude update`.
 
     # Programming languages
     deno            # TypeScript/JavaScript runtime

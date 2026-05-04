@@ -3,9 +3,10 @@
 
 NIXNAME = macbook-m4-max
 NIXPKGS_ALLOW_UNFREE = 1
-NIXBUILD = NIXPKGS_ALLOW_UNFREE=1 nix build --impure ".#darwinConfigurations.${NIXNAME}.system"
+NIXSYSTEM = .\#darwinConfigurations.${NIXNAME}.system
+NIXBUILD = NIXPKGS_ALLOW_UNFREE=1 nix build --impure "${NIXSYSTEM}"
 
-.PHONY: help switch test build clean update update-commit update-commit-push dry-run
+.PHONY: help switch test build clean update update-commit update-commit-push dry-run update-nixpkgs
 
 # Default target - full system switch
 switch:
@@ -36,10 +37,6 @@ update:
 update-nixpkgs:
 	nix flake update nixpkgs
 
-# Update only llm-agents (AI tools from numtide)
-update-llm:
-	nix flake update llm-agents
-
 # Update flake inputs and auto-commit
 update-commit: update
 	@if git diff --quiet --exit-code flake.lock; then \
@@ -68,7 +65,6 @@ help:
 	@echo "  dry-run             - Show what needs to be built/downloaded"
 	@echo "  update              - Update ALL flake inputs (use sparingly)"
 	@echo "  update-nixpkgs      - Update only nixpkgs-unstable"
-	@echo "  update-llm          - Update only llm-agents (AI tools)"
 	@echo "  update-commit       - Update flake inputs and auto-commit changes"
 	@echo "  update-commit-push  - Update, commit, and push to remote"
 	@echo "  clean               - Remove build artifacts"
