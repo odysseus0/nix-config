@@ -29,11 +29,9 @@
       "whatsapp"
       "telegram"
       "telegram-desktop"
-      "lark"
       "zoom"
       
       # Development
-      "cursor"
       "ghostty@tip" 
       "visual-studio-code@insiders"
       "orbstack"
@@ -42,7 +40,6 @@
       "zed"
       "chromedriver"
       "proxyman"
-      "sublime-merge"
       "rapidapi"
 
       # Network & Security
@@ -51,7 +48,6 @@
       # AI Tools
       "chatgpt"
       "lm-studio"
-      "superset"  # Terminal for orchestrating multiple AI coding agents in parallel
       "steipete/tap/codexbar"
       # Productivity
       "1password"
