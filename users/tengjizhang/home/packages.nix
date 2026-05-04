@@ -78,13 +78,13 @@ in {
   # Install bun global packages (from git repos)
   home.activation.updateBunTools = lib.hm.dag.entryAfter ["writeBoundary"] ''
     echo "Updating bun global packages..."
-    ${lib.concatMapStringsSep "\n    " (pkg: ''${pkgs.bun}/bin/bun install -g ${pkg} || echo "bun install ${pkg} failed, continuing..."'') bunGlobalPackages}
+    ${lib.concatMapStringsSep "\n    " (pkg: ''${pkgs.bun}/bin/bun install -g --force ${pkg} || echo "bun install ${pkg} failed, continuing..."'') bunGlobalPackages}
   '';
 
   # Install uv tool packages (Python CLIs with heavy/ML deps)
   home.activation.updateUvTools = lib.hm.dag.entryAfter ["writeBoundary"] ''
     echo "Updating uv tool packages..."
-    ${lib.concatMapStringsSep "\n    " (pkg: ''${pkgs.uv}/bin/uv tool install ${pkg} --native-tls || echo "uv tool install ${pkg} failed, continuing..."'') uvToolPackages}
+    ${lib.concatMapStringsSep "\n    " (pkg: ''${pkgs.uv}/bin/uv tool install --upgrade ${pkg} --native-tls || echo "uv tool install ${pkg} failed, continuing..."'') uvToolPackages}
   '';
 
   home.packages = with pkgs; [
