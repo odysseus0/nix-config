@@ -149,9 +149,6 @@ end
 # Custom Aliases
 #-------------------------------------------------------------------------------
 
-# Custom complex aliases that need shell logic
-alias code cursor
-
 # gh-dash with auto theme switching (Catppuccin Latte/Frappé)
 function gh-dash -d "GitHub dashboard with auto light/dark theme"
     set -l theme (test "$(defaults read -g AppleInterfaceStyle 2>/dev/null)" = "Dark" && echo "dark" || echo "light")
