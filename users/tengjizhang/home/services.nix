@@ -71,4 +71,31 @@
       StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/chatlog.error.log";
     };
   };
+
+  # Prune meeting audio files older than 30 days.
+  # Audio Hijack writes two-track recordings here; transcripts land in vault inbox.
+  # Audio kept as a regenerate-from-source safety net; vault keeps only text.
+  launchd.agents.prune-meeting-recordings = {
+    enable = true;
+    config = {
+      Label = "com.user.prune-meeting-recordings";
+      ProgramArguments = [
+        "/usr/bin/find"
+        "${config.home.homeDirectory}/Recordings/meetings"
+        "-mindepth"
+        "1"
+        "-type"
+        "f"
+        "-mtime"
+        "+30"
+        "-delete"
+      ];
+      StartCalendarInterval = {
+        Hour = 3;
+        Minute = 0;
+      };
+      StandardOutPath = "${config.home.homeDirectory}/Library/Logs/prune-meeting-recordings.log";
+      StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/prune-meeting-recordings.error.log";
+    };
+  };
 }
