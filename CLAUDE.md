@@ -118,7 +118,7 @@ See `users/tengjizhang/home/packages.nix` for the full configuration.
 
 - nix-darwin handles Nix daemon integration automatically
 - Fish/zsh init scripts are in machine config (`machines/*.nix`)
-- Personal PATH additions go in `users/*/config.fish`, not home-manager
+- Personal PATH additions go in `users/*/home/environment.nix` via `home.sessionPath`; `config.fish` only keeps MANPATH/INFOPATH setup that needs prepend semantics
 
 ### Git Configuration
 
