@@ -21,6 +21,40 @@ let
     meta.mainProgram = "DiscordChatExporter.Cli";
   };
 
+  # Paperclip — biomedical paper search CLI + Python SDK.
+  # Wheel served from upstream (no PyPI).
+  #
+  # Upstream ships a self-update mechanism (cli/updater.py), but it's gated on
+  # is_managed_install() — only fires when the package lives in ~/.paperclip/lib.
+  # Under Nix the package lives in /nix/store, so auto-update silently no-ops.
+  # No env var needed to disable it; the Nix install path is the disable.
+  #
+  # Bump recipe:
+  #   curl -fsSL https://paperclip.gxl.ai/paperclip.whl -o /tmp/paperclip.whl
+  #   unzip -p /tmp/paperclip.whl '*.dist-info/METADATA' | grep -E '^(Version|Requires-Dist):'
+  #   nix hash file --sri /tmp/paperclip.whl
+  paperclipPkg = pkgs.python3.pkgs.buildPythonPackage rec {
+    pname = "gxl-paperclip";
+    version = "0.3.0";
+    format = "wheel";  # prebuilt wheel — no pyproject hooks needed
+    src = pkgs.fetchurl {
+      url = "https://paperclip.gxl.ai/paperclip.whl";
+      # Rename so pip/nixpkgs wheel handler sees a canonical wheel filename.
+      name = "gxl_paperclip-${version}-py3-none-any.whl";
+      hash = "sha256-qr0CMs6D07/mg68wgdDTc3moT3xXDfV1ao9MJT0B9rk=";
+    };
+    dependencies = with pkgs.python3.pkgs; [ click requests ];
+    doCheck = false;
+  };
+  paperclip = pkgs.python3.pkgs.toPythonApplication paperclipPkg;
+  # Python interpreter with the gxl_paperclip SDK importable. Use:
+  #   paperclip-python -c 'from gxl_paperclip import client; ...'
+  paperclipPython =
+    let env = pkgs.python3.withPackages (_: [ paperclipPkg ]);
+    in pkgs.writeShellScriptBin "paperclip-python" ''
+      exec ${env}/bin/python "$@"
+    '';
+
   # Fast-moving npm CLIs: Nix owns the desired set, pnpm owns freshness.
   # Use this for vendor-recommended npm installs or tools that should update
   # without routine flake.lock churn. "bin" documents the expected command and
@@ -132,6 +166,10 @@ in {
 
     # Discord archival
     discordchatexporter-cli
+
+    # Biomedical / arxiv paper search (CLI + Python SDK wrapper)
+    paperclip
+    paperclipPython
 
     # Additional tools
     taskwarrior3
