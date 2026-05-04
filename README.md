@@ -14,7 +14,7 @@ make test      # Test without activating
 
 - **CLI packages** — Dev tools, modern CLI utilities, cloud SDKs
 - **GUI apps** — Managed declaratively via Homebrew
-- **AI tools** — Claude Code, Codex, Gemini CLI via [numtide/llm-agents.nix](https://github.com/numtide/llm-agents.nix)
+- **AI tools** — Split by ownership: activation-managed vendor packages for fast-moving CLIs, vendor self-managed tools when they ship their own updater
 - **Shell** — Fish with plugins and custom config
 - **Dotfiles** — Git, terminal, tool configs
 - **System settings** — Touch ID for sudo, shells, environment variables
@@ -61,16 +61,15 @@ Three-layer configuration system following [mitchellh's patterns](https://github
 
 ## Key Details
 
-**Package sources:**
+**Package sources and ownership:**
 - **nixpkgs-unstable** — Dev tools, recent versions
 - **Homebrew** — GUI apps and Mac App Store apps
-- **numtide/llm-agents.nix** — AI CLI tools with daily builds and binary cache
+- **Home Manager activation + pnpm/bun/uv** — Fast-moving vendor CLIs that should update without routine `flake.lock` churn
+- **Vendor self-managed** — Tools like Claude Code that install under `~/.local/bin` and provide their own updater
 
 **Binary caches:**
 - `cache.nixos.org` — Official
 - `nix-community.cachix.org` — Community packages
-- `cache.numtide.com` — LLM/AI tools
-
 **Determinate Nix:** Uses the Determinate installer with its official nix-darwin module for daemon management.
 
 ## Inspiration
@@ -78,7 +77,6 @@ Three-layer configuration system following [mitchellh's patterns](https://github
 - [mitchellh/nixos-config](https://github.com/mitchellh/nixos-config)
 - [nix-darwin](https://github.com/nix-darwin/nix-darwin)
 - [home-manager](https://github.com/nix-community/home-manager)
-- [numtide/llm-agents.nix](https://github.com/numtide/llm-agents.nix)
 
 ## License
 

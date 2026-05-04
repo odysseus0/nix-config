@@ -34,10 +34,9 @@
   };
 
   # CLIProxyAPI - proxy so Amp can use Claude/Gemini/Codex via CLI OAuth sessions
-  # Binary from Homebrew (hybrid) until Nix package lands:
-  # → https://github.com/numtide/llm-agents.nix/pull/2622
-  # Once merged: replace /opt/homebrew/bin/cliproxyapi with ${llmAgents.cli-proxy-api}/bin/cli-proxy-api
-  # and remove "cliproxyapi" from darwin.nix brews.
+  # Binary from Homebrew until a maintained Nix package exists. When moving it,
+  # replace /opt/homebrew/bin/cliproxyapi and remove "cliproxyapi" from
+  # darwin.nix brews in the same change.
 
   launchd.agents.cliproxyapi = {
     enable = true;

@@ -76,7 +76,6 @@ The overlay in flake.nix exposes unstable packages as `pkgs.unstable.*` to get r
 Pre-configured for fast downloads (managed via `determinateNix.customSettings` in `machines/*.nix`):
 - `cache.nixos.org` - Official Nix cache (included by default)
 - `nix-community.cachix.org` - Community packages
-- `cache.numtide.com` - LLM/AI tools from numtide/llm-agents.nix (daily builds)
 
 **Important**: Avoid adding overlays without verifying they have active caches. The neovim-nightly-overlay was removed in Oct 2025 because it caused 2-3GB downloads and 30+ min builds when caches were stale. Switched to stable neovim from nixpkgs-unstable instead.
 
@@ -87,6 +86,7 @@ Pre-configured for fast downloads (managed via `determinateNix.customSettings` i
 **CLI tools** → `users/tengjizhang/home-manager.nix` in `home.packages`
 **GUI apps** → `users/tengjizhang/darwin.nix` in `homebrew.casks`
 **Mac App Store apps** → `users/tengjizhang/darwin.nix` in `homebrew.masApps`
+**Fast-moving vendor CLIs** → `users/tengjizhang/home/packages.nix` in activation-managed pnpm/bun/uv lists
 
 ### Program Configuration (Mitchell's Pattern)
 
@@ -97,16 +97,18 @@ Pre-configured for fast downloads (managed via `determinateNix.customSettings` i
 
 ### AI CLI Tools Pattern
 
-AI CLI tools come from `numtide/llm-agents.nix` flake input (daily automated updates with binary cache):
-- `claude-code` - Anthropic's Claude Code CLI
-- `codex` - OpenAI Codex CLI
-- `gemini-cli` - Google Gemini CLI
-- `agent-browser` - Browser automation
-- `clawdbot` - Claude bot utility
+AI CLI ownership is chosen by update and reproducibility needs:
 
-Tools not covered by numtide are installed via pnpm activation script:
-- `bird` - Twitter/X CLI (@steipete/bird)
-- `gccli` - Google Calendar CLI (@mariozechner/gccli)
+**Home Manager activation + vendor package managers** is for fast-moving CLIs that should stay current without routine `flake.lock` churn:
+- `@openai/codex` - OpenAI Codex CLI, installed with pnpm because upstream recommends npm for install/update
+- `@sourcegraph/amp` - Sourcegraph's Amp CLI, installed with pnpm to avoid stale Nix/package-cache lag
+- `agent-browser` - Browser automation, installed with pnpm because npm ships prebuilt binaries
+- `qmd` - Quick Markdown search, installed from its Git repo with bun
+- `mlx-whisper`, `mlx-qwen3-asr`, `gam7` - Python CLIs installed with uv
+- Other npm CLIs such as `bird`, `gccli`, `gws`, `ghcrawl`, `pi`, `opencli`, and `opentabs`
+
+**Vendor self-managed** is for tools with their own updater and install root:
+- `claude` - Claude Code, installed under `~/.local/bin` and updated with `claude update`
 
 See `users/tengjizhang/home/packages.nix` for the full configuration.
 

@@ -29,12 +29,6 @@
     # Determinate Nix - official nix-darwin integration module
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/3";
 
-    # LLM/AI CLI tools - daily updated packages from Numtide
-    llm-agents = {
-      url = "github:numtide/llm-agents.nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     # Secret management - encrypted secrets in git, decrypted at activation
     sops-nix = {
       url = "github:Mic92/sops-nix";
