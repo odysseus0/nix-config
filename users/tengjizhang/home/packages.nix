@@ -2,7 +2,7 @@
 
 let
   isDarwin = pkgs.stdenv.isDarwin;
-  pkgs-stable = inputs.nixpkgs-stable.legacyPackages.${pkgs.system};
+  pkgs-stable = inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system};
 
   # DiscordChatExporter CLI — prebuilt binary (nixpkgs version is 2 years stale)
   discordchatexporter-cli = pkgs.stdenv.mkDerivation rec {
