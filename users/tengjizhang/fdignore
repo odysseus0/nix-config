@@ -10,7 +10,6 @@ site-packages/
 .cpan/
 .cpanm/
 .cups/
-.cursor/
 .dlv/
 .docker/
 .fleet/
