@@ -14,10 +14,10 @@ in {
     BUN_INSTALL = bunInstallDir;
     PNPM_HOME = pnpmHome;
 
-    # Amp - use local CLIProxyAPI instead of ampcode.com
-    AMP_URL = "http://localhost:8317";
-    AMP_API_KEY = "amp-local-proxy-key";
-
+    # Amp local CLIProxyAPI override. Temporarily disabled now that Amp can use
+    # the default ampcode.com API path directly.
+    # AMP_URL = "http://localhost:8317";
+    # AMP_API_KEY = "amp-local-proxy-key";
 
     # Homebrew env vars
     HOMEBREW_PREFIX = "/opt/homebrew";
@@ -48,7 +48,7 @@ in {
     "/Applications/Hammerspoon.app/Contents/Frameworks/hs"
     "/Applications/Obsidian.app/Contents/MacOS"
 
-    # Local scripts
+    # Local scripts and vendor-managed CLI symlinks
     "$HOME/.local/bin"
   ];
 }

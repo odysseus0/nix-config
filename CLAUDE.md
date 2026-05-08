@@ -101,13 +101,13 @@ AI CLI ownership is chosen by update and reproducibility needs:
 
 **Home Manager activation + vendor package managers** is for fast-moving CLIs that should stay current without routine `flake.lock` churn:
 - `@openai/codex` - OpenAI Codex CLI, installed with pnpm because upstream recommends npm for install/update
-- `@sourcegraph/amp` - Sourcegraph's Amp CLI, installed with pnpm to avoid stale Nix/package-cache lag
 - `agent-browser` - Browser automation, installed with pnpm because npm ships prebuilt binaries
 - `qmd` - Quick Markdown search, installed from its Git repo with bun
 - `mlx-whisper`, `mlx-qwen3-asr`, `gam7` - Python CLIs installed with uv
 - Other npm CLIs such as `bird`, `gccli`, `gws`, `ghcrawl`, `pi`, `opencli`, and `opentabs`
 
-**Vendor self-managed** is for tools with their own updater and install root:
+**Vendor self-managed** is for tools with their own installer/update path and install root:
+- `amp` - Amp CLI, installed under `~/.amp` by the upstream installer and symlinked into `~/.local/bin`
 - `claude` - Claude Code, installed under `~/.local/bin` and updated with `claude update`
 
 See `users/tengjizhang/home/packages.nix` for the full configuration.

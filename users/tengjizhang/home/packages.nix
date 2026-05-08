@@ -61,7 +61,6 @@ let
   # is checked manually in the command-resolution verification pass.
   npmGlobalPackages = [
     { pkg = "@openai/codex"; bin = "codex"; }
-    { pkg = "@sourcegraph/amp"; bin = "amp"; }
     { pkg = "@steipete/bird"; bin = "bird"; }
     { pkg = "@mariozechner/gccli"; bin = "gccli"; }
     { pkg = "agent-browser"; bin = "agent-browser"; }
@@ -106,7 +105,26 @@ in {
     export PNPM_HOME="$HOME/${pnpmSubdir}"
     export PATH="$PNPM_HOME:$PATH"
     mkdir -p "$PNPM_HOME"
+    ${pkgs.pnpm}/bin/pnpm remove -g @sourcegraph/amp >/dev/null 2>&1 || true
+    rm -f "$PNPM_HOME/amp" "$PNPM_HOME/amp.cmd" "$PNPM_HOME/amp.ps1"
     ${npmInstallCommands}
+  '';
+
+  # Amp ships a vendor installer that manages its own binary under ~/.amp and
+  # symlinks into ~/.local/bin. Keep presence declarative without packaging it
+  # into /nix/store or depending on pnpm/npm metadata freshness.
+  home.activation.updateAmpCli = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    echo "Updating Amp CLI via vendor installer..."
+    export PATH="${pkgs.curl}/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/.local/bin:$PATH"
+    export AMP_HOME="$HOME/.amp"
+    mkdir -p "$AMP_HOME"
+    amp_install_script="$AMP_HOME/install.sh"
+    if ${pkgs.curl}/bin/curl -fsSL https://ampcode.com/install.sh -o "$amp_install_script"; then
+      ${pkgs.bash}/bin/bash "$amp_install_script" || echo "Amp vendor install failed, continuing..."
+      rm -f "$amp_install_script"
+    else
+      echo "Amp vendor installer download failed, continuing..."
+    fi
   '';
 
   # Install bun global packages (from git repos)
