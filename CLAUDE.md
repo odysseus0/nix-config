@@ -86,7 +86,7 @@ Pre-configured for fast downloads (managed via `determinateNix.customSettings` i
 **CLI tools** → `users/tengjizhang/home-manager.nix` in `home.packages`
 **GUI apps** → `users/tengjizhang/darwin.nix` in `homebrew.casks`
 **Mac App Store apps** → `users/tengjizhang/darwin.nix` in `homebrew.masApps`
-**Fast-moving vendor CLIs** → `users/tengjizhang/home/packages.nix` in activation-managed pnpm/bun/uv lists
+**Fast-moving vendor CLIs** → `users/tengjizhang/home/packages.nix` in activation-managed pnpm/bun/uv lists, or vendor-owned user roots when the tool has its own updater
 
 ### Program Configuration (Mitchell's Pattern)
 
@@ -100,13 +100,13 @@ Pre-configured for fast downloads (managed via `determinateNix.customSettings` i
 AI CLI ownership is chosen by update and reproducibility needs:
 
 **Home Manager activation + vendor package managers** is for fast-moving CLIs that should stay current without routine `flake.lock` churn:
-- `@openai/codex` - OpenAI Codex CLI, installed with pnpm because upstream recommends npm for install/update
 - `agent-browser` - Browser automation, installed with pnpm because npm ships prebuilt binaries
 - `qmd` - Quick Markdown search, installed from its Git repo with bun
 - `mlx-whisper`, `mlx-qwen3-asr`, `gam7` - Python CLIs installed with uv
 - Other npm CLIs such as `bird`, `gccli`, `gws`, `ghcrawl`, `pi`, `opencli`, and `opentabs`
 
 **Vendor self-managed** is for tools with their own installer/update path and install root:
+- `codex` - OpenAI Codex CLI, installed in the npm global prefix because its self-updater expects npm ownership
 - `amp` - Amp CLI, installed under `~/.amp` by the upstream installer and symlinked into `~/.local/bin`
 - `claude` - Claude Code, installed under `~/.local/bin` and updated with `claude update`
 

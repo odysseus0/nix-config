@@ -59,8 +59,7 @@ let
   # Use this for vendor-recommended npm installs or tools that should update
   # without routine flake.lock churn. "bin" documents the expected command and
   # is checked manually in the command-resolution verification pass.
-  npmGlobalPackages = [
-    { pkg = "@openai/codex"; bin = "codex"; }
+  pnpmGlobalPackages = [
     { pkg = "@steipete/bird"; bin = "bird"; }
     { pkg = "@mariozechner/gccli"; bin = "gccli"; }
     { pkg = "agent-browser"; bin = "agent-browser"; }
@@ -78,10 +77,10 @@ let
     afterFirst = builtins.substring 1 (builtins.stringLength pkg) pkg;
   in lib.hasInfix "@" afterFirst;
   addLatest = pkg: if hasVersion pkg then pkg else pkg + "@latest";
-  npmInstallCommands = lib.concatMapStringsSep "\n    " (p: ''
+  pnpmInstallCommands = lib.concatMapStringsSep "\n    " (p: ''
     echo "  pnpm: ${p.pkg} -> ${p.bin}"
     ${pkgs.pnpm}/bin/pnpm add -g ${addLatest p.pkg} || echo "pnpm install ${p.pkg} failed, continuing..."
-  '') npmGlobalPackages;
+  '') pnpmGlobalPackages;
 
   # pnpm global directory (relative to $HOME, expanded at runtime)
   pnpmSubdir = if isDarwin then "Library/pnpm" else ".local/share/pnpm";
@@ -107,7 +106,7 @@ in {
     mkdir -p "$PNPM_HOME"
     ${pkgs.pnpm}/bin/pnpm remove -g @sourcegraph/amp >/dev/null 2>&1 || true
     rm -f "$PNPM_HOME/amp" "$PNPM_HOME/amp.cmd" "$PNPM_HOME/amp.ps1"
-    ${npmInstallCommands}
+    ${pnpmInstallCommands}
   '';
 
   # Amp ships a vendor installer that manages its own binary under ~/.amp and
@@ -203,8 +202,8 @@ in {
     atuin       # shell history search
 
     # Node.js runtime (for editor integration)
-    nodejs      # for editor integration and basic needs
-    pnpm        # activation-managed npm CLIs
+    nodejs      # includes npm for vendor-managed CLIs + editor integration
+    pnpm        # activation-managed npm-distributed CLIs
     bun         # fast JS runtime & bundler
 
     # Fast-moving agent CLIs use vendor package managers above. Claude Code is

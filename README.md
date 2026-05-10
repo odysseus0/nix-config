@@ -65,7 +65,7 @@ Three-layer configuration system following [mitchellh's patterns](https://github
 - **nixpkgs-unstable** — Dev tools, recent versions
 - **Homebrew** — GUI apps and Mac App Store apps
 - **Home Manager activation + pnpm/bun/uv** — Fast-moving vendor CLIs that should update without routine `flake.lock` churn
-- **Vendor self-managed** — Tools like Amp and Claude Code that install into their own user-owned roots and expose commands through `~/.local/bin`
+- **Vendor self-managed** — Tools like Codex, Amp, and Claude Code that install into user-owned roots and expose commands through PATH
 
 **Binary caches:**
 - `cache.nixos.org` — Official

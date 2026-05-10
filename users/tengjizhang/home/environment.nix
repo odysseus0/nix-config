@@ -5,6 +5,8 @@ let
   bunInstallDir = "$HOME/.cache/.bun";
   # pnpm global directory (macOS default)
   pnpmHome = if pkgs.stdenv.isDarwin then "$HOME/Library/pnpm" else "$HOME/.local/share/pnpm";
+  # npm global directory for CLIs whose vendor updater assumes npm ownership.
+  npmPrefix = "$HOME/.npm-global";
 in {
   home.sessionVariables = {
     EDITOR = "nvim";
@@ -13,6 +15,7 @@ in {
     OP_ACCOUNT = "my.1password.com";
     BUN_INSTALL = bunInstallDir;
     PNPM_HOME = pnpmHome;
+    NPM_CONFIG_PREFIX = npmPrefix;
 
     # Amp local CLIProxyAPI override. Temporarily disabled now that Amp can use
     # the default ampcode.com API path directly.
@@ -40,6 +43,7 @@ in {
     "$HOME/.cache/lm-studio/bin"
 
     # Package manager bins
+    "${npmPrefix}/bin"
     pnpmHome
     "${bunInstallDir}/bin"
     "$HOME/.bun/bin"
