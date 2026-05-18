@@ -126,6 +126,22 @@ in {
     fi
   '';
 
+  # Grok CLI ships a vendor installer that manages the binary under ~/.grok and
+  # symlinks grok/agent into ~/.local/bin. Suppress installer shell-rc edits:
+  # PATH ownership lives in home/environment.nix.
+  home.activation.updateGrokCli = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    echo "Updating Grok CLI via vendor installer..."
+    export PATH="${pkgs.curl}/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/.local/bin:$PATH"
+    mkdir -p "$HOME/.grok" "$HOME/.local/bin"
+    grok_install_script="$HOME/.grok/install.sh"
+    if ${pkgs.curl}/bin/curl -fsSL https://x.ai/cli/install.sh -o "$grok_install_script"; then
+      SHELL=/usr/bin/false GROK_BIN_DIR="$HOME/.grok/bin" ${pkgs.bash}/bin/bash "$grok_install_script" || echo "Grok vendor install failed, continuing..."
+      rm -f "$grok_install_script"
+    else
+      echo "Grok vendor installer download failed, continuing..."
+    fi
+  '';
+
   # Install bun global packages (from git repos)
   home.activation.updateBunTools = lib.hm.dag.entryAfter ["writeBoundary"] ''
     echo "Updating bun global packages..."

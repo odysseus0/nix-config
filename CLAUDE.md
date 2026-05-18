@@ -108,6 +108,7 @@ AI CLI ownership is chosen by update and reproducibility needs:
 **Vendor self-managed** is for tools with their own installer/update path and install root:
 - `codex` - OpenAI Codex CLI, installed in the npm global prefix because its self-updater expects npm ownership
 - `amp` - Amp CLI, installed under `~/.amp` by the upstream installer and symlinked into `~/.local/bin`
+- `grok` - xAI Grok CLI, installed under `~/.grok` by the upstream installer and symlinked into `~/.local/bin`
 - `claude` - Claude Code, installed under `~/.local/bin` and updated with `claude update`
 
 See `users/tengjizhang/home/packages.nix` for the full configuration.
