@@ -192,6 +192,8 @@ in {
     yq          # YAML processor
     clickhouse  # ClickHouse database client
     ffmpeg      # media processing
+    manim       # 3Blue1Brown-style animation engine (skill: .agents/skills/manim-video)
+    texlive.combined.scheme-full   # full TeX Live; backs Manim MathTex + any LaTeX
     sox         # audio recording/processing (used by Claude Code /voice)
     d2          # diagram-as-code tool
     actionlint  # GitHub Actions workflow lint
