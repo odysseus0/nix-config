@@ -148,6 +148,16 @@ in {
     ${lib.concatMapStringsSep "\n    " (pkg: ''${pkgs.bun}/bin/bun install -g --force ${pkg} || echo "bun install ${pkg} failed, continuing..."'') bunGlobalPackages}
   '';
 
+  # Guarantee vault tooling deps (zod, yaml) so the vault's pre-commit gate never
+  # fails-closed for lack of `bun install` on a fresh clone / after a backup restore.
+  # Idempotent + fast when up to date; non-fatal (the gate fail-closes as backstop).
+  home.activation.vaultToolingDeps = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    if [ -f "$HOME/vault/package.json" ]; then
+      echo "Installing vault tooling deps (bun)..."
+      ( cd "$HOME/vault" && ${pkgs.bun}/bin/bun install --frozen-lockfile ) || echo "vault bun install failed, continuing..."
+    fi
+  '';
+
   # Install uv tool packages (Python CLIs with heavy/ML deps)
   home.activation.updateUvTools = lib.hm.dag.entryAfter ["writeBoundary"] ''
     echo "Updating uv tool packages..."
