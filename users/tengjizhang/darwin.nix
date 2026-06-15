@@ -88,7 +88,11 @@
       "iina"
       
       # Cloud & Utilities
-      "google-drive"
+      {
+        name = "google-drive";
+        # Google Drive is an auto-updating cask, so normal brew bundle upgrades skip it.
+        greedy = true;
+      }
       
       # Fonts (Mitchell's selection)
       "font-jetbrains-mono-nerd-font"
