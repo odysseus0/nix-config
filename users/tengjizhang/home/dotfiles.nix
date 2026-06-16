@@ -77,6 +77,16 @@ let
   };
 
   toYAML = lib.generators.toYAML {};
+  homebrewTrust = builtins.toJSON {
+    trustedformulae = [
+      "openclaw/tap/discrawl"
+      "openclaw/tap/gogcli"
+    ];
+    trustedcasks = [
+      "mrkai77/cask/loop"
+      "steipete/tap/codexbar"
+    ];
+  };
 in
 {
   #---------------------------------------------------------------------
@@ -121,16 +131,11 @@ in
 
     # Homebrew tap trust is required by HOMEBREW_REQUIRE_TAP_TRUST.
     # Keep approvals scoped to the third-party entries declared in darwin.nix.
-    "homebrew/trust.json".text = builtins.toJSON {
-      trustedformulae = [
-        "openclaw/tap/discrawl"
-        "openclaw/tap/gogcli"
-      ];
-      trustedcasks = [
-        "mrkai77/cask/loop"
-        "steipete/tap/codexbar"
-      ];
-    };
+    "homebrew/trust.json".text = homebrewTrust;
+
+    # sudo darwin-rebuild does not preserve XDG_CONFIG_HOME, so Homebrew falls
+    # back to ~/.homebrew/trust.json during activation.
+    ".homebrew/trust.json".text = homebrewTrust;
 
     # gh-dash configs - generated from single source with theme variants
     "gh-dash/config-light.yml".text = toYAML (mkGhDashConfig catppuccinLatte);
