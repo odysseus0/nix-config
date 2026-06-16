@@ -12,7 +12,8 @@
     # Additional taps for specialized apps
     taps = [
       "mrkai77/cask"  # For Loop window manager
-      "steipete/tap"  # For CodexBar, bird, gogcli
+      "steipete/tap"  # For CodexBar, bird
+      "openclaw/tap"  # For gogcli and discrawl
     ];
 
     # GUI Applications via Homebrew casks
@@ -78,7 +79,7 @@
       "keymapp"
       "pika"
       "qflipper"
-      "loop"
+      "mrkai77/cask/loop"
       "stretchly"
       "macwhisper"
       
@@ -109,10 +110,10 @@
       # bird: installed from personal fork via activation script below
 
       # Clawdbot skill dependencies
-      "steipete/tap/gogcli"  # Google Workspace CLI (gog)
+      "openclaw/tap/gogcli"  # Google Workspace CLI (gog)
 
       "cliproxyapi"  # Unified proxy for AI coding CLIs (Claude, Gemini, Amp, Codex)
-      "discrawl"     # Discord archive to local SQLite via bot token (steipete/tap)
+      "openclaw/tap/discrawl"  # Discord archive to local SQLite via bot token
 
       # Agent coordination
       "beads"  # Git-backed DAG issue tracker for AI agents (installs dolt as dependency)

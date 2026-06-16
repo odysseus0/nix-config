@@ -119,6 +119,19 @@ in
       onlyBuiltDependencies[]=tree-sitter-bash
     '';
 
+    # Homebrew tap trust is required by HOMEBREW_REQUIRE_TAP_TRUST.
+    # Keep approvals scoped to the third-party entries declared in darwin.nix.
+    "homebrew/trust.json".text = builtins.toJSON {
+      trustedformulae = [
+        "openclaw/tap/discrawl"
+        "openclaw/tap/gogcli"
+      ];
+      trustedcasks = [
+        "mrkai77/cask/loop"
+        "steipete/tap/codexbar"
+      ];
+    };
+
     # gh-dash configs - generated from single source with theme variants
     "gh-dash/config-light.yml".text = toYAML (mkGhDashConfig catppuccinLatte);
     "gh-dash/config-dark.yml".text = toYAML (mkGhDashConfig catppuccinFrappe);
