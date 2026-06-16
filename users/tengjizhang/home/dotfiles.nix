@@ -107,6 +107,10 @@ in
     ".gitignore".source = ../gitignore;  # Global gitignore
     ".tmux.conf".source = ../tmux.conf;  # iOS-optimized (see comments in file)
 
+    # sudo darwin-rebuild does not preserve XDG_CONFIG_HOME, so Homebrew falls
+    # back to ~/.homebrew/trust.json during activation.
+    ".homebrew/trust.json".text = homebrewTrust;
+
   };
 
   #---------------------------------------------------------------------
@@ -132,10 +136,6 @@ in
     # Homebrew tap trust is required by HOMEBREW_REQUIRE_TAP_TRUST.
     # Keep approvals scoped to the third-party entries declared in darwin.nix.
     "homebrew/trust.json".text = homebrewTrust;
-
-    # sudo darwin-rebuild does not preserve XDG_CONFIG_HOME, so Homebrew falls
-    # back to ~/.homebrew/trust.json during activation.
-    ".homebrew/trust.json".text = homebrewTrust;
 
     # gh-dash configs - generated from single source with theme variants
     "gh-dash/config-light.yml".text = toYAML (mkGhDashConfig catppuccinLatte);
