@@ -120,7 +120,9 @@
     ];
 
     onActivation = {
-      cleanup = "zap";
+      # Homebrew 6 requires an explicit force flag for cleanup, and running it
+      # during every activation would remove unmanaged apps unexpectedly.
+      cleanup = "none";
       autoUpdate = true;
       upgrade = true;
     };

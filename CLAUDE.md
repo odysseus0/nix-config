@@ -130,7 +130,8 @@ Uses structured `settings` attribute (new format as of home-manager updates):
 
 ### Homebrew Integration
 
-- `onActivation.cleanup = "uninstall"` removes old formulas automatically
+- `onActivation.cleanup = "none"` avoids destructive Homebrew cleanup during every activation
+- Run `brew bundle cleanup --force` manually when you intentionally want to remove unmanaged formulae/casks/apps
 - Requires Mac App Store login for MAS apps
 - Activation script warns if not signed in
 
