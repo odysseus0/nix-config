@@ -69,6 +69,7 @@ let
     { pkg = "@mariozechner/pi-coding-agent"; bin = "pi"; }
     { pkg = "@jackwener/opencli"; bin = "opencli"; }
     { pkg = "@opentabs-dev/cli"; bin = "opentabs"; }
+    { pkg = "ntn"; bin = "ntn"; }
   ];
 
   # Only append @latest if package doesn't already have a version specifier
