@@ -99,6 +99,38 @@ let
   ];
 
 in {
+  # Vite+ is not packaged in current nixpkgs and upstream manages runtime
+  # shims under ~/.vite-plus. Keep the install root vendor-owned, but keep
+  # shell/PATH ownership in home/environment.nix by running the installer with
+  # a temporary HOME so it cannot mutate Home Manager shell files.
+  home.activation.updateVitePlus = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    echo "Updating Vite+ CLI via vendor installer..."
+    real_home="$HOME"
+    export VP_HOME="$real_home/.vite-plus"
+    mkdir -p "$VP_HOME"
+    vite_plus_installer="$VP_HOME/install.sh"
+    vite_plus_tmp_home="$(mktemp -d)"
+    cleanup_vite_plus_tmp_home() {
+      rm -rf "$vite_plus_tmp_home"
+    }
+    trap cleanup_vite_plus_tmp_home EXIT
+    if ${pkgs.curl}/bin/curl -fsSL https://vite.plus -o "$vite_plus_installer"; then
+      HOME="$vite_plus_tmp_home" \
+        VP_HOME="$VP_HOME" \
+        VP_NODE_MANAGER=yes \
+        ${pkgs.bash}/bin/bash "$vite_plus_installer" \
+        || echo "Vite+ vendor install failed, continuing..."
+      rm -f "$vite_plus_installer"
+      if [ -x "$VP_HOME/bin/vp" ]; then
+        "$VP_HOME/bin/vp" env setup || echo "Vite+ env setup failed, continuing..."
+      fi
+    else
+      echo "Vite+ vendor installer download failed, continuing..."
+    fi
+    trap - EXIT
+    cleanup_vite_plus_tmp_home
+  '';
+
   # Install fast-moving npm CLIs without making darwin-rebuild depend on their package freshness.
   home.activation.updateAiTools = lib.hm.dag.entryAfter ["writeBoundary"] ''
     echo "Updating fast-moving npm CLIs via pnpm..."
