@@ -55,6 +55,34 @@ let
       exec ${env}/bin/python "$@"
     '';
 
+  # Plannotator — browser-based review/annotation UI for generated specs and diffs.
+  #
+  # Upstream's installer also mutates agent hook state. Keep that out of
+  # activation: Nix owns the CLI and user-invoked shared skills; Codex Stop
+  # hooks remain opt-in/manual.
+  plannotatorVersion = "0.22.0";
+  plannotatorSrc = pkgs.fetchFromGitHub {
+    owner = "backnotprop";
+    repo = "plannotator";
+    rev = "v${plannotatorVersion}";
+    hash = "sha256-CbKxru0bNgCvkoQr973GnNWvcspar2MkNG4AsJBEYUk=";
+  };
+  plannotator = pkgs.stdenvNoCC.mkDerivation {
+    pname = "plannotator";
+    version = plannotatorVersion;
+    src = pkgs.fetchurl {
+      url = "https://github.com/backnotprop/plannotator/releases/download/v${plannotatorVersion}/plannotator-darwin-arm64";
+      hash = "sha256-e6utZ5avj36jGYvZYzqm8szmq5fF7GjC/eDnTkwqBlI=";
+    };
+    dontUnpack = true;
+    installPhase = ''
+      mkdir -p "$out/bin"
+      cp "$src" "$out/bin/plannotator"
+      chmod +x "$out/bin/plannotator"
+    '';
+    meta.mainProgram = "plannotator";
+  };
+
   # Fast-moving npm CLIs: Nix owns the desired set, pnpm owns freshness.
   # Use this for vendor-recommended npm installs or tools that should update
   # without routine flake.lock churn. "bin" documents the expected command and
@@ -129,6 +157,15 @@ in {
     fi
     trap - EXIT
     cleanup_vite_plus_tmp_home
+  '';
+
+  # Remove the installer-managed binary so the Nix profile is the command
+  # authority. The shared skills stay declarative below.
+  home.activation.removeInstallerPlannotatorCli = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    if [ -e "$HOME/.local/bin/plannotator" ]; then
+      echo "Removing installer-managed Plannotator CLI; Nix profile owns plannotator."
+      rm -f "$HOME/.local/bin/plannotator"
+    fi
   '';
 
   # Install fast-moving npm CLIs without making darwin-rebuild depend on their package freshness.
@@ -245,6 +282,9 @@ in {
     # Discord archival
     discordchatexporter-cli
 
+    # Review / annotation tooling
+    plannotator
+
     # Biomedical / arxiv paper search (CLI + Python SDK wrapper)
     paperclip
     paperclipPython
@@ -293,4 +333,10 @@ in {
     wrangler         # Cloudflare Workers CLI (deploy serverless functions)
 
   ];
+
+  home.file = {
+    ".agents/skills/plannotator-annotate".source = "${plannotatorSrc}/apps/skills/core/plannotator-annotate";
+    ".agents/skills/plannotator-last".source = "${plannotatorSrc}/apps/skills/core/plannotator-last";
+    ".agents/skills/plannotator-review".source = "${plannotatorSrc}/apps/skills/core/plannotator-review";
+  };
 }
