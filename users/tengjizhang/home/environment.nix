@@ -20,11 +20,6 @@ in {
     NPM_CONFIG_PREFIX = npmPrefix;
     VP_HOME = vitePlusHome;
 
-    # Amp local CLIProxyAPI override. Temporarily disabled now that Amp can use
-    # the default ampcode.com API path directly.
-    # AMP_URL = "http://localhost:8317";
-    # AMP_API_KEY = "amp-local-proxy-key";
-
     # Homebrew env vars
     HOMEBREW_PREFIX = "/opt/homebrew";
     HOMEBREW_CELLAR = "/opt/homebrew/Cellar";
