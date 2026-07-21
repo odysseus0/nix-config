@@ -35,6 +35,14 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Personal runtime layer (control loop over deployed contracts). Private
+    # repo — was users/tengjizhang/runtime/ in-tree here, moved out because
+    # registry.toml carries a WeChat account watch-path + personal ritual
+    # entries this (public) repo must not contain. Not yet pushed to GitHub;
+    # for local eval before that, override with:
+    #   --override-input runtime /Users/tengjizhang/runtime
+    runtime.url = "git+ssh://git@github.com/odysseus0/runtime";
+
   };
 
   outputs = { self, nixpkgs, home-manager, darwin, ... }@inputs: let

@@ -13,6 +13,9 @@
     ./home/secrets.nix
     # claudecode.nix removed - ~/.claude/ now git-tracked directly
     # See: ~/.claude/ for skills, commands, output-styles, profiles
+    # Personal runtime layer — moved out of this (public) repo to the
+    # private `runtime` flake input; was ./runtime/runtime.nix in-tree.
+    inputs.runtime.homeManagerModules.default
   ];
 
   # Make inputs available to all imported modules
