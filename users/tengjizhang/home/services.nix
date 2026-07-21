@@ -60,8 +60,16 @@
   # WatchPaths triggers decrypt + normalize into ~/.wechat/wechat.db when WeChat writes new data.
   # Query: sqlite3 ~/.wechat/wechat.db "..."
 
+  # SUPERSEDED by the runtime layer (private `runtime` flake input, see
+  # flake.nix + home-manager.nix): this agent is now generated as
+  # launchd.agents.chatlog-sync (Label com.runtime.chatlog-sync) from that
+  # repo's registry.toml [entries.chatlog-sync.exec] block, so the job is
+  # registered (not hand-declared) and watched. Disabled here rather than
+  # deleted — its WatchPaths (below) shares the runtime layer's registry
+  # entry verbatim, and keeping both enabled would double-run chatlog sync
+  # on every WeChat write.
   launchd.agents.chatlog = {
-    enable = true;
+    enable = false;
     config = {
       Label = "com.chatlog.sync";
       ProgramArguments = [ "${config.home.homeDirectory}/projects/chatlog/bin/chatlog" "sync" ];
