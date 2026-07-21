@@ -177,6 +177,21 @@
         "type": "github"
       }
     },
+    "home-ops": {
+      "locked": {
+        "lastModified": 1784597825,
+        "narHash": "sha256-Yhj0yZixWVUBP5SyICPZOYO8NbHpqVizOtqrQ5XA2rM=",
+        "owner": "odysseus0",
+        "repo": "home-ops",
+        "rev": "06bc8af83a1c014832b68869167d04b12b0e476e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "odysseus0",
+        "repo": "home-ops",
+        "type": "github"
+      }
+    },
     "nix": {
       "inputs": {
         "flake-parts": "flake-parts",
@@ -296,6 +311,7 @@
         "determinate": "determinate",
         "fish-hydro": "fish-hydro",
         "home-manager": "home-manager",
+        "home-ops": "home-ops",
         "nixpkgs": "nixpkgs_3",
         "nixpkgs-stable": "nixpkgs-stable",
         "sops-nix": "sops-nix"
