@@ -2,7 +2,18 @@
 
 let
   isDarwin = pkgs.stdenv.isDarwin;
-  pkgs-stable = inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system};
+  # NOT inputs.nixpkgs-stable.legacyPackages.${system} — that flake output is
+  # pre-instantiated with the default nixpkgs config (allowUnfree = false)
+  # regardless of this system's `nixpkgs.config.allowUnfree = true` module
+  # option (machines/macbook-m4-max.nix + lib/mksystem.nix), since it never
+  # goes through the module system. That mismatch was the one thing forcing
+  # `--impure`/`NIXPKGS_ALLOW_UNFREE=1` on every build (2026-07-20 audit F5:
+  # _1password-cli below is unfree and comes from pkgs-stable) — re-importing
+  # explicitly with the same allowUnfree here makes evaluation pure again.
+  pkgs-stable = import inputs.nixpkgs-stable {
+    system = pkgs.stdenv.hostPlatform.system;
+    config.allowUnfree = true;
+  };
 
   # DiscordChatExporter CLI — prebuilt binary (nixpkgs version is 2 years stale)
   discordchatexporter-cli = pkgs.stdenv.mkDerivation rec {

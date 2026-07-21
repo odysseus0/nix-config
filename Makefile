@@ -2,20 +2,24 @@
 # Based on Mitchell Hashimoto's approach
 
 NIXNAME = macbook-m4-max
-NIXPKGS_ALLOW_UNFREE = 1
 NIXSYSTEM = .\#darwinConfigurations.${NIXNAME}.system
-NIXBUILD = NIXPKGS_ALLOW_UNFREE=1 nix build --impure "${NIXSYSTEM}"
+# --impure and NIXPKGS_ALLOW_UNFREE were redundant with the declarative
+# `nixpkgs.config.allowUnfree = true` (machines/macbook-m4-max.nix +
+# lib/mksystem.nix) — removed 2026-07-20 (audit F5) after verifying a pure
+# `nix build .#darwinConfigurations.macbook-m4-max.system --dry-run`
+# evaluates cleanly with neither flag nor env var set.
+NIXBUILD = nix build "${NIXSYSTEM}"
 
 .PHONY: help switch test build clean update update-commit update-commit-push dry-run update-nixpkgs
 
 # Default target - full system switch
 switch:
-	sudo NIXPKGS_ALLOW_UNFREE=1 darwin-rebuild switch --impure --flake ".#${NIXNAME}"
+	sudo darwin-rebuild switch --flake ".#${NIXNAME}"
 
 # Test the configuration without switching
 test:
 	${NIXBUILD}
-	sudo NIXPKGS_ALLOW_UNFREE=1 ./result/sw/bin/darwin-rebuild test --impure --flake ".#${NIXNAME}"
+	sudo ./result/sw/bin/darwin-rebuild test --flake ".#${NIXNAME}"
 
 # Build only (no activation)
 build:
