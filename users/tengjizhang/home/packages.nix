@@ -126,6 +126,7 @@ in {
       HOME="$vite_plus_tmp_home" \
         VP_HOME="$VP_HOME" \
         VP_NODE_MANAGER=yes \
+        PATH="${lib.makeBinPath [ pkgs.curl pkgs.gnutar pkgs.gzip ]}:$PATH" \
         ${pkgs.bash}/bin/bash "$vite_plus_installer" \
         || echo "Vite+ vendor install failed, continuing..."
       rm -f "$vite_plus_installer"
