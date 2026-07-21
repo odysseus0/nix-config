@@ -123,8 +123,13 @@
       # Homebrew 6 requires an explicit force flag for cleanup, and running it
       # during every activation would remove unmanaged apps unexpectedly.
       cleanup = "none";
-      autoUpdate = true;
-      upgrade = true;
+      # Switch materializes declarations only: ensure declared casks/brews are
+      # PRESENT, never update/upgrade them in the activation path (2026-07-20
+      # ruling: upgrades are explicit, network-dependent steps — `make
+      # brew-upgrade` — not a side effect of every rebuild; a switch on hotel
+      # wifi must not download 24 casks).
+      autoUpdate = false;
+      upgrade = false;
     };
 
     # Mac App Store apps (modern syntax)

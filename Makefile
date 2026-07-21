@@ -76,3 +76,9 @@ help:
 
 # Make 'switch' the default target
 .DEFAULT_GOAL := switch
+
+# Explicit Homebrew upgrade — deliberately OUT of the switch path (2026-07-20
+# ruling: switch materializes declarations; upgrades are a separate, explicit,
+# network-dependent step).
+brew-upgrade:
+	brew update && brew upgrade
