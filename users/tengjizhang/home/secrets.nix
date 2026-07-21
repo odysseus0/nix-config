@@ -26,6 +26,10 @@
     secrets."discord-user-token" = {};
     secrets."discord-bot-token" = {};
     secrets."linear-api-key" = {};
+    secrets."trace-archive-r2-access-key-id" = {};
+    secrets."trace-archive-r2-secret-access-key" = {};
+    secrets."trace-archive-r2-crypt-password" = {};
+    secrets."trace-archive-r2-crypt-salt" = {};
 
     # Shell environment variables — sourced by all shells via home.sessionVariablesExtra.
     # home-manager runs hm-session-vars.sh through babelfish for fish, sources directly for zsh.
@@ -63,6 +67,27 @@
           upstream-url: "https://ampcode.com"
           upstream-api-key: "${config.sops.placeholder."cliproxyapi-upstream-api-key"}"
           restrict-management-to-localhost: true
+      '';
+    };
+
+    # trace-archive-r2.env — machine-tier R2 credentials for the
+    # trace-archive-sync launchd job (home-ops/trace-archive/bin/sync.sh).
+    # Migrated 2026-07-20 from op-at-runtime per the runtime-layer design
+    # doc's "same-day amendments" secrets-tiering note: an unattended
+    # scheduled run must not depend on the 1Password app being unlocked.
+    # No account-identifying content here (unlike chatlog-server.json), so
+    # this stays entirely in the public nix-config tree — only the
+    # *encrypted values* are sensitive, and sops handles that. sync.sh
+    # sources this file when present and falls back to `op read` otherwise
+    # (dual-path until one green scheduled run confirms the sops path,
+    # then the op fallback is deleted).
+    templates."trace-archive-r2.env" = {
+      path = "${config.home.homeDirectory}/.config/trace-archive/r2.env";
+      content = ''
+        export RCLONE_CONFIG_TRACES_ACCESS_KEY_ID="${config.sops.placeholder."trace-archive-r2-access-key-id"}"
+        export RCLONE_CONFIG_TRACES_SECRET_ACCESS_KEY="${config.sops.placeholder."trace-archive-r2-secret-access-key"}"
+        export TRACE_ARCHIVE_CRYPT_PASSWORD="${config.sops.placeholder."trace-archive-r2-crypt-password"}"
+        export TRACE_ARCHIVE_CRYPT_SALT="${config.sops.placeholder."trace-archive-r2-crypt-salt"}"
       '';
     };
 
