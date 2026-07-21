@@ -74,6 +74,7 @@
       "appcleaner" 
       "jordanbaird-ice"
       "qlmarkdown"
+      "swiftbar"  # menu-bar glance surface for the runtime layer (~/home-ops/runtime/runtime.30s.ts)
       "keymapp"
       "pika"
       "qflipper"
