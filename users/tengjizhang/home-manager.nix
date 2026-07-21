@@ -23,7 +23,12 @@
     # module reads config.sops.placeholder.* directly, so the secret
     # *declarations* in ./home/secrets.nix are what actually wire it up.
     inputs.home-ops.homeManagerModules.chatlog
+    # Accepted code-mode gateway pilot. Install-only: connections and OAuth
+    # remain app-owned runtime state, never Nix declarations.
+    inputs.home-ops.homeManagerModules.executor
   ];
+
+  executor.enable = true;
 
   # Make inputs available to all imported modules
   _module.args.inputs = inputs;
