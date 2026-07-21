@@ -38,7 +38,6 @@
       "orbstack"
       "tableplus"
       "zed"
-      "chromedriver"
       "proxyman"
 
       # Network & Security

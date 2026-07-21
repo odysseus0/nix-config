@@ -84,7 +84,6 @@ let
   pnpmGlobalPackages = [
     { pkg = "@steipete/bird"; bin = "bird"; }
     { pkg = "neonctl"; bin = "neonctl"; }
-    { pkg = "@googleworkspace/cli"; bin = "gws"; }
     { pkg = "@mariozechner/pi-coding-agent"; bin = "pi"; }
   ];
 
@@ -105,7 +104,6 @@ let
   # uv tool packages (Python CLIs with heavy/ML deps)
   uvToolPackages = [
     "mlx-qwen3-asr"   # Qwen3-ASR speech recognition for Apple Silicon
-    "gam7"             # Google Workspace admin CLI (GAM)
   ];
 
 in {
@@ -211,7 +209,6 @@ in {
     just        # command runner (Makefile alternative)
     sd          # modern sed replacement
     yq          # YAML processor
-    clickhouse  # ClickHouse database client
     ffmpeg      # media processing
     sox         # audio recording/processing (used by Claude Code /voice)
     d2          # diagram-as-code tool
@@ -251,7 +248,6 @@ in {
     go              # Go programming language
 
     # Blockchain development tools
-    foundry         # Foundry toolchain (forge, cast, anvil, chisel)
 
     # Infrastructure tools
     terraform       # Infrastructure as code
