@@ -179,11 +179,11 @@
     },
     "home-ops": {
       "locked": {
-        "lastModified": 1784604249,
-        "narHash": "sha256-5RHZrV07MnsrDnhAWz1MM8YS5uFuh4ttL+JBQvbwyLc=",
+        "lastModified": 1784605046,
+        "narHash": "sha256-R5/9UbtXKuxc2WcdITHRK61pbb0RIJMwsFmfvQbVDCM=",
         "owner": "odysseus0",
         "repo": "home-ops",
-        "rev": "7db5317f931ceee93b8a12cba28b3dccb990febd",
+        "rev": "2c8a354bb9229a381e03e08c361ec9fbed873b12",
         "type": "github"
       },
       "original": {
