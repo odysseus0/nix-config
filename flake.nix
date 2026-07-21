@@ -35,13 +35,15 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Personal runtime layer (control loop over deployed contracts). Private
-    # repo — was users/tengjizhang/runtime/ in-tree here, moved out because
-    # registry.toml carries a WeChat account watch-path + personal ritual
-    # entries this (public) repo must not contain. Not yet pushed to GitHub;
-    # for local eval before that, override with:
-    #   --override-input runtime /Users/tengjizhang/runtime
-    runtime.url = "git+ssh://git@github.com/odysseus0/runtime";
+    # Personal-ops monorepo (runtime layer + chatlog config + future life-ops
+    # machinery). Private repo — was users/tengjizhang/runtime/ in-tree here,
+    # moved out because it carries a WeChat account id + personal ritual
+    # entries this (public) repo must not contain. Renamed runtime -> home-ops
+    # 2026-07-20 (home-ops community naming; absorbs more than just the
+    # runtime layer now). Not yet pushed to GitHub; for local eval before
+    # that, override with:
+    #   --override-input home-ops /Users/tengjizhang/home-ops
+    home-ops.url = "git+ssh://git@github.com/odysseus0/home-ops";
 
   };
 

@@ -66,20 +66,12 @@
       '';
     };
 
-    templates."chatlog-server.json" = {
-      path = "${config.home.homeDirectory}/.chatlog/chatlog-server.json";
-      content = ''
-        {
-          "type": "wechat",
-          "platform": "darwin",
-          "version": 4,
-          "full_version": "4.0.3.80",
-          "data_dir": "/Users/tengjizhang/Library/Containers/com.tencent.xinWeChat/Data/Documents/xwechat_files/WXID_REDACTED",
-          "data_key": "${config.sops.placeholder."chatlog-data-key"}",
-          "img_key": "${config.sops.placeholder."chatlog-img-key"}",
-          "work_dir": "/Users/tengjizhang/.local/share/chatlog"
-        }
-      '';
-    };
+    # chatlog-server.json (WeChat account id + these two secrets' placeholders)
+    # is rendered by the private `home-ops` flake input's chatlog module now —
+    # see users/tengjizhang/home-manager.nix and home-ops/README.md "chatlog".
+    # The secret *declarations* above (chatlog-data-key, chatlog-img-key)
+    # stay here: names aren't sensitive, and sops-nix's placeholder
+    # substitution works across the merged config tree regardless of which
+    # module declares the `sops.templates` entry that consumes them.
   };
 }

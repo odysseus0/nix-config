@@ -56,29 +56,16 @@
 
   # Chatlog - WeChat chat history sync
   # Secrets: sops-nix → secrets/secrets.yaml (chatlog-data-key, chatlog-img-key)
-  # Config written to ~/.chatlog/chatlog-server.json via sops template in secrets.nix
-  # WatchPaths triggers decrypt + normalize into ~/.wechat/wechat.db when WeChat writes new data.
+  # Config + the (superseded, disabled) old launchd.agents.chatlog now live
+  # in the private `home-ops` flake input's chatlog module — both embedded
+  # the WeChat account id and its Tencent-app container path, which this
+  # public repo must not contain. See users/tengjizhang/home-manager.nix
+  # (inputs.home-ops.homeManagerModules.chatlog) and home-ops/README.md
+  # "chatlog". The live agent is launchd.agents.chatlog-sync (Label
+  # com.runtime.chatlog-sync), generated from that repo's
+  # runtime/registry.toml [entries.chatlog-sync.exec] block — registered,
+  # not hand-declared, and watched by the runtime layer.
   # Query: sqlite3 ~/.wechat/wechat.db "..."
-
-  # SUPERSEDED by the runtime layer (private `runtime` flake input, see
-  # flake.nix + home-manager.nix): this agent is now generated as
-  # launchd.agents.chatlog-sync (Label com.runtime.chatlog-sync) from that
-  # repo's registry.toml [entries.chatlog-sync.exec] block, so the job is
-  # registered (not hand-declared) and watched. Disabled here rather than
-  # deleted — its WatchPaths (below) shares the runtime layer's registry
-  # entry verbatim, and keeping both enabled would double-run chatlog sync
-  # on every WeChat write.
-  launchd.agents.chatlog = {
-    enable = false;
-    config = {
-      Label = "com.chatlog.sync";
-      ProgramArguments = [ "${config.home.homeDirectory}/projects/chatlog/bin/chatlog" "sync" ];
-      WatchPaths = [ "/Users/tengjizhang/Library/Containers/com.tencent.xinWeChat/Data/Documents/xwechat_files/WXID_REDACTED/db_storage/message" ];
-      ThrottleInterval = 30;
-      StandardOutPath = "${config.home.homeDirectory}/Library/Logs/chatlog.log";
-      StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/chatlog.error.log";
-    };
-  };
 
   # Prune meeting audio files older than 30 days.
   # Audio Hijack writes two-track recordings here; transcripts land in vault inbox.
