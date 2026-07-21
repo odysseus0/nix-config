@@ -15,23 +15,6 @@ let
     config.allowUnfree = true;
   };
 
-  # DiscordChatExporter CLI — prebuilt binary (nixpkgs version is 2 years stale)
-  discordchatexporter-cli = pkgs.stdenv.mkDerivation rec {
-    pname = "discordchatexporter-cli";
-    version = "2.47";
-    src = pkgs.fetchzip {
-      url = "https://github.com/Tyrrrz/DiscordChatExporter/releases/download/${version}/DiscordChatExporter.Cli.osx-arm64.zip";
-      hash = "sha256-Lq/c7WTV8abxlxZ9LjK8dfN1fGGx8xkduuLBUoSKLSs=";
-      stripRoot = false;
-    };
-    installPhase = ''
-      mkdir -p $out/bin
-      cp -r $src/* $out/bin/
-      chmod +x $out/bin/DiscordChatExporter.Cli
-    '';
-    meta.mainProgram = "DiscordChatExporter.Cli";
-  };
-
   # Paperclip — biomedical paper search CLI + Python SDK.
   # Wheel served from upstream (no PyPI).
   #
@@ -100,15 +83,9 @@ let
   # is checked manually in the command-resolution verification pass.
   pnpmGlobalPackages = [
     { pkg = "@steipete/bird"; bin = "bird"; }
-    { pkg = "@mariozechner/gccli"; bin = "gccli"; }
-    { pkg = "agent-browser"; bin = "agent-browser"; }
     { pkg = "neonctl"; bin = "neonctl"; }
     { pkg = "@googleworkspace/cli"; bin = "gws"; }
-    { pkg = "ghcrawl"; bin = "ghcrawl"; }
     { pkg = "@mariozechner/pi-coding-agent"; bin = "pi"; }
-    { pkg = "@jackwener/opencli"; bin = "opencli"; }
-    { pkg = "@opentabs-dev/cli"; bin = "opentabs"; }
-    { pkg = "ntn"; bin = "ntn"; }
   ];
 
   # Only append @latest if package doesn't already have a version specifier
@@ -125,14 +102,8 @@ let
   # pnpm global directory (relative to $HOME, expanded at runtime)
   pnpmSubdir = if isDarwin then "Library/pnpm" else ".local/share/pnpm";
 
-  # Bun global packages (installed from git repos)
-  bunGlobalPackages = [
-    "https://github.com/tobi/qmd"  # Quick Markdown search for Obsidian
-  ];
-
   # uv tool packages (Python CLIs with heavy/ML deps)
   uvToolPackages = [
-    "mlx-whisper"      # Whisper transcription optimized for Apple Silicon
     "mlx-qwen3-asr"   # Qwen3-ASR speech recognition for Apple Silicon
     "gam7"             # Google Workspace admin CLI (GAM)
   ];
@@ -207,28 +178,6 @@ in {
     fi
   '';
 
-  # Grok CLI ships a vendor installer that manages the binary under ~/.grok and
-  # symlinks grok/agent into ~/.local/bin. Suppress installer shell-rc edits:
-  # PATH ownership lives in home/environment.nix.
-  home.activation.updateGrokCli = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    echo "Updating Grok CLI via vendor installer..."
-    export PATH="${pkgs.curl}/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/.local/bin:$PATH"
-    mkdir -p "$HOME/.grok" "$HOME/.local/bin"
-    grok_install_script="$HOME/.grok/install.sh"
-    if ${pkgs.curl}/bin/curl -fsSL https://x.ai/cli/install.sh -o "$grok_install_script"; then
-      SHELL=/usr/bin/false GROK_BIN_DIR="$HOME/.grok/bin" ${pkgs.bash}/bin/bash "$grok_install_script" || echo "Grok vendor install failed, continuing..."
-      rm -f "$grok_install_script"
-    else
-      echo "Grok vendor installer download failed, continuing..."
-    fi
-  '';
-
-  # Install bun global packages (from git repos)
-  home.activation.updateBunTools = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    echo "Updating bun global packages..."
-    ${lib.concatMapStringsSep "\n    " (pkg: ''${pkgs.bun}/bin/bun install -g --force ${pkg} || echo "bun install ${pkg} failed, continuing..."'') bunGlobalPackages}
-  '';
-
   # Guarantee vault tooling deps (zod, yaml) so the vault's pre-commit gate never
   # fails-closed for lack of `bun install` on a fresh clone / after a backup restore.
   # Idempotent + fast when up to date; non-fatal (the gate fail-closes as backstop).
@@ -283,15 +232,10 @@ in {
     yq          # YAML processor
     clickhouse  # ClickHouse database client
     ffmpeg      # media processing
-    manim       # 3Blue1Brown-style animation engine (skill: .agents/skills/manim-video)
-    texlive.combined.scheme-full   # full TeX Live; backs Manim MathTex + any LaTeX
     sox         # audio recording/processing (used by Claude Code /voice)
     d2          # diagram-as-code tool
     actionlint  # GitHub Actions workflow lint
     shellcheck  # shell lint used by actionlint for run blocks
-
-    # Discord archival
-    discordchatexporter-cli
 
     # Review / annotation tooling
     plannotator
