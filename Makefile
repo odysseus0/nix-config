@@ -3,17 +3,34 @@
 
 NIXNAME = macbook-m4-max
 NIXSYSTEM = .\#darwinConfigurations.${NIXNAME}.system
+HOME_ACTIVATION = .\#darwinConfigurations.${NIXNAME}.config.home-manager.users.${USER}.home.activationPackage
 # --impure and NIXPKGS_ALLOW_UNFREE were redundant with the declarative
 # `nixpkgs.config.allowUnfree = true` (machines/macbook-m4-max.nix +
 # lib/mksystem.nix) — removed 2026-07-20 (audit F5) after verifying a pure
 # `nix build .#darwinConfigurations.macbook-m4-max.system --dry-run`
 # evaluates cleanly with neither flag nor env var set.
 NIXBUILD = nix build "${NIXSYSTEM}"
+HOMEBUILD = nix build --no-link "${HOME_ACTIVATION}"
 
-.PHONY: help switch test build clean update update-commit update-commit-push dry-run update-nixpkgs
+.PHONY: help home-switch home-build switch system-switch test build clean update update-commit update-commit-push dry-run update-nixpkgs
 
-# Default target - full system switch
-switch:
+# Activate only the existing Home Manager subconfiguration. This evaluates the
+# exact module embedded in nix-darwin, so there is no second profile or source
+# of truth, and routine user-level changes remain remotely operable without
+# administrator authentication.
+home-switch:
+	@generation="$$(nix build --no-link --print-out-paths "${HOME_ACTIVATION}")"; \
+	"$$generation/activate"
+
+# Build only the user activation package (no activation, no result symlink).
+home-build:
+	${HOMEBUILD}
+
+# Full-system activation remains an explicit supervised boundary. Keep the old
+# target as a compatibility alias for muscle memory and external instructions.
+switch: system-switch
+
+system-switch:
 	sudo darwin-rebuild switch --flake ".#${NIXNAME}"
 
 # Test the configuration without switching
@@ -63,7 +80,10 @@ update-commit-push: update-commit
 # Show help
 help:
 	@echo "Available targets:"
-	@echo "  switch              - Build and activate the system configuration (default)"
+	@echo "  home-switch         - Activate user configuration without sudo (default)"
+	@echo "  home-build          - Build user configuration without activation"
+	@echo "  system-switch       - Build and activate the full system (requires sudo)"
+	@echo "  switch              - Compatibility alias for system-switch"
 	@echo "  test                - Build and test configuration without activation"
 	@echo "  build               - Build configuration only"
 	@echo "  dry-run             - Show what needs to be built/downloaded"
@@ -74,8 +94,10 @@ help:
 	@echo "  clean               - Remove build artifacts"
 	@echo "  help                - Show this help message"
 
-# Make 'switch' the default target
-.DEFAULT_GOAL := switch
+# Routine configuration changes are user-scoped; make the remotely operable
+# path the default. Use system-switch when a change genuinely affects macOS,
+# nix-daemon, Homebrew, or another root-owned surface.
+.DEFAULT_GOAL := home-switch
 
 # Explicit Homebrew upgrade — deliberately OUT of the switch path (2026-07-20
 # ruling: switch materializes declarations; upgrades are a separate, explicit,
