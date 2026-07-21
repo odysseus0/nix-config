@@ -13,7 +13,7 @@
     taps = [
       "mrkai77/cask"  # For Loop window manager
       "steipete/tap"  # For CodexBar, bird
-      "openclaw/tap"  # For gogcli and discrawl
+      "openclaw/tap"  # For gogcli
     ];
 
     # GUI Applications via Homebrew casks
@@ -37,11 +37,9 @@
       "visual-studio-code@insiders"
       "orbstack"
       "tableplus"
-      "transmit"
       "zed"
       "chromedriver"
       "proxyman"
-      "rapidapi"
 
       # Network & Security
       "tailscale-app"
@@ -104,7 +102,7 @@
     brews = [
       "mas"  # Mac App Store CLI
       "mole"  # Mac system optimization (mo command)
-      "sqlite"  # SQLite with extension support (required by qmd)
+      "sqlite"  # SQLite with extension support (FTS5 etc.; used by zk, chatlog/wechat queries)
       "zk"  # Zettelkasten CLI - backlinks, orphans, link analysis for Obsidian vault
       "telegram-downloader"  # tdl: Telegram message export/sync with takeout API support
       # bird: installed from personal fork via activation script below
@@ -113,7 +111,6 @@
       "openclaw/tap/gogcli"  # Google Workspace CLI (gog)
 
       "cliproxyapi"  # Unified proxy for AI coding CLIs (Claude, Gemini, Amp, Codex)
-      "openclaw/tap/discrawl"  # Discord archive to local SQLite via bot token
 
       # Agent coordination
       "beads"  # Git-backed DAG issue tracker for AI agents (installs dolt as dependency)
