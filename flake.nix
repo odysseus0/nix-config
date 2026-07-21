@@ -40,10 +40,12 @@
     # moved out because it carries a WeChat account id + personal ritual
     # entries this (public) repo must not contain. Renamed runtime -> home-ops
     # 2026-07-20 (home-ops community naming; absorbs more than just the
-    # runtime layer now). Not yet pushed to GitHub; for local eval before
-    # that, override with:
+    # runtime layer now). github: fetcher, not git+ssh — this machine auths
+    # to GitHub via HTTPS + gh token only (no SSH keys); private-repo fetch
+    # needs `access-tokens = github.com=<token>` in ~/.config/nix/nix.conf.
+    # For local eval without network:
     #   --override-input home-ops /Users/tengjizhang/home-ops
-    home-ops.url = "git+ssh://git@github.com/odysseus0/home-ops";
+    home-ops.url = "github:odysseus0/home-ops";
 
   };
 
