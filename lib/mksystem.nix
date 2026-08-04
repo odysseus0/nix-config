@@ -37,7 +37,16 @@ in systemFunc {
     userOSConfig
     home-manager.home-manager {
       home-manager.useGlobalPkgs = true;
-      home-manager.useUserPackages = true;
+      # false: home.packages live in the USER profile
+      # (~/.local/state/nix/profiles/home-manager), so `make home-switch`
+      # delivers package changes without sudo — the Makefile's declared
+      # design ("routine changes remotely operable without administrator
+      # authentication") was silently broken by `true`, which routes
+      # packages into root-owned /etc/profiles/per-user that only a full
+      # darwin-rebuild rewrites (found 2026-08-04: a home-switch "succeeded"
+      # while the new package never reached PATH). `make switch` remains the
+      # boundary for genuinely system-scoped surfaces only.
+      home-manager.useUserPackages = false;
       home-manager.backupFileExtension = "backup";
       home-manager.sharedModules = [ inputs.sops-nix.homeManagerModules.sops ];
       home-manager.users.${user} = import userHMConfig {
