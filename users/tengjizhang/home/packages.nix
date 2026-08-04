@@ -34,6 +34,18 @@ let
     exec ${pkgs.nodejs}/bin/npx -y neonctl@2.43.0 "$@"
   '';
 
+  # pi — VENDOR-OWNED (runtime resolution), NOT the llm-agents.nix `pi`.
+  # pi migrated orgs: @mariozechner/pi-coding-agent froze at 0.73.1
+  # (2026-05-07, dead) and development continues as
+  # @earendil-works/pi-coding-agent (0.83.0 as of 2026-07-29, confirmed by
+  # George 2026-08-04). llm-agents.nix still tracks the dead scope, so its
+  # package is three months stale — repoint requested upstream. Graduation
+  # trigger: llm-agents.nix (or nixpkgs) ships @earendil-works, then move pi
+  # back to the store-owned list and delete this wrapper.
+  pi = pkgs.writeShellScriptBin "pi" ''
+    exec ${pkgs.nodejs}/bin/npx -y @earendil-works/pi-coding-agent@0.83.0 "$@"
+  '';
+
   # Store-owned AI agent CLIs. Consumed via llm-agents.nix's own
   # `packages.<system>` output rather than its overlay — see flake.nix's
   # comment on `inputs.llm-agents` for why (nixpkgs version skew breaks the
@@ -214,8 +226,9 @@ in {
     nodejs      # includes npm
     bun         # fast JS runtime & bundler
 
-    # VENDOR-OWNED (see `neonctl` binding above; runtime npm resolution)
+    # VENDOR-OWNED (see bindings above; runtime npm resolution, pinned)
     neonctl
+    pi
 
     # Programming languages
     deno            # TypeScript/JavaScript runtime
@@ -255,7 +268,8 @@ in {
     claude-code
     codex
     amp
-    pi            # @mariozechner/pi-coding-agent
+    # pi deliberately absent: llm-agents' pi tracks the dead @mariozechner
+    # scope — see the vendor-owned `pi` wrapper above for the story.
     agent-browser
     qmd
     beads         # mainProgram is `bd`
