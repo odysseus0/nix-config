@@ -62,13 +62,14 @@ update-nixpkgs:
 # their manifest (users/tengjizhang/home/uv-tools-manifest.nix). Network-
 # dependent, explicit, never run from `switch`/activation — that's the whole
 # point of the two-clock split (see README §The two clocks). VENDOR-OWNED
-# tools (Vite+, grok, ...) are not touched here; they update themselves.
+# tools (Vite+) are not touched here; they update themselves.
 # Built via `nix build` rather than assuming uv-tools-reconcile is on PATH:
 # that works before the first switch and can't be shadowed by a stale PATH
 # entry — don't "simplify" this to a bare command invocation.
 update-tools:
 	@bin="$$(nix build --no-link --print-out-paths '.#darwinConfigurations.${NIXNAME}.pkgs.uv-tools-reconcile')/bin/uv-tools-reconcile"; \
 	"$$bin"
+	@if command -v executor-update >/dev/null 2>&1; then executor-update; fi  # home-ops executor module's clock
 
 # Update flake inputs and auto-commit
 update-commit: update

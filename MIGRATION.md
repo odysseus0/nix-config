@@ -105,9 +105,8 @@ Review the manifest first if you want to keep any of those; add them to
 
 ## Not migrated — check before relying on them
 
-- **grok** (`~/.grok`): left vendor-owned, untouched. Confirm you still use
-  it; if not, it can be dropped from PATH entirely (see the comment in
-  `home/packages.nix`).
+- **grok** (`~/.grok`): RESOLVED 2026-08-04 — George ruled it unused;
+  `~/.grok` and the `~/.local/bin/grok` symlink deleted.
 - **gccli, ghcrawl, opencli, @googleworkspace/cli, @opentabs-dev/cli, ntn**:
   installed pnpm-globally on this machine but were never actually declared
   in the old `pnpmGlobalPackages` list (that list only had `bird`, `neonctl`,

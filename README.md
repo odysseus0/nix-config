@@ -32,7 +32,7 @@ exactly one of three tiers:
 |---|---|---|---|
 | **Store-owned** (default) | Nix | `make switch` | `pkgs.ripgrep`, the AI agent CLIs via `llm-agents.nix` |
 | **Manifest-owned** | The domain's native executor, reconciling to a Nix-declared list | `make update-tools`, explicit | `uv tool install/uninstall` against `home/uv-tools-manifest.nix` |
-| **Vendor-owned** | The tool's own installer/updater | Whenever the vendor updates it | Vite+, grok — Nix only wires PATH |
+| **Vendor-owned** | The tool's own installer/updater | Whenever the vendor updates it | Vite+ — Nix only wires PATH |
 
 Store-owned is the default and the preferred outcome: Nix pins the exact
 binary, and the only way it changes is a deliberate `make switch`. PATH

@@ -157,9 +157,8 @@ in {
 
   # VENDOR-OWNED exceptions deliberately absent from this list (own
   # installer/updater owns the install root; Nix wires PATH only, in
-  # home/environment.nix): Vite+ (graduation triggers there) and grok
-  # (~/.grok — llm-agents.nix doesn't package it; confirm still in use, see
-  # MIGRATION.md, else drop its PATH claim entirely).
+  # home/environment.nix): Vite+ (graduation triggers there). grok was
+  # dropped 2026-08-04 (George: unused) — ~/.grok deleted.
   home.packages = with pkgs; [
     # Version control & GitHub
     git
