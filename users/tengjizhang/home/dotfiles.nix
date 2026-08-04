@@ -27,9 +27,8 @@ let
       "flashbots/devops" = "~/projects/devops";
       "flashbots/go-utils" = "~/projects/go-utils";
       "flashbots/protect-of-api" = "~/projects/protect-of-api";
-      # bird's upstream repo entry removed here for the same reason it's
-      # absent from packages.nix — the repo is private; see darwin.nix's
-      # comment near the old pnpm bird install for the ownership story.
+      # bird's upstream repo entry removed — the repo is private; the tool
+      # ships via the home-ops input (see home-manager.nix).
       "openclaw/openclaw" = "~/projects/openclaw";
     };
     keybindings = {
@@ -123,15 +122,8 @@ in
     "gh/config.yml".source = ../gh-config.yml;
     "ghostty/config".source = ../ghostty;
 
-    # pnpm config - allow build scripts only for specific packages
-    # These are native modules needed for AI CLI tools functionality
-    "pnpm/rc".text = ''
-      onlyBuiltDependencies[]=keytar
-      onlyBuiltDependencies[]=node-pty
-      onlyBuiltDependencies[]=protobufjs
-      onlyBuiltDependencies[]=sharp
-      onlyBuiltDependencies[]=tree-sitter-bash
-    '';
+    # pnpm config removed 2026-08-04 with the pnpm tier (agent CLIs are
+    # store-owned via llm-agents.nix now).
 
     # Homebrew tap trust is required by HOMEBREW_REQUIRE_TAP_TRUST.
     # Keep approvals scoped to the third-party entries declared in darwin.nix.

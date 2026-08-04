@@ -5,7 +5,8 @@ My entire computing environment, version-controlled. Declarative macOS using nix
 ## Quick Reference
 
 ```bash
-make switch       # Apply configuration changes (offline, rollback-complete)
+make              # = make home-switch: activate home config only (routine path)
+make switch       # Apply full system configuration (offline, rollback-complete)
 make update       # Update flake inputs
 make update-tools # Reconcile manifest-owned tools (uv) to their manifest
 make test         # Test without activating
@@ -30,11 +31,14 @@ exactly one of three tiers:
 | Tier | Who updates it | When | Example |
 |---|---|---|---|
 | **Store-owned** (default) | Nix | `make switch` | `pkgs.ripgrep`, the AI agent CLIs via `llm-agents.nix` |
-| **Manifest-owned** | The domain's native executor, reconciling to a Nix-declared list | `make update-tools`, explicit | `uv tool install/uninstall` against `uvToolPackages` |
+| **Manifest-owned** | The domain's native executor, reconciling to a Nix-declared list | `make update-tools`, explicit | `uv tool install/uninstall` against `home/uv-tools-manifest.nix` |
 | **Vendor-owned** | The tool's own installer/updater | Whenever the vendor updates it | Vite+, grok — Nix only wires PATH |
 
 Store-owned is the default and the preferred outcome: Nix pins the exact
-binary, and the only way it changes is a deliberate `make switch`. The other
+binary, and the only way it changes is a deliberate `make switch`. PATH
+precedence is part of the contract — a stale vendor copy earlier on PATH
+silently defeats the tier, which is why MIGRATION.md's removal steps are
+load-bearing rather than hygienic. The other
 two tiers are opt-outs, and each opt-out carries a reason in the code
 (unpackaged upstream, a runtime-manager design that assumes it owns Node,
 etc.) plus, where applicable, a graduation trigger — the condition under
@@ -64,7 +68,11 @@ those scripts had already installed).
 The fix is separating the clocks:
 
 - **`make switch`** (the apply-config clock) touches only what's declared in
-  the flake and its lock file. Activation now does zero network access and
+  the flake and its lock file. One carve-out: Homebrew's reconciler runs
+  inside nix-darwin activation (that's how the module works), bounded to
+  materializing declarations by `autoUpdate = false; upgrade = false` —
+  upgrades stay on the explicit clock (`make brew-upgrade`). Every other
+  activation script now does zero network access and
   has zero `|| echo continuing` soft-fails — every activation script left is
   local cleanup (e.g. `removeInstallerPlannotatorCli`, deleting a stale
   installer-managed binary so the Nix profile is the command authority).
@@ -104,11 +112,11 @@ Cloud/infra CLIs (`terraform`, `pulumi`, `flyctl`, `google-cloud-sdk`,
 machine-wide `home.packages`, but conceptually belong to specific projects.
 The target state is per-project devShells picked up automatically via
 `.envrc`, backed by `programs.direnv` + `nix-direnv` — enabled in
-`home/programs.nix`, with the direnv binary pulled from nixpkgs-stable for
-now (unstable's direnv hits nixpkgs #503298, a Go 1.26 cgo linkmode bug —
-see that file's comment). Marked in `home/packages.nix` as pending George's
-veto — not yet moved, because the actual per-project boundaries haven't
-been drawn.
+`home/programs.nix` with `CGO_ENABLED=1` forced via `overrideAttrs`
+(nixpkgs #503298, a Go 1.26 cgo linkmode bug, breaks stock direnv on the
+unstable *and* stable pins — see that file's comment). Marked in
+`home/packages.nix` as pending George's veto — not yet moved, because the
+actual per-project boundaries haven't been drawn.
 
 ## Server-readiness
 

@@ -6,26 +6,32 @@
 #     is the only way it changes. Preferred tier; opt out only for a stated
 #     reason.
 #   MANIFEST-OWNED — Nix declares desired state; the domain's native executor
-#     (uv, Homebrew) reconciles it. Runs from `make update-tools`, never from
-#     activation — see uv-tools-reconcile below.
+#     reconciles it. uv runs from `make update-tools`, never from activation.
+#     Homebrew (darwin.nix) is the same tier with a nix-darwin-imposed
+#     exception: its reconciler runs in activation, bounded to materializing
+#     declarations by `autoUpdate = false; upgrade = false` — upgrades stay on
+#     the explicit clock (`make brew-upgrade`).
 #   VENDOR-OWNED — the tool's own installer/updater owns its install root; Nix
 #     only wires PATH. Short exception list, each entry justified inline.
+#     PATH precedence is part of this contract: vendor bin dirs must not
+#     shadow Nix-built binaries of the same name (see MIGRATION.md §stale
+#     copies).
 #
 # This tiering is the point of this file: it replaces machine-topology
 # thinking (what's on this Mac) with ownership thinking (who updates this and
 # on whose clock). See ../../../README.md for the full argument.
 
 let
-  # neonctl (Neon Postgres CLI) is NOT in nixpkgs — verified 2026-08-04
-  # (`nix search nixpkgs neonctl` empty), so "plain nixpkgs home.packages
-  # entry" isn't available as stated. Wrapped via npx instead of reintroducing
-  # pnpm (which this restructure removes entirely): not truly pinned/
-  # store-owned in the strict sense, but it's the documented house pattern
-  # for a fast-moving npm CLI with no Nix packaging (see nix-config skill,
-  # "npm Package Pattern"). Revisit if neonctl lands in nixpkgs or
-  # llm-agents.nix.
+  # neonctl (Neon Postgres CLI) — VENDOR-OWNED (runtime resolution). NOT in
+  # nixpkgs (verified 2026-08-04: `nix search nixpkgs neonctl` empty), so the
+  # plain-nixpkgs route isn't available. npx wrapper rather than pnpm-global
+  # (pnpm is out of the package set): the Nix side pins only the wrapper;
+  # npx resolves the pinned version from the registry at first run and serves
+  # its cache after. Version pinned so the resolution is at least
+  # reproducible; bump deliberately. Graduation trigger: neonctl lands in
+  # nixpkgs or llm-agents.nix.
   neonctl = pkgs.writeShellScriptBin "neonctl" ''
-    exec ${pkgs.nodejs}/bin/npx -y neonctl@latest "$@"
+    exec ${pkgs.nodejs}/bin/npx -y neonctl@2.43.0 "$@"
   '';
 
   # Store-owned AI agent CLIs. Consumed via llm-agents.nix's own
@@ -117,16 +123,10 @@ let
     meta.mainProgram = "plannotator";
   };
 
-  # ---------------------------------------------------------------------
-  # MANIFEST-OWNED: uv tool reconciler
-  # ---------------------------------------------------------------------
-  # The manifest (single source of truth) lives in ./uv-tools-manifest.nix so
-  # the flake-level overlay (flake.nix -> lib/uv-tools-reconcile.nix) can read
-  # the same list without importing this whole module. The executor itself is
-  # pkgs.uv-tools-reconcile (from that overlay), added to home.packages below
-  # — Nix declares the manifest, uv reconciles reality to it, and it only
-  # ever runs from `make update-tools`, never from activation.
-  uvToolPackages = import ./uv-tools-manifest.nix;
+  # MANIFEST-OWNED (uv): the manifest is ./uv-tools-manifest.nix; the
+  # executor is pkgs.uv-tools-reconcile (flake.nix overlay ->
+  # lib/uv-tools-reconcile.nix), added to home.packages below and run only
+  # from `make update-tools`, never from activation.
 
 in {
   # ---------------------------------------------------------------------
@@ -143,6 +143,11 @@ in {
     fi
   '';
 
+  # VENDOR-OWNED exceptions deliberately absent from this list (own
+  # installer/updater owns the install root; Nix wires PATH only, in
+  # home/environment.nix): Vite+ (graduation triggers there) and grok
+  # (~/.grok — llm-agents.nix doesn't package it; confirm still in use, see
+  # MIGRATION.md, else drop its PATH claim entirely).
   home.packages = with pkgs; [
     # Version control & GitHub
     git
@@ -209,16 +214,8 @@ in {
     nodejs      # includes npm
     bun         # fast JS runtime & bundler
 
-    # neonctl: was pnpm-global; see `neonctl` binding above for why this is
-    # an npx wrapper rather than a plain nixpkgs entry.
+    # VENDOR-OWNED (see `neonctl` binding above; runtime npm resolution)
     neonctl
-
-    # grok (xAI Grok CLI) — VENDOR-OWNED, deliberately absent from this list.
-    # llm-agents.nix doesn't package it; it stays under ~/.grok via its own
-    # installer/updater, symlinked into ~/.local/bin (already on PATH via
-    # home/environment.nix). Graduates to store-owned if/when numtide picks
-    # it up. Flagged for George: confirm this is still in active use before
-    # carrying the exception forward — unverified as of this restructure.
 
     # Programming languages
     deno            # TypeScript/JavaScript runtime
@@ -255,13 +252,13 @@ in {
     # the default tier for agent CLIs now — reach for a manifest- or
     # vendor-owned exception (below) only when a tool genuinely isn't
     # packaged here or its update model requires it.
-    claude-code   # was ~/.local/bin/claude, self-updated via `claude update`
-    codex         # was npm-global @openai/codex
-    amp           # was ~/.amp vendor installer
-    pi            # was pnpm-global @mariozechner/pi-coding-agent
-    agent-browser # was pnpm-global agent-browser
-    qmd           # was bun-installed from git
-    beads         # was Homebrew `beads` (darwin.nix) — mainProgram is `bd`
+    claude-code
+    codex
+    amp
+    pi            # @mariozechner/pi-coding-agent
+    agent-browser
+    qmd
+    beads         # mainProgram is `bd`
   ])
   ++ [
     # -------------------------------------------------------------------

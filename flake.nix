@@ -37,9 +37,13 @@
 
     # Store-owned AI coding agent CLIs (claude-code, codex, amp, pi,
     # agent-browser, qmd, beads, ...), built and cached daily by numtide.
-    # Not pinned to `nixpkgs.follows` — the packages are self-contained
-    # binary/npm/go builds, and following our nixpkgs would force a rebuild
-    # from source on every eval instead of pulling numtide's daily cache hit.
+    # Consumed via its `packages.<system>` output (home/packages.nix), NOT via
+    # its `overlays.shared-nixpkgs`: the overlay rebuilds against *our*
+    # nixpkgs pin, which is old enough to break (hit 2026-08-04:
+    # agent-browser needs `pnpm_11`, absent from our pin) and forfeits the
+    # cache. Same reason `nixpkgs.follows` is intentionally NOT set here —
+    # building against numtide's own pin is what guarantees the
+    # cache.numtide.com hit (substituter wired in machines/).
     llm-agents.url = "github:numtide/llm-agents.nix";
 
     # Personal-ops monorepo (runtime layer + chatlog config + future life-ops
@@ -60,41 +64,28 @@
     mkSystem = import ./lib/mksystem.nix {
       inherit nixpkgs inputs;
       overlays = [
-      # Workaround: jeepney check phase fails with exit code 127 (missing test runner)
-      # on nixpkgs-unstable. This breaks yt-dlp -> secretstorage -> jeepney chain.
-      # Remove once upstream nixpkgs fixes python313Packages.jeepney.
-      (final: prev: {
-        pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
-          (pyFinal: pyPrev: {
-            jeepney = pyPrev.jeepney.overridePythonAttrs {
-              doCheck = false;
-              # jeepney.io.trio imports 'outcome' which isn't a runtime dep
-              pythonImportsCheck = [ "jeepney" "jeepney.auth" "jeepney.io" ];
-            };
-          })
-        ];
-      })
-      # llm-agents.nix (store-owned AI agent CLIs) is deliberately NOT pulled
-      # in via its `overlays.shared-nixpkgs` here — that overlay rebuilds
-      # packages/ against *our* nixpkgs pin, and our pin is old enough that
-      # e.g. agent-browser's `pnpm_11` dependency doesn't exist yet (hit
-      # 2026-08-04: `callPackageWith: Function called without required
-      # argument "pnpm_11"`). Consumed instead via its own `packages.<system>`
-      # output (users/tengjizhang/home/packages.nix), which builds against
-      # llm-agents.nix's own pinned nixpkgs and gets a guaranteed cache hit —
-      # this is also the README's "Recommended" installation path, not the
-      # fallback. `nixpkgs.follows` is intentionally NOT set on that input for
-      # the same reason.
+        # Workaround: jeepney check phase fails with exit code 127 (missing test runner)
+        # on nixpkgs-unstable. This breaks yt-dlp -> secretstorage -> jeepney chain.
+        # Remove once upstream nixpkgs fixes python313Packages.jeepney.
+        (final: prev: {
+          pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
+            (pyFinal: pyPrev: {
+              jeepney = pyPrev.jeepney.overridePythonAttrs {
+                doCheck = false;
+                # jeepney.io.trio imports 'outcome' which isn't a runtime dep
+                pythonImportsCheck = [ "jeepney" "jeepney.auth" "jeepney.io" ];
+              };
+            })
+          ];
+        })
+        # No llm-agents overlay here — deliberate; see the `llm-agents` input.
 
-      # MANIFEST-OWNED tier executor, exposed as pkgs.uv-tools-reconcile so
-      # `make update-tools` can address it directly by flake output path.
-      (final: prev: {
-        uv-tools-reconcile = import ./lib/uv-tools-reconcile.nix {
-          inherit (final) lib;
-          pkgs = final;
-        };
-      })
-    ];
+        # MANIFEST-OWNED tier executor, exposed as pkgs.uv-tools-reconcile so
+        # `make update-tools` can address it directly by flake output path.
+        (final: prev: {
+          uv-tools-reconcile = final.callPackage ./lib/uv-tools-reconcile.nix { };
+        })
+      ];
     };
   in {
     darwinConfigurations.macbook-m4-max = mkSystem "macbook-m4-max" {

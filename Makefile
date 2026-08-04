@@ -12,7 +12,7 @@ HOME_ACTIVATION = .\#darwinConfigurations.${NIXNAME}.config.home-manager.users.$
 NIXBUILD = nix build "${NIXSYSTEM}"
 HOMEBUILD = nix build --no-link "${HOME_ACTIVATION}"
 
-.PHONY: help home-switch home-build switch system-switch test build clean update update-tools update-commit update-commit-push dry-run update-nixpkgs
+.PHONY: help home-switch home-build switch system-switch test build clean update update-tools brew-upgrade update-commit update-commit-push dry-run update-nixpkgs
 
 # Activate only the existing Home Manager subconfiguration. This evaluates the
 # exact module embedded in nix-darwin, so there is no second profile or source
@@ -63,6 +63,9 @@ update-nixpkgs:
 # dependent, explicit, never run from `switch`/activation — that's the whole
 # point of the two-clock split (see README §The two clocks). VENDOR-OWNED
 # tools (Vite+, grok, ...) are not touched here; they update themselves.
+# Built via `nix build` rather than assuming uv-tools-reconcile is on PATH:
+# that works before the first switch and can't be shadowed by a stale PATH
+# entry — don't "simplify" this to a bare command invocation.
 update-tools:
 	@bin="$$(nix build --no-link --print-out-paths '.#darwinConfigurations.${NIXNAME}.pkgs.uv-tools-reconcile')/bin/uv-tools-reconcile"; \
 	"$$bin"
@@ -99,6 +102,7 @@ help:
 	@echo "  update              - Update ALL flake inputs (use sparingly)"
 	@echo "  update-nixpkgs      - Update only nixpkgs-unstable"
 	@echo "  update-tools        - Reconcile MANIFEST-OWNED tools (uv) to their manifest"
+	@echo "  brew-upgrade        - Upgrade Homebrew formulae/casks (explicit, out of switch path)"
 	@echo "  update-commit       - Update flake inputs and auto-commit changes"
 	@echo "  update-commit-push  - Update, commit, and push to remote"
 	@echo "  clean               - Remove build artifacts"

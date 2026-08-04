@@ -163,10 +163,11 @@ This config uses the Determinate Nix installer with its official nix-darwin modu
 
 ### Known nixpkgs breakage
 
-- `direnv` currently fails to build under this repo's pinned nixpkgs-unstable
-  (nixpkgs #503298, Go 1.26 cgo linkmode bug) — `programs.direnv` is
-  commented out in `home/programs.nix` for this reason, not by oversight.
-  Verify `make build` passes before re-enabling.
+- `direnv` fails to build stock on BOTH the unstable and stable pins
+  (nixpkgs #503298, Go 1.26 cgo linkmode bug). `programs.direnv` is enabled
+  in `home/programs.nix` via an `overrideAttrs` forcing `CGO_ENABLED=1`;
+  drop that override once nixpkgs' direnv builds stock again (`make build`
+  is the gate).
 
 ## Workflow
 

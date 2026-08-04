@@ -165,12 +165,11 @@
   };
 
 
-  # A CLI tool with a private upstream repo now arrives via the home-ops
-  # flake input (users/tengjizhang/home-manager.nix,
-  # inputs.home-ops.homeManagerModules.bird) instead of being vendored in
-  # this (public) tree — see that file's comment. Not declared here for the
-  # same privacy reason chatlog isn't: this tree carries no reference to the
-  # private upstream package or repo.
+  # bird now arrives via the home-ops flake input
+  # (users/tengjizhang/home-manager.nix, homeManagerModules.bird) instead of
+  # being installed from here. Its upstream repo and packaging are private
+  # and live behind the home-ops seam — this tree names the tool, never its
+  # source.
 
   # Helpful warning if not signed into App Store
   system.activationScripts.masLoginCheck.text = ''

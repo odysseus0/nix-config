@@ -1,5 +1,5 @@
-# This function creates a NixOS system based on our VM setup for a
-# particular architecture.
+# Builds one machine's system configuration — nix-darwin today, NixOS when
+# the home server lands — from the machine + user-OS + user-home layers.
 { nixpkgs, overlays, inputs }:
 
 name:
@@ -18,7 +18,7 @@ let
   # NixOS vs nix-darwin functions
   systemFunc = if darwin then inputs.darwin.lib.darwinSystem else nixpkgs.lib.nixosSystem;
   home-manager = if darwin then inputs.home-manager.darwinModules else inputs.home-manager.nixosModules;
-in systemFunc rec {
+in systemFunc {
   inherit system;
 
   modules = [

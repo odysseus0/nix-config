@@ -26,10 +26,10 @@
     # Accepted code-mode gateway pilot. Install-only: connections and OAuth
     # remain app-owned runtime state, never Nix declarations.
     inputs.home-ops.homeManagerModules.executor
-    # A CLI tool whose upstream repo is private — packaged in home-ops rather
-    # than here for the same reason chatlog is (see comment above). No
-    # upstream name in this public repo; see home-ops/README.md for what it
-    # is if you have access.
+    # bird: packaged in home-ops, not here. The tool name is public (it's a
+    # published npm package); what stays private is its upstream repo, the
+    # fork it's built from, and the packaging — all of which live behind the
+    # home-ops seam for the same reason chatlog does (see comment above).
     inputs.home-ops.homeManagerModules.bird
   ];
 

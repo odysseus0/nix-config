@@ -3,8 +3,6 @@
 let
   # Bun global install location (tools already installed here)
   bunInstallDir = "$HOME/.cache/.bun";
-  # pnpm global directory (macOS default)
-  pnpmHome = if pkgs.stdenv.isDarwin then "$HOME/Library/pnpm" else "$HOME/.local/share/pnpm";
   # npm global directory for CLIs whose vendor updater assumes npm ownership.
   npmPrefix = "$HOME/.npm-global";
   # Vite+ (vp) — VENDOR-OWNED. Vite+ is beta and its runtime-manager design
@@ -23,7 +21,6 @@ in {
     GOPATH = "$HOME/go";
     OP_ACCOUNT = "my.1password.com";
     BUN_INSTALL = bunInstallDir;
-    PNPM_HOME = pnpmHome;
     NPM_CONFIG_PREFIX = npmPrefix;
     VP_HOME = vitePlusHome;
 
@@ -48,9 +45,9 @@ in {
     "$HOME/.cache/lm-studio/bin"
     "${vitePlusHome}/bin"
 
-    # Package manager bins
+    # Package manager bins (pnpm wiring removed with the pnpm tier,
+    # 2026-08-04 — ~/Library/pnpm is drained by MIGRATION.md)
     "${npmPrefix}/bin"
-    pnpmHome
     "${bunInstallDir}/bin"
     "$HOME/.bun/bin"
 

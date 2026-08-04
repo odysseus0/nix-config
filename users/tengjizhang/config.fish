@@ -99,9 +99,6 @@ function managed -d "List packages managed by various package managers (Nix pro 
     # NPM global (Node.js)
     npm list -g --depth=0 2>/dev/null | grep '^[├└]' | sed 's/^[├└]── //' | awk '{print "lang:npm:" $1}'
 
-    # PNPM global (Node.js)
-    pnpm list -g --json 2>/dev/null | jq -r '.[0].dependencies // {} | keys[]' 2>/dev/null | sed 's/^/lang:pnpm:/'
-
     # Go binaries
     if test -d ~/go/bin
         ls ~/go/bin 2>/dev/null | sed 's/^/lang:go:/'
