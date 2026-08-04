@@ -7,22 +7,15 @@ name:
   system,
   user,
   darwin ? false,
-  wsl ? false
 }:
 
 let
-  # True if this is a WSL system.
-  isWSL = wsl;
-
-  # True if Linux, which is a heuristic for not being Darwin.
-  isLinux = !darwin && !isWSL;
-
   # The config files for this system.
   machineConfig = ../machines/${name}.nix;
   userOSConfig = ../users/${user}/${if darwin then "darwin" else "nixos" }.nix;
   userHMConfig = ../users/${user}/home-manager.nix;
 
-  # NixOS vs nix-darwin functionst
+  # NixOS vs nix-darwin functions
   systemFunc = if darwin then inputs.darwin.lib.darwinSystem else nixpkgs.lib.nixosSystem;
   home-manager = if darwin then inputs.home-manager.darwinModules else inputs.home-manager.nixosModules;
 in systemFunc rec {
@@ -37,12 +30,6 @@ in systemFunc rec {
     # Allow unfree packages.
     { nixpkgs.config.allowUnfree = true; }
 
-    # Bring in WSL if this is a WSL build
-    (if isWSL then inputs.nixos-wsl.nixosModules.wsl else {})
-
-    # Snapd on Linux
-    (if isLinux then inputs.nix-snapd.nixosModules.default else {})
-
     # Determinate Nix module for darwin (manages /etc/nix/nix.custom.conf)
     (if darwin then inputs.determinate.darwinModules.default else {})
 
@@ -54,7 +41,6 @@ in systemFunc rec {
       home-manager.backupFileExtension = "backup";
       home-manager.sharedModules = [ inputs.sops-nix.homeManagerModules.sops ];
       home-manager.users.${user} = import userHMConfig {
-        isWSL = isWSL;
         inputs = inputs;
       };
     }
@@ -66,7 +52,6 @@ in systemFunc rec {
         currentSystem = system;
         currentSystemName = name;
         currentSystemUser = user;
-        isWSL = isWSL;
         inputs = inputs;
       };
     }
