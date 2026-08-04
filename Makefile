@@ -12,7 +12,7 @@ HOME_ACTIVATION = .\#darwinConfigurations.${NIXNAME}.config.home-manager.users.$
 NIXBUILD = nix build "${NIXSYSTEM}"
 HOMEBUILD = nix build --no-link "${HOME_ACTIVATION}"
 
-.PHONY: help home-switch home-build switch system-switch test build clean update update-commit update-commit-push dry-run update-nixpkgs
+.PHONY: help home-switch home-build switch system-switch test build clean update update-tools update-commit update-commit-push dry-run update-nixpkgs
 
 # Activate only the existing Home Manager subconfiguration. This evaluates the
 # exact module embedded in nix-darwin, so there is no second profile or source
@@ -58,6 +58,15 @@ update:
 update-nixpkgs:
 	nix flake update nixpkgs
 
+# The other clock: reconcile MANIFEST-OWNED tools (currently just uv) against
+# their manifest (users/tengjizhang/home/uv-tools-manifest.nix). Network-
+# dependent, explicit, never run from `switch`/activation — that's the whole
+# point of the two-clock split (see README §The two clocks). VENDOR-OWNED
+# tools (Vite+, grok, ...) are not touched here; they update themselves.
+update-tools:
+	@bin="$$(nix build --no-link --print-out-paths '.#darwinConfigurations.${NIXNAME}.pkgs.uv-tools-reconcile')/bin/uv-tools-reconcile"; \
+	"$$bin"
+
 # Update flake inputs and auto-commit
 update-commit: update
 	@if git diff --quiet --exit-code flake.lock; then \
@@ -89,6 +98,7 @@ help:
 	@echo "  dry-run             - Show what needs to be built/downloaded"
 	@echo "  update              - Update ALL flake inputs (use sparingly)"
 	@echo "  update-nixpkgs      - Update only nixpkgs-unstable"
+	@echo "  update-tools        - Reconcile MANIFEST-OWNED tools (uv) to their manifest"
 	@echo "  update-commit       - Update flake inputs and auto-commit changes"
 	@echo "  update-commit-push  - Update, commit, and push to remote"
 	@echo "  clean               - Remove build artifacts"

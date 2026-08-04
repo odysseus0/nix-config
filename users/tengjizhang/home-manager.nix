@@ -26,9 +26,15 @@
     # Accepted code-mode gateway pilot. Install-only: connections and OAuth
     # remain app-owned runtime state, never Nix declarations.
     inputs.home-ops.homeManagerModules.executor
+    # A CLI tool whose upstream repo is private — packaged in home-ops rather
+    # than here for the same reason chatlog is (see comment above). No
+    # upstream name in this public repo; see home-ops/README.md for what it
+    # is if you have access.
+    inputs.home-ops.homeManagerModules.bird
   ];
 
   executor.enable = true;
+  bird.enable = true;
 
   # Make inputs available to all imported modules
   _module.args.inputs = inputs;

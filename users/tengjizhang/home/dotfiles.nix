@@ -27,7 +27,9 @@ let
       "flashbots/devops" = "~/projects/devops";
       "flashbots/go-utils" = "~/projects/go-utils";
       "flashbots/protect-of-api" = "~/projects/protect-of-api";
-      "steipete/bird" = "~/projects/bird";
+      # bird's upstream repo entry removed here for the same reason it's
+      # absent from packages.nix — the repo is private; see darwin.nix's
+      # comment near the old pnpm bird install for the ownership story.
       "openclaw/openclaw" = "~/projects/openclaw";
     };
     keybindings = {

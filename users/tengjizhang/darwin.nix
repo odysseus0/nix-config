@@ -12,7 +12,7 @@
     # Additional taps for specialized apps
     taps = [
       "mrkai77/cask"  # For Loop window manager
-      "steipete/tap"  # For CodexBar, bird
+      "steipete/tap"  # For CodexBar
       "openclaw/tap"  # For gogcli
     ];
 
@@ -105,15 +105,14 @@
       "sqlite"  # SQLite with extension support (FTS5 etc.; used by zk, chatlog/wechat queries)
       "zk"  # Zettelkasten CLI - backlinks, orphans, link analysis for Obsidian vault
       "telegram-downloader"  # tdl: Telegram message export/sync with takeout API support
-      # bird: installed from personal fork via activation script below
 
       # Clawdbot skill dependencies
       "openclaw/tap/gogcli"  # Google Workspace CLI (gog)
 
       "cliproxyapi"  # Unified proxy for AI coding CLIs (Claude, Gemini, Amp, Codex)
 
-      # Agent coordination
-      "beads"  # Git-backed DAG issue tracker for AI agents (installs dolt as dependency)
+      # beads moved to store-owned tier (pkgs.llm-agents.beads, see
+      # home/packages.nix) — was duplicated here as a Homebrew formula.
     ];
 
     onActivation = {
@@ -166,8 +165,12 @@
   };
 
 
-  # bird CLI: installed via pnpm dlx alias in shell.nix
-  # Using alias instead of global install - auto-updates on new commits
+  # A CLI tool with a private upstream repo now arrives via the home-ops
+  # flake input (users/tengjizhang/home-manager.nix,
+  # inputs.home-ops.homeManagerModules.bird) instead of being vendored in
+  # this (public) tree — see that file's comment. Not declared here for the
+  # same privacy reason chatlog isn't: this tree carries no reference to the
+  # private upstream package or repo.
 
   # Helpful warning if not signed into App Store
   system.activationScripts.masLoginCheck.text = ''

@@ -1,5 +1,5 @@
 {
-  description = "tengjizhang's nix-darwin configuration - following Mitchell's structure";
+  description = "George's declarative computing environment — hermetic builds, ownership-tiered tooling";
 
   inputs = {
     # Use unstable for latest packages on personal dev machine
@@ -35,6 +35,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Store-owned AI coding agent CLIs (claude-code, codex, amp, pi,
+    # agent-browser, qmd, beads, ...), built and cached daily by numtide.
+    # Not pinned to `nixpkgs.follows` — the packages are self-contained
+    # binary/npm/go builds, and following our nixpkgs would force a rebuild
+    # from source on every eval instead of pulling numtide's daily cache hit.
+    llm-agents.url = "github:numtide/llm-agents.nix";
+
     # Personal-ops monorepo (runtime layer + chatlog config + future life-ops
     # machinery). Private repo — was users/tengjizhang/runtime/ in-tree here,
     # moved out because it carries a WeChat account id + personal ritual
@@ -66,6 +73,26 @@
             };
           })
         ];
+      })
+      # llm-agents.nix (store-owned AI agent CLIs) is deliberately NOT pulled
+      # in via its `overlays.shared-nixpkgs` here — that overlay rebuilds
+      # packages/ against *our* nixpkgs pin, and our pin is old enough that
+      # e.g. agent-browser's `pnpm_11` dependency doesn't exist yet (hit
+      # 2026-08-04: `callPackageWith: Function called without required
+      # argument "pnpm_11"`). Consumed instead via its own `packages.<system>`
+      # output (users/tengjizhang/home/packages.nix), which builds against
+      # llm-agents.nix's own pinned nixpkgs and gets a guaranteed cache hit —
+      # this is also the README's "Recommended" installation path, not the
+      # fallback. `nixpkgs.follows` is intentionally NOT set on that input for
+      # the same reason.
+
+      # MANIFEST-OWNED tier executor, exposed as pkgs.uv-tools-reconcile so
+      # `make update-tools` can address it directly by flake output path.
+      (final: prev: {
+        uv-tools-reconcile = import ./lib/uv-tools-reconcile.nix {
+          inherit (final) lib;
+          pkgs = final;
+        };
       })
     ];
     };

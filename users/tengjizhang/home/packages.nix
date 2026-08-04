@@ -1,7 +1,39 @@
 { pkgs, lib, inputs, ... }:
 
+# Ownership is binary, three tiers. Every package below sits in exactly one:
+#
+#   STORE-OWNED (default) — Nix builds and pins the exact binary; `make switch`
+#     is the only way it changes. Preferred tier; opt out only for a stated
+#     reason.
+#   MANIFEST-OWNED — Nix declares desired state; the domain's native executor
+#     (uv, Homebrew) reconciles it. Runs from `make update-tools`, never from
+#     activation — see uv-tools-reconcile below.
+#   VENDOR-OWNED — the tool's own installer/updater owns its install root; Nix
+#     only wires PATH. Short exception list, each entry justified inline.
+#
+# This tiering is the point of this file: it replaces machine-topology
+# thinking (what's on this Mac) with ownership thinking (who updates this and
+# on whose clock). See ../../../README.md for the full argument.
+
 let
-  isDarwin = pkgs.stdenv.isDarwin;
+  # neonctl (Neon Postgres CLI) is NOT in nixpkgs — verified 2026-08-04
+  # (`nix search nixpkgs neonctl` empty), so "plain nixpkgs home.packages
+  # entry" isn't available as stated. Wrapped via npx instead of reintroducing
+  # pnpm (which this restructure removes entirely): not truly pinned/
+  # store-owned in the strict sense, but it's the documented house pattern
+  # for a fast-moving npm CLI with no Nix packaging (see nix-config skill,
+  # "npm Package Pattern"). Revisit if neonctl lands in nixpkgs or
+  # llm-agents.nix.
+  neonctl = pkgs.writeShellScriptBin "neonctl" ''
+    exec ${pkgs.nodejs}/bin/npx -y neonctl@latest "$@"
+  '';
+
+  # Store-owned AI agent CLIs. Consumed via llm-agents.nix's own
+  # `packages.<system>` output rather than its overlay — see flake.nix's
+  # comment on `inputs.llm-agents` for why (nixpkgs version skew breaks the
+  # overlay path; this path builds against their pin and hits their cache).
+  llmAgents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
+
   # NOT inputs.nixpkgs-stable.legacyPackages.${system} — that flake output is
   # pre-instantiated with the default nixpkgs config (allowUnfree = false)
   # regardless of this system's `nixpkgs.config.allowUnfree = true` module
@@ -14,6 +46,14 @@ let
     system = pkgs.stdenv.hostPlatform.system;
     config.allowUnfree = true;
   };
+
+  # ---------------------------------------------------------------------
+  # STORE-OWNED: in-tree derivations
+  # ---------------------------------------------------------------------
+  # House pattern for tools with no upstream Nix packaging: pin a fetched
+  # artifact/wheel/tarball, build with a plain derivation, done. No activation
+  # script, no vendor updater — `make update` + a hash bump is the only way
+  # these change.
 
   # Paperclip — biomedical paper search CLI + Python SDK.
   # Wheel served from upstream (no PyPI).
@@ -77,101 +117,30 @@ let
     meta.mainProgram = "plannotator";
   };
 
-  # Fast-moving npm CLIs: Nix owns the desired set, pnpm owns freshness.
-  # Use this for vendor-recommended npm installs or tools that should update
-  # without routine flake.lock churn. "bin" documents the expected command and
-  # is checked manually in the command-resolution verification pass.
-  pnpmGlobalPackages = [
-    { pkg = "@steipete/bird"; bin = "bird"; }
-    { pkg = "neonctl"; bin = "neonctl"; }
-    { pkg = "@mariozechner/pi-coding-agent"; bin = "pi"; }
-  ];
-
-  # Only append @latest if package doesn't already have a version specifier
-  # Scoped packages start with @, so check for @ after first char
-  hasVersion = pkg: let
-    afterFirst = builtins.substring 1 (builtins.stringLength pkg) pkg;
-  in lib.hasInfix "@" afterFirst;
-  addLatest = pkg: if hasVersion pkg then pkg else pkg + "@latest";
-  pnpmInstallCommands = lib.concatMapStringsSep "\n    " (p: ''
-    echo "  pnpm: ${p.pkg} -> ${p.bin}"
-    ${pkgs.pnpm}/bin/pnpm add -g ${addLatest p.pkg} || echo "pnpm install ${p.pkg} failed, continuing..."
-  '') pnpmGlobalPackages;
-
-  # pnpm global directory (relative to $HOME, expanded at runtime)
-  pnpmSubdir = if isDarwin then "Library/pnpm" else ".local/share/pnpm";
-
-  # uv tool packages (Python CLIs with heavy/ML deps)
-  uvToolPackages = [
-    "mlx-qwen3-asr"   # Qwen3-ASR speech recognition for Apple Silicon
-  ];
+  # ---------------------------------------------------------------------
+  # MANIFEST-OWNED: uv tool reconciler
+  # ---------------------------------------------------------------------
+  # The manifest (single source of truth) lives in ./uv-tools-manifest.nix so
+  # the flake-level overlay (flake.nix -> lib/uv-tools-reconcile.nix) can read
+  # the same list without importing this whole module. The executor itself is
+  # pkgs.uv-tools-reconcile (from that overlay), added to home.packages below
+  # — Nix declares the manifest, uv reconciles reality to it, and it only
+  # ever runs from `make update-tools`, never from activation.
+  uvToolPackages = import ./uv-tools-manifest.nix;
 
 in {
-  # Vite+ is not packaged in current nixpkgs and upstream manages runtime
-  # shims under ~/.vite-plus. Keep the install root vendor-owned, but keep
-  # shell/PATH ownership in home/environment.nix by running the installer with
-  # a temporary HOME so it cannot mutate Home Manager shell files.
-  home.activation.updateVitePlus = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    echo "Updating Vite+ CLI via vendor installer..."
-    real_home="$HOME"
-    export VP_HOME="$real_home/.vite-plus"
-    mkdir -p "$VP_HOME"
-    vite_plus_installer="$VP_HOME/install.sh"
-    vite_plus_tmp_home="$(mktemp -d)"
-    cleanup_vite_plus_tmp_home() {
-      rm -rf "$vite_plus_tmp_home"
-    }
-    trap cleanup_vite_plus_tmp_home EXIT
-    if ${pkgs.curl}/bin/curl -fsSL https://vite.plus -o "$vite_plus_installer"; then
-      HOME="$vite_plus_tmp_home" \
-        VP_HOME="$VP_HOME" \
-        VP_NODE_MANAGER=yes \
-        PATH="${lib.makeBinPath [ pkgs.curl pkgs.gnutar pkgs.gzip ]}:$PATH" \
-        ${pkgs.bash}/bin/bash "$vite_plus_installer" \
-        || echo "Vite+ vendor install failed, continuing..."
-      rm -f "$vite_plus_installer"
-      if [ -x "$VP_HOME/bin/vp" ]; then
-        "$VP_HOME/bin/vp" env setup || echo "Vite+ env setup failed, continuing..."
-      fi
-    else
-      echo "Vite+ vendor installer download failed, continuing..."
-    fi
-    trap - EXIT
-    cleanup_vite_plus_tmp_home
-  '';
-
+  # ---------------------------------------------------------------------
+  # VENDOR-OWNED activation: local cleanup only, never network
+  # ---------------------------------------------------------------------
   # Remove the installer-managed binary so the Nix profile is the command
-  # authority. The shared skills stay declarative below.
+  # authority. The shared skills stay declarative below. This is local
+  # (rm, not curl) so it's safe inside the activation phase, which must stay
+  # offline — see README §The two clocks.
   home.activation.removeInstallerPlannotatorCli = lib.hm.dag.entryAfter ["writeBoundary"] ''
     if [ -e "$HOME/.local/bin/plannotator" ]; then
       echo "Removing installer-managed Plannotator CLI; Nix profile owns plannotator."
       rm -f "$HOME/.local/bin/plannotator"
     fi
-  '';
-
-  # Install fast-moving npm CLIs without making darwin-rebuild depend on their package freshness.
-  home.activation.updateAiTools = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    echo "Updating fast-moving npm CLIs via pnpm..."
-    export PNPM_HOME="$HOME/${pnpmSubdir}"
-    export PATH="$PNPM_HOME:$PATH"
-    mkdir -p "$PNPM_HOME"
-    ${pnpmInstallCommands}
-  '';
-
-  # Guarantee vault tooling deps (zod, yaml) so the vault's pre-commit gate never
-  # fails-closed for lack of `bun install` on a fresh clone / after a backup restore.
-  # Idempotent + fast when up to date; non-fatal (the gate fail-closes as backstop).
-  home.activation.vaultToolingDeps = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    if [ -f "$HOME/vault/package.json" ]; then
-      echo "Installing vault tooling deps (bun)..."
-      ( cd "$HOME/vault" && ${pkgs.bun}/bin/bun install --frozen-lockfile ) || echo "vault bun install failed, continuing..."
-    fi
-  '';
-
-  # Install uv tool packages (Python CLIs with heavy/ML deps)
-  home.activation.updateUvTools = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    echo "Updating uv tool packages..."
-    ${lib.concatMapStringsSep "\n    " (pkg: ''${pkgs.uv}/bin/uv tool install --upgrade ${pkg} --native-tls || echo "uv tool install ${pkg} failed, continuing..."'') uvToolPackages}
   '';
 
   home.packages = with pkgs; [
@@ -226,7 +195,7 @@ in {
     # Additional tools
     taskwarrior3
     rclone
-    uv          # pure Python projects
+    uv          # pure Python projects; also runs uv-tools-reconcile above
     pixi        # ML/heavy native deps (conda-forge)
     yt-dlp
     zellij
@@ -236,35 +205,70 @@ in {
     watch       # command repeater
     atuin       # shell history search
 
-    # Node.js runtime (for editor integration)
-    nodejs      # includes npm for vendor-managed CLIs + editor integration
-    pnpm        # activation-managed npm-distributed CLIs
+    # Node.js runtime (for editor integration / anything still npm-shaped)
+    nodejs      # includes npm
     bun         # fast JS runtime & bundler
 
-    # Fast-moving agent CLIs use vendor package managers above. Claude Code is
-    # intentionally vendor-self-managed in ~/.local/bin via `claude update`.
+    # neonctl: was pnpm-global; see `neonctl` binding above for why this is
+    # an npx wrapper rather than a plain nixpkgs entry.
+    neonctl
+
+    # grok (xAI Grok CLI) — VENDOR-OWNED, deliberately absent from this list.
+    # llm-agents.nix doesn't package it; it stays under ~/.grok via its own
+    # installer/updater, symlinked into ~/.local/bin (already on PATH via
+    # home/environment.nix). Graduates to store-owned if/when numtide picks
+    # it up. Flagged for George: confirm this is still in active use before
+    # carrying the exception forward — unverified as of this restructure.
 
     # Programming languages
     deno            # TypeScript/JavaScript runtime
     go              # Go programming language
 
-    # Blockchain development tools
-
-    # Infrastructure tools
+    # -------------------------------------------------------------------
+    # Project-scope demotion candidates — pending George's veto
+    # -------------------------------------------------------------------
+    # These are machine-wide store-owned packages today but conceptually
+    # belong to specific projects, not the whole environment. Target: move
+    # each to a per-project devShell (flake.nix + .envrc) picked up by
+    # nix-direnv (enabled in programs.nix) instead of living here forever.
+    # Left in place until George confirms which projects still need them
+    # globally vs. per-shell.
     terraform       # Infrastructure as code
     pulumi          # Infrastructure as code (TypeScript)
     pulumiPackages.pulumi-nodejs  # Pulumi TypeScript/JS support
     flyctl          # Fly.io CLI
-    # FIXME: mise depends on direnv — broken by Go 1.26 cgo bug (nixpkgs #503298)
-    # mise            # Polyglot version manager (Ruby, Node, etc.)
-
-    # Cloud CLIs (work requirements, Nix-managed)
     google-cloud-sdk  # Google Cloud Platform CLI
     awscli2          # AWS CLI (latest version)
-    pkgs-stable._1password-cli  # Stable: unstable ships beta that breaks Pulumi 1Password provider
     cloudflared      # Cloudflare Tunnel client (local → public HTTPS via *.trycloudflare.com)
     wrangler         # Cloudflare Workers CLI (deploy serverless functions)
-
+  ]
+  ++ (with pkgs-stable; [
+    _1password-cli  # Stable: unstable ships beta that breaks Pulumi 1Password provider
+  ])
+  ++ (with llmAgents; [
+    # -------------------------------------------------------------------
+    # STORE-OWNED: AI coding agent CLIs (github:numtide/llm-agents.nix)
+    # -------------------------------------------------------------------
+    # Daily-built, cached at cache.numtide.com (wired in
+    # machines/macbook-m4-max.nix) since these build against llm-agents.nix's
+    # own nixpkgs pin — see the `llmAgents` binding above for why. This is
+    # the default tier for agent CLIs now — reach for a manifest- or
+    # vendor-owned exception (below) only when a tool genuinely isn't
+    # packaged here or its update model requires it.
+    claude-code   # was ~/.local/bin/claude, self-updated via `claude update`
+    codex         # was npm-global @openai/codex
+    amp           # was ~/.amp vendor installer
+    pi            # was pnpm-global @mariozechner/pi-coding-agent
+    agent-browser # was pnpm-global agent-browser
+    qmd           # was bun-installed from git
+    beads         # was Homebrew `beads` (darwin.nix) — mainProgram is `bd`
+  ])
+  ++ [
+    # -------------------------------------------------------------------
+    # MANIFEST-OWNED: uv reconciler executable (defined via overlay, see
+    # flake.nix + lib/uv-tools-reconcile.nix; manifest above)
+    # -------------------------------------------------------------------
+    pkgs.uv-tools-reconcile  # run via `make update-tools`, never activation
   ];
 
   home.file = {

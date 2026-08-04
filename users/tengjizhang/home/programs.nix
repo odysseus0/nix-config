@@ -75,11 +75,21 @@
   # Direnv - Per-directory environment management
   #---------------------------------------------------------------------
 
-  # FIXME: direnv broken — Go 1.26 cgo linkmode bug (nixpkgs #503298)
-  # programs.direnv = {
-  #   enable = true;
-  #   nix-direnv.enable = true;
-  # };
+  # Backs the "project-scope demotion candidates" tier in home/packages.nix
+  # (cloud/infra CLIs moving to per-project devShells loaded via .envrc).
+  # CGO_ENABLED override: direnv's Makefile links with `-linkmode=external`
+  # while buildGoModule defaults CGO off under Go 1.26, so the stock package
+  # fails on BOTH unstable and stable pins (nixpkgs #503298; verified
+  # 2026-08-04 — `-linkmode=external requires external (cgo) linking`).
+  # Forcing cgo on builds clean. Drop the override once nixpkgs' direnv
+  # builds stock again; `make build` is the gate.
+  programs.direnv = {
+    enable = true;
+    package = pkgs.direnv.overrideAttrs (o: {
+      env = (o.env or { }) // { CGO_ENABLED = "1"; };
+    });
+    nix-direnv.enable = true;
+  };
 
   #---------------------------------------------------------------------
   # FZF - Fuzzy finder
