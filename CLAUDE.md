@@ -52,7 +52,7 @@ make clean
    - Sets `system.stateVersion`
 
 2. **User OS Layer** (`users/<user>/darwin.nix`)
-   - Homebrew configuration (GUI apps, Mac App Store apps)
+   - (Homebrew moved to the user layer 2026-08-04 — see home/brew.nix)
    - macOS-specific system settings (Touch ID for sudo)
    - User shell setup and activation scripts
 
@@ -107,8 +107,8 @@ See README §Ownership tiers for the full argument. In short:
 
 **VENDOR-OWNED** → PATH wiring only, in `users/tengjizhang/home/environment.nix` (`home.sessionPath`). Every vendor-owned exception needs a code comment stating why it can't be store-owned and what would let it graduate — see the `vitePlusHome` comment in that file for the template.
 
-**GUI apps** → `users/tengjizhang/darwin.nix`, `homebrew.casks`
-**Mac App Store apps** → `users/tengjizhang/darwin.nix`, `homebrew.masApps`
+**GUI apps** → `users/tengjizhang/home/brew.nix` `casks` (then `make home-switch && make brew-apply` — sudo-free)
+**Mac App Store apps** → `users/tengjizhang/home/brew.nix` `masApps`
 
 ### Program Configuration (Mitchell's Pattern)
 
@@ -144,11 +144,11 @@ Uses structured `settings` attribute (new format as of home-manager updates):
 
 ### Homebrew Integration
 
-- `onActivation.cleanup = "none"` avoids destructive Homebrew cleanup during every activation
-- Run `brew bundle cleanup --force` manually when you intentionally want to remove unmanaged formulae/casks/apps
+- Homebrew is OUT of activation entirely (2026-08-04): manifest in `home/brew.nix` renders `~/.config/homebrew/Brewfile`; `make brew-apply` (sudo-free) materializes it, never upgrades
+- Run `brew bundle cleanup --force --file=$HOME/.config/homebrew/Brewfile` manually when you intentionally want to remove unmanaged formulae/casks/apps
 - Requires Mac App Store login for MAS apps
 - Activation script warns if not signed in
-- `onActivation.autoUpdate = false; upgrade = false;` — switch materializes declarations only, never upgrades; `make brew-upgrade` is the explicit, separate step
+- `make brew-upgrade` is the explicit upgrade step; `HOMEBREW_BUNDLE_NO_UPGRADE=1` in brew-apply keeps materialization upgrade-free
 
 ### Determinate Nix Installer
 

@@ -31,7 +31,7 @@ exactly one of three tiers:
 | Tier | Who updates it | When | Example |
 |---|---|---|---|
 | **Store-owned** (default) | Nix | `make switch` | `pkgs.ripgrep`, the AI agent CLIs via `llm-agents.nix` |
-| **Manifest-owned** | The domain's native executor, reconciling to a Nix-declared list | `make update-tools`, explicit | `uv tool install/uninstall` against `home/uv-tools-manifest.nix` |
+| **Manifest-owned** | The domain's native executor, reconciling to a Nix-declared list | `make update-tools` / `make brew-apply`, explicit | uv against `home/uv-tools-manifest.nix`; Homebrew against `home/brew.nix` |
 | **Vendor-owned** | The tool's own installer/updater | Whenever the vendor updates it | Vite+ — Nix only wires PATH |
 
 Store-owned is the default and the preferred outcome: Nix pins the exact
@@ -68,11 +68,10 @@ those scripts had already installed).
 The fix is separating the clocks:
 
 - **`make switch`** (the apply-config clock) touches only what's declared in
-  the flake and its lock file. One carve-out: Homebrew's reconciler runs
-  inside nix-darwin activation (that's how the module works), bounded to
-  materializing declarations by `autoUpdate = false; upgrade = false` —
-  upgrades stay on the explicit clock (`make brew-upgrade`). Every other
-  activation script now does zero network access and
+  the flake and its lock file. Homebrew left activation entirely
+  (2026-08-04): the manifest renders to `~/.config/homebrew/Brewfile` and
+  `make brew-apply` reconciles it sudo-free. Every activation script now
+  does zero network access and
   has zero `|| echo continuing` soft-fails — every activation script left is
   local cleanup (e.g. `removeInstallerPlannotatorCli`, deleting a stale
   installer-managed binary so the Nix profile is the command authority).

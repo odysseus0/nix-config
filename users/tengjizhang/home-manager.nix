@@ -11,6 +11,7 @@
     ./home/environment.nix
     ./home/services.nix
     ./home/secrets.nix
+    ./home/brew.nix
     # claudecode.nix removed - ~/.claude/ now git-tracked directly
     # See: ~/.claude/ for skills, commands, output-styles, profiles
     # Personal-ops monorepo — moved out of this (public) repo to the

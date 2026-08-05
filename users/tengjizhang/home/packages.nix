@@ -6,11 +6,10 @@
 #     is the only way it changes. Preferred tier; opt out only for a stated
 #     reason.
 #   MANIFEST-OWNED — Nix declares desired state; the domain's native executor
-#     reconciles it. uv runs from `make update-tools`, never from activation.
-#     Homebrew (darwin.nix) is the same tier with a nix-darwin-imposed
-#     exception: its reconciler runs in activation, bounded to materializing
-#     declarations by `autoUpdate = false; upgrade = false` — upgrades stay on
-#     the explicit clock (`make brew-upgrade`).
+#     reconciles it, always from an explicit clock, never from activation:
+#     uv from `make update-tools`, Homebrew from `make brew-apply`
+#     (manifest in ./brew.nix), executor from `make update-tools`
+#     (home-ops module). No exceptions remain.
 #   VENDOR-OWNED — the tool's own installer/updater owns its install root; Nix
 #     only wires PATH. Short exception list, each entry justified inline.
 #     PATH precedence is part of this contract: vendor bin dirs must not

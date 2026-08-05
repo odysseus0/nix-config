@@ -12,7 +12,7 @@ HOME_ACTIVATION = .\#darwinConfigurations.${NIXNAME}.config.home-manager.users.$
 NIXBUILD = nix build "${NIXSYSTEM}"
 HOMEBUILD = nix build --no-link "${HOME_ACTIVATION}"
 
-.PHONY: help home-switch home-build switch system-switch test build clean update update-tools brew-upgrade update-commit update-commit-push dry-run update-nixpkgs
+.PHONY: help home-switch home-build switch system-switch test build clean update update-tools brew-apply brew-upgrade update-commit update-commit-push dry-run update-nixpkgs
 
 # Activate only the existing Home Manager subconfiguration. This evaluates the
 # exact module embedded in nix-darwin, so there is no second profile or source
@@ -103,6 +103,7 @@ help:
 	@echo "  update              - Update ALL flake inputs (use sparingly)"
 	@echo "  update-nixpkgs      - Update only nixpkgs-unstable"
 	@echo "  update-tools        - Reconcile MANIFEST-OWNED tools (uv) to their manifest"
+	@echo "  brew-apply          - Materialize declared Homebrew apps (sudo-free, no upgrades)"
 	@echo "  brew-upgrade        - Upgrade Homebrew formulae/casks (explicit, out of switch path)"
 	@echo "  update-commit       - Update flake inputs and auto-commit changes"
 	@echo "  update-commit-push  - Update, commit, and push to remote"
@@ -113,6 +114,15 @@ help:
 # path the default. Use system-switch when a change genuinely affects macOS,
 # nix-daemon, Homebrew, or another root-owned surface.
 .DEFAULT_GOAL := home-switch
+
+# Materialize the declared Homebrew set (home/brew.nix -> rendered Brewfile).
+# Sudo-free and explicit — Homebrew left system activation 2026-08-04, so GUI
+# app changes ship via `make home-switch && make brew-apply`, no root prompt.
+# NO_UPGRADE mirrors the old autoUpdate=false/upgrade=false activation
+# semantics: install what's missing, never upgrade as a side effect.
+brew-apply:
+	@if ! mas account >/dev/null 2>&1; then echo "⚠️  Not signed into the Mac App Store — mas entries will fail. Sign in first."; fi
+	HOMEBREW_BUNDLE_NO_UPGRADE=1 brew bundle install --file="$$HOME/.config/homebrew/Brewfile"
 
 # Explicit Homebrew upgrade — deliberately OUT of the switch path (2026-07-20
 # ruling: switch materializes declarations; upgrades are a separate, explicit,
