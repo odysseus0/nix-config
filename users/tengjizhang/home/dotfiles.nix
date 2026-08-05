@@ -84,7 +84,6 @@ let
     ];
     trustedcasks = [
       "mrkai77/cask/loop"
-      "steipete/tap/codexbar"
     ];
   };
 in

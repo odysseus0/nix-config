@@ -31,9 +31,11 @@ let
   # Graduation triggers: a tap-HEAD change burns us once, the tap count
   # grows past a handful, or the ecosystem consolidates on nix-homebrew.
   taps = [
-    "mrkai77/cask"  # For Loop window manager
-    "steipete/tap"  # For CodexBar
-    "openclaw/tap"  # For gogcli
+    "mrkai77/cask"  # For Loop window manager (running daily driver)
+    "openclaw/tap"  # For gogcli — NOT OpenClaw-project tooling: gog is the
+                    # Google Workspace CLI the /calendar skill runs on
+    # steipete/tap dropped 2026-08-05 with CodexBar (unused, replaced by the
+    # SwiftBar runtime glance surface direction; bird ships via home-ops).
   ];
 
   # Command line tools genuinely outside nixpkgs. Surface-area rule
@@ -79,7 +81,6 @@ let
     # AI Tools
     "chatgpt"
     "lm-studio"
-    "steipete/tap/codexbar"
 
     # Productivity
     "1password"
