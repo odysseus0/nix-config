@@ -12,6 +12,14 @@
 #
 # Why Homebrew at all (unchanged): nixpkgs doesn't handle Mac App Store apps,
 # and many GUI casks are unpackaged/outdated in nixpkgs on macOS.
+#
+# REMOVAL TEST for this deviation (priced 2026-08-04): the whole gain over
+# nix-darwin's stock homebrew module is that cask changes ship remotely
+# (remote sudo is impossible, not merely inconvenient). When the NixOS home
+# server takes over remote-agent duty and this Mac is desk-operated again,
+# fold this back into darwin.nix's homebrew module — the divergence tax
+# (custom arrangement future readers must learn) then outweighs a gain that
+# has dropped to one Touch ID tap.
 
 let
   taps = [
