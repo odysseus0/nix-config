@@ -22,19 +22,27 @@
 # has dropped to one Touch ID tap.
 
 let
+  # Taps are DELIBERATE vendor-owned inputs, not an unpinned gap (ruled
+  # 2026-08-05 after investigating nix-homebrew + brew-nix; verdicts and
+  # revisit triggers in the Beads issue "nix-config: evaluate nix-homebrew").
+  # They follow HEAD, but exposure is bounded by architecture: brew-apply is
+  # materialize-only, so a tap's HEAD moving can only reach this machine at
+  # an explicit `make brew-upgrade` — vendor-owned tier semantics exactly.
+  # Graduation triggers: a tap-HEAD change burns us once, the tap count
+  # grows past a handful, or the ecosystem consolidates on nix-homebrew.
   taps = [
     "mrkai77/cask"  # For Loop window manager
     "steipete/tap"  # For CodexBar
     "openclaw/tap"  # For gogcli
   ];
 
-  # Command line tools that aren't in nixpkgs or need macOS-specific versions
+  # Command line tools genuinely outside nixpkgs. Surface-area rule
+  # (2026-08-05): a formula lives here ONLY if nixpkgs can't supply it —
+  # mas, sqlite, zk, tdl moved to store-owned home.packages that day.
+  # CAUTION: nixpkgs has a DIFFERENT project named `mole` (SSH tunnels);
+  # this mole is mole.fit (Mac cleaner) — name collision, do not "migrate".
   brews = [
-    "mas"  # Mac App Store CLI
-    "mole"  # Mac system optimization (mo command)
-    "sqlite"  # SQLite with extension support (FTS5 etc.; used by zk, chatlog/wechat queries)
-    "zk"  # Zettelkasten CLI - backlinks, orphans, link analysis for Obsidian vault
-    "telegram-downloader"  # tdl: Telegram message export/sync with takeout API support
+    "mole"  # Mac system optimization (mo command) — mole.fit, NOT nixpkgs mole
     "openclaw/tap/gogcli"  # Google Workspace CLI (gog); Clawdbot skill dependency
     "cliproxyapi"  # Unified proxy for AI coding CLIs (Claude, Gemini, Amp, Codex)
     # beads lives in the store-owned tier (llm-agents.nix) — do not re-add here.
@@ -118,11 +126,9 @@ let
       # Auto-updating cask; greedy keeps it visible to explicit upgrades.
       greedy = true;
     }
-
-    # Fonts (Mitchell's selection)
-    "font-jetbrains-mono-nerd-font"
-    "font-fira-code-nerd-font"
   ];
+  # Fonts moved to nix-darwin fonts.packages (nerd-fonts in nixpkgs) —
+  # store-owned, pinned, cached; font casks were Homebrew-by-accident.
 
   # Mac App Store apps
   masApps = {

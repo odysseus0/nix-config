@@ -8,6 +8,14 @@
   # prompt — hostile to remote (SSH) operation. darwin.nix now carries only
   # genuinely system-scoped surfaces.
 
+  # Fonts — store-owned via nixpkgs (moved from Homebrew font casks
+  # 2026-08-05). System layer because nix-darwin installs to
+  # /Library/Fonts/Nix Fonts; font changes are machine-config cadence.
+  fonts.packages = [
+    pkgs.nerd-fonts.jetbrains-mono
+    pkgs.nerd-fonts.fira-code
+  ];
+
   # Ensure the login shell for the primary user is the nix-managed path.
   # Darwin intentionally does NOT change shells for existing accounts via users.users.*,
   # so we do it declaratively here during activation. Safe and idempotent.

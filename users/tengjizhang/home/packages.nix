@@ -207,7 +207,12 @@ in {
     paperclip
     paperclipPython
 
-    # Additional tools
+    # Additional tools (sqlite/zk/tdl/mas moved from Homebrew 2026-08-05 —
+    # they were brew-by-accident; Homebrew's jurisdiction is casks + MAS)
+    sqlite      # CLI with FTS5 etc. (zk, chatlog/wechat queries)
+    zk          # Zettelkasten CLI - backlinks, orphans, link analysis
+    tdl         # Telegram message export/sync (was brew telegram-downloader)
+    mas         # Mac App Store CLI (brew bundle shells out to it for masApps)
     taskwarrior3
     rclone
     uv          # pure Python projects; also runs uv-tools-reconcile above
