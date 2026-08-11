@@ -23,10 +23,6 @@ let
     # Task management
     t = "task";
 
-    # AI CLI tools
-    ccc = "claude --dangerously-skip-permissions";
-    cx = "codex --dangerously-bypass-approvals-and-sandbox";
-
   };
 in {
   #---------------------------------------------------------------------
