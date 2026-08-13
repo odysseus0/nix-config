@@ -166,15 +166,17 @@
   # Herdr - agent multiplexer (replaces the tmux/zellij pair)
   #---------------------------------------------------------------------
   # ui.toast.delivery ships as "off", so a default install does NOT do the one
-  # thing herdr was chosen for. "system" hands notifications to the macOS
-  # notification centre directly; "terminal" would be the pick if these
-  # sessions were driven over SSH.
+  # thing herdr was chosen for. "terminal" over "system": it asks Ghostty to
+  # raise the notification, which is the same path Claude Code's own
+  # preferredNotifChannel uses — one bundle holding the macOS notification
+  # permission instead of a bare CLI binary trying to post directly, and it
+  # keeps working if these sessions are ever driven over SSH.
   programs.herdr = {
     enable = true;
     settings.ui = {
       agent_panel_sort = "spaces";
       toast = {
-        delivery = "system";
+        delivery = "terminal";
         delay_seconds = 1;  # suppresses blips that resolve on their own
       };
       sound.enabled = true;
