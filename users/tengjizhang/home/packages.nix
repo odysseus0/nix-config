@@ -217,7 +217,6 @@ in {
     amp
     # pi deliberately absent: llm-agents' pi tracks the dead @mariozechner
     # scope — see the vendor-owned `pi` wrapper above for the story.
-    agent-browser
     qmd
     beads         # mainProgram is `bd`
   ])
