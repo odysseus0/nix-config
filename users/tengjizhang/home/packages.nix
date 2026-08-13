@@ -205,8 +205,8 @@ in {
     uv          # pure Python projects; also runs uv-tools-reconcile above
     pixi        # ML/heavy native deps (conda-forge)
     yt-dlp
-    herdr       # agent multiplexer: persistent session server + TUI client,
-                # agent-state sidebar (blocked/working/done), reattach over SSH
+    # herdr is NOT here — programs.herdr in programs.nix owns both the package
+    # and config.toml.
 
     # Unfree; allowed via nixpkgs.config.allowUnfree in lib/mksystem.nix +
     # machines/macbook-m4-max.nix.
@@ -275,6 +275,11 @@ in {
   ];
 
   home.file = {
+    # Shipped inside the herdr package; wired here so agents running in a herdr
+    # pane can actually drive it. The skill self-gates on HERDR_ENV=1, so it
+    # stays inert everywhere else.
+    ".agents/skills/herdr".source = "${pkgs.herdr}/share/herdr/skills/herdr";
+
     ".agents/skills/plannotator-annotate".source = "${plannotatorSrc}/apps/skills/core/plannotator-annotate";
     ".agents/skills/plannotator-last".source = "${plannotatorSrc}/apps/skills/core/plannotator-last";
     ".agents/skills/plannotator-review".source = "${plannotatorSrc}/apps/skills/core/plannotator-review";

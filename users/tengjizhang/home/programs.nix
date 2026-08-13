@@ -162,6 +162,25 @@
     '';
   };
 
+  #---------------------------------------------------------------------
+  # Herdr - agent multiplexer (replaces the tmux/zellij pair)
+  #---------------------------------------------------------------------
+  # ui.toast.delivery ships as "off", so a default install does NOT do the one
+  # thing herdr was chosen for. "system" hands notifications to the macOS
+  # notification centre directly; "terminal" would be the pick if these
+  # sessions were driven over SSH.
+  programs.herdr = {
+    enable = true;
+    settings.ui = {
+      agent_panel_sort = "spaces";
+      toast = {
+        delivery = "system";
+        delay_seconds = 1;  # suppresses blips that resolve on their own
+      };
+      sound.enabled = true;
+    };
+  };
+
   # Silence "generateCaches has no effect" warning on darwin
   programs.man.generateCaches = false;
 
