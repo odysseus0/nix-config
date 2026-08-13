@@ -34,7 +34,7 @@ in {
     shellAliases = shellAliases;
     interactiveShellInit = builtins.readFile ../config.fish;
     plugins = [
-      { name = "hydro"; src = inputs.fish-hydro; }
+      { name = "hydro"; src = pkgs.fishPlugins.hydro.src; }
       { name = "fzf.fish"; src = pkgs.fishPlugins.fzf-fish.src; }
     ];
   };

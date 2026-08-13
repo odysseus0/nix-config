@@ -21,12 +21,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     
-    # Fish plugin
-    fish-hydro = {
-      url = "github:jorgebucaran/hydro/75ab7168a35358b3d08eeefad4ff0dd306bd80d4";
-      flake = false;
-    };
-
     # Determinate Nix - official nix-darwin integration module
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/3";
 
