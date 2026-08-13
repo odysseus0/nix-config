@@ -208,6 +208,14 @@ enabled = true
 # it carries Ghostty's identity and follows the client over SSH.
 delivery = "terminal"
 delay_seconds = 1
+
+[theme]
+# auto_switch ships as false, so herdr pins one theme while Ghostty follows
+# macOS appearance — the sidebar stays dark against a light transcript. Names
+# track the ghostty config's Catppuccin Frappe/Latte pair.
+auto_switch = true
+dark_name = "catppuccin"
+light_name = "catppuccin-latte"
 TOML
     fi
   '';
