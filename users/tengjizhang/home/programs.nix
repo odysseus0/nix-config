@@ -217,18 +217,6 @@ auto_switch = true
 dark_name = "catppuccin"
 light_name = "catppuccin-latte"
 
-[keys]
-# ctrl+b is tmux inheritance: a two-hand stretch that also shadows readline's
-# back-one-char. ctrl+space is thumb+pinky on one hand and collides with
-# nothing.
-prefix = "ctrl+space"
-# Direct, no prefix — pane movement is the one action frequent enough that a
-# two-key dance is the wrong price. Arrows deliberately, not alt+hjkl: LazyVim
-# binds alt+j/k to move-line and herdr intercepts before the pane sees it.
-focus_pane_left = "alt+left"
-focus_pane_right = "alt+right"
-focus_pane_up = "alt+up"
-focus_pane_down = "alt+down"
 TOML
     fi
   '';
