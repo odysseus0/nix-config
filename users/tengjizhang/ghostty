@@ -1,4 +1,7 @@
-theme = dark:Catppuccin Frappe,light:Catppuccin Latte
+# Mocha, not Frappe: Frappe is the deliberately soft flavor, and the accents
+# need to stay separable now that agent state is read at a glance. It also
+# matches herdr, which ships a single dark Catppuccin (no flavor variants).
+theme = dark:Catppuccin Mocha,light:Catppuccin Latte
 keybind = shift+enter=text:\n
 macos-option-as-alt = true
 
