@@ -217,11 +217,6 @@ in {
     amp
     # pi deliberately absent: llm-agents' pi tracks the dead @mariozechner
     # scope — see the vendor-owned `pi` wrapper above for the story.
-    # Headless-browser CLI (vercel-labs). Kept for being a CLI: the
-    # claude-in-chrome MCP covers the same job only inside Claude Code, and
-    # agents now run in sibling herdr panes where that is unreachable. defuddle
-    # hands an SPA shell to codex/amp/pi with nothing behind it otherwise.
-    agent-browser
     qmd
     beads         # mainProgram is `bd`
   ])
