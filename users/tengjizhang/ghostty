@@ -5,6 +5,15 @@ theme = dark:Catppuccin Mocha,light:Catppuccin Latte
 keybind = shift+enter=text:\n
 macos-option-as-alt = true
 
+# Floor, not a correction: 1.1 only rescues text that is effectively invisible
+# against its background — a tool emitting dark grey on the dark theme, say —
+# and leaves every legible pair untouched. Higher values start overriding the
+# palette's own choices, which defeats picking a palette.
+# Deliberately NOT display-p3 for window-colorspace: Catppuccin's hexes are
+# authored in sRGB, so a wider gamut reinterprets the same numbers and
+# oversaturates them.
+minimum-contrast = 1.1
+
 # Font configuration (from Mitchell's setup)
 font-family = JetBrains Mono Nerd Font
 font-size = 14
