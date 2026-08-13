@@ -148,13 +148,19 @@
   # Neovim - Editor
   #---------------------------------------------------------------------
 
-  # Package only, deliberately NOT programs.neovim: that module owns
-  # ~/.config/nvim/init.lua, and this machine's nvim config is LazyVim's — an
-  # app-owned tree with its own lockfile. Nix owns the binary, the app owns its
-  # config. Enabling the module puts a generated init.lua (provider toggles
-  # only) where LazyVim's `require("config.lazy")` bootstrap belongs, which
-  # silently reduces nvim to a bare editor.
-  home.packages = [ pkgs.neovim ];
+  # home-manager owns init.lua. The module generates it, so LazyVim's bootstrap
+  # has to be threaded THROUGH extraLuaConfig — otherwise the generated file
+  # (provider toggles only) lands on top of `require("config.lazy")` and nvim
+  # silently starts as a bare editor. The rest of the LazyVim tree
+  # (~/.config/nvim/lua/**) and lazy-lock.json stay app-owned: lazy.nvim writes
+  # that lockfile itself and cannot be given a read-only store path.
+  programs.neovim = {
+    enable = true;
+    package = pkgs.neovim-unwrapped;
+    extraLuaConfig = ''
+      require("config.lazy")
+    '';
+  };
 
   # Silence "generateCaches has no effect" warning on darwin
   programs.man.generateCaches = false;
