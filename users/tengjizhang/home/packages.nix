@@ -93,54 +93,12 @@ let
       exec ${env}/bin/python "$@"
     '';
 
-  # Plannotator — browser-based review/annotation UI for generated specs and diffs.
-  #
-  # Upstream's installer also mutates agent hook state. Keep that out of
-  # activation: Nix owns the CLI and user-invoked shared skills; Codex Stop
-  # hooks remain opt-in/manual.
-  plannotatorVersion = "0.22.0";
-  plannotatorSrc = pkgs.fetchFromGitHub {
-    owner = "backnotprop";
-    repo = "plannotator";
-    rev = "v${plannotatorVersion}";
-    hash = "sha256-CbKxru0bNgCvkoQr973GnNWvcspar2MkNG4AsJBEYUk=";
-  };
-  plannotator = pkgs.stdenvNoCC.mkDerivation {
-    pname = "plannotator";
-    version = plannotatorVersion;
-    src = pkgs.fetchurl {
-      url = "https://github.com/backnotprop/plannotator/releases/download/v${plannotatorVersion}/plannotator-darwin-arm64";
-      hash = "sha256-e6utZ5avj36jGYvZYzqm8szmq5fF7GjC/eDnTkwqBlI=";
-    };
-    dontUnpack = true;
-    installPhase = ''
-      mkdir -p "$out/bin"
-      cp "$src" "$out/bin/plannotator"
-      chmod +x "$out/bin/plannotator"
-    '';
-    meta.mainProgram = "plannotator";
-  };
-
   # MANIFEST-OWNED (uv): the manifest is ./uv-tools-manifest.nix; the
   # executor is pkgs.uv-tools-reconcile (flake.nix overlay ->
   # lib/uv-tools-reconcile.nix), added to home.packages below and run only
   # from `make update-tools`, never from activation.
 
 in {
-  # ---------------------------------------------------------------------
-  # VENDOR-OWNED activation: local cleanup only, never network
-  # ---------------------------------------------------------------------
-  # Remove the installer-managed binary so the Nix profile is the command
-  # authority. The shared skills stay declarative below. This is local
-  # (rm, not curl) so it's safe inside the activation phase, which must stay
-  # offline — see README §The two clocks.
-  home.activation.removeInstallerPlannotatorCli = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    if [ -e "$HOME/.local/bin/plannotator" ]; then
-      echo "Removing installer-managed Plannotator CLI; Nix profile owns plannotator."
-      rm -f "$HOME/.local/bin/plannotator"
-    fi
-  '';
-
   # VENDOR-OWNED exceptions deliberately absent from this list (own
   # installer/updater owns the install root; Nix wires PATH only, in
   # home/environment.nix): Vite+ (graduation triggers there). grok was
@@ -186,9 +144,6 @@ in {
     d2          # diagram-as-code tool
     actionlint  # GitHub Actions workflow lint
     shellcheck  # shell lint used by actionlint for run blocks
-
-    # Review / annotation tooling
-    plannotator
 
     # Biomedical / arxiv paper search (CLI + Python SDK wrapper)
     paperclip
@@ -279,9 +234,5 @@ in {
     # pane can actually drive it. The skill self-gates on HERDR_ENV=1, so it
     # stays inert everywhere else.
     ".agents/skills/herdr".source = "${pkgs.herdr}/share/herdr/skills/herdr";
-
-    ".agents/skills/plannotator-annotate".source = "${plannotatorSrc}/apps/skills/core/plannotator-annotate";
-    ".agents/skills/plannotator-last".source = "${plannotatorSrc}/apps/skills/core/plannotator-last";
-    ".agents/skills/plannotator-review".source = "${plannotatorSrc}/apps/skills/core/plannotator-review";
   };
 }
