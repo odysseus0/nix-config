@@ -104,7 +104,6 @@ in
     ".fdignore".source = ../fdignore;
     ".rgignore".source = ../rgignore;
     ".gitignore".source = ../gitignore;  # Global gitignore
-    ".tmux.conf".source = ../tmux.conf;  # iOS-optimized (see comments in file)
 
     # sudo darwin-rebuild does not preserve XDG_CONFIG_HOME, so Homebrew falls
     # back to ~/.homebrew/trust.json during activation.

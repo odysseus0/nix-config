@@ -1,35 +1,59 @@
 { config, lib, pkgs, ... }:
 
 {
-  # tmux-claude - Persistent tmux session for iOS remote Claude Code
-  # Starts at GUI login with keychain access, so SSH can attach without auth issues
-  # Termius startup: tmux attach -t claude || (cd ~/obsidian && tmux new-session -s claude)
-
-  home.file.".local/bin/tmux-claude-start" = {
+  # The third clock: flake-input freshness. `switch` applies, `update-tools`
+  # reconciles manifest-owned tools, and this bumps the pins. Without it a
+  # rolling channel plus a frozen lock is the worst of both — no currency, and
+  # none of a release branch's tested-as-a-set coherence. It froze for five
+  # months once (2026-03-23 -> 2026-08-13) and the workarounds calcified.
+  #
+  # Build-gated on purpose: the lock is only committed if the whole system
+  # still builds against it, so a bad upstream day reverts instead of landing.
+  home.file.".local/bin/nix-flake-bump" = {
     executable = true;
     text = ''
       #!/bin/bash
-      # Start tmux session for iOS remote Claude Code access
-      # This script runs at GUI login to ensure keychain access
+      set -uo pipefail
+      export PATH=/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin
+      REPO=${config.home.homeDirectory}/nix-config
+      cd "$REPO" || exit 1
 
-      TMUX=/run/current-system/sw/bin/tmux
-      FISH=/etc/profiles/per-user/tengjizhang/bin/fish
-      WORKDIR=${config.home.homeDirectory}/obsidian
+      echo "=== $(date) flake bump ==="
 
-      $TMUX new-session -d -s claude -c "$WORKDIR" "$FISH" && \
-      sleep 1 && \
-      $TMUX send-keys -t claude 'claude --dangerously-skip-permissions' Enter
+      # Never fight a session in progress; a dirty tree means George is mid-edit.
+      if [ -n "$(git status --porcelain)" ]; then
+        echo "working tree dirty — skipping"; exit 0
+      fi
+
+      git fetch --quiet origin 2>/dev/null
+      nix flake update || { echo "update failed"; git checkout -- flake.lock; exit 1; }
+
+      if git diff --quiet --exit-code flake.lock; then
+        echo "no input changes"; exit 0
+      fi
+
+      echo "--- build gate ---"
+      if nix build --no-link ".#darwinConfigurations.macbook-m4-max.system"; then
+        git add flake.lock
+        git commit -m "flake.lock: monthly input bump (build-verified)"
+        git push || echo "push failed — commit is local"
+        echo "bumped and committed; run 'make switch' to apply"
+      else
+        echo "BUILD FAILED against new inputs — reverting lock"
+        git checkout -- flake.lock
+        exit 1
+      fi
     '';
   };
 
-  launchd.agents.tmux-claude = {
+  launchd.agents.nix-flake-bump = {
     enable = true;
     config = {
-      Label = "com.user.tmux-claude";
-      ProgramArguments = [ "${config.home.homeDirectory}/.local/bin/tmux-claude-start" ];
-      RunAtLoad = true;
-      StandardOutPath = "${config.home.homeDirectory}/Library/Logs/tmux-claude.log";
-      StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/tmux-claude.error.log";
+      Label = "com.user.nix-flake-bump";
+      ProgramArguments = [ "${config.home.homeDirectory}/.local/bin/nix-flake-bump" ];
+      StartCalendarInterval = [{ Day = 1; Hour = 9; Minute = 0; }];
+      StandardOutPath = "${config.home.homeDirectory}/Library/Logs/nix-flake-bump.log";
+      StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/nix-flake-bump.error.log";
     };
   };
 

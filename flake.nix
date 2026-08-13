@@ -2,11 +2,12 @@
   description = "George's declarative computing environment — hermetic builds, ownership-tiered tooling";
 
   inputs = {
-    # Use unstable for latest packages on personal dev machine
+    # Use unstable for latest packages on personal dev machine. Single nixpkgs:
+    # rolling channel + lockfile + a bump cadence (make update-commit-push, on
+    # the monthly clock) is the whole design — reproducible between bumps,
+    # current after them. A second release-branch input is a standing liability:
+    # release branches EOL every six months and silently stop moving.
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-
-    # Stable channel — cherry-pick packages that break on unstable
-    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-25.11";
 
     # nix-darwin (master follows unstable)
     darwin = {

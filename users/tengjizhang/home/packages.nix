@@ -51,19 +51,6 @@ let
   # overlay path; this path builds against their pin and hits their cache).
   llmAgents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
 
-  # NOT inputs.nixpkgs-stable.legacyPackages.${system} — that flake output is
-  # pre-instantiated with the default nixpkgs config (allowUnfree = false)
-  # regardless of this system's `nixpkgs.config.allowUnfree = true` module
-  # option (machines/macbook-m4-max.nix + lib/mksystem.nix), since it never
-  # goes through the module system. That mismatch was the one thing forcing
-  # `--impure`/`NIXPKGS_ALLOW_UNFREE=1` on every build (2026-07-20 audit F5:
-  # _1password-cli below is unfree and comes from pkgs-stable) — re-importing
-  # explicitly with the same allowUnfree here makes evaluation pure again.
-  pkgs-stable = import inputs.nixpkgs-stable {
-    system = pkgs.stdenv.hostPlatform.system;
-    config.allowUnfree = true;
-  };
-
   # ---------------------------------------------------------------------
   # STORE-OWNED: in-tree derivations
   # ---------------------------------------------------------------------
@@ -218,7 +205,12 @@ in {
     uv          # pure Python projects; also runs uv-tools-reconcile above
     pixi        # ML/heavy native deps (conda-forge)
     yt-dlp
-    zellij
+    herdr       # agent multiplexer: persistent session server + TUI client,
+                # agent-state sidebar (blocked/working/done), reattach over SSH
+
+    # Unfree; allowed via nixpkgs.config.allowUnfree in lib/mksystem.nix +
+    # machines/macbook-m4-max.nix.
+    _1password-cli
 
     # Essential development tools
     asciinema   # terminal recorder
@@ -255,9 +247,6 @@ in {
     cloudflared      # Cloudflare Tunnel client (local → public HTTPS via *.trycloudflare.com)
     wrangler         # Cloudflare Workers CLI (deploy serverless functions)
   ]
-  ++ (with pkgs-stable; [
-    _1password-cli  # Stable: unstable ships beta that breaks Pulumi 1Password provider
-  ])
   ++ (with llmAgents; [
     # -------------------------------------------------------------------
     # STORE-OWNED: AI coding agent CLIs (github:numtide/llm-agents.nix)
