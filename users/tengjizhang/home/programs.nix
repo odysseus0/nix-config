@@ -1,4 +1,4 @@
-{ inputs, pkgs, ... }:
+{ inputs, pkgs, lib, ... }:
 
 {
   #---------------------------------------------------------------------
@@ -177,17 +177,40 @@
   # CLIENT rather than the server — so an SSH-driven session notifies the
   # laptop in front of you, not the box the server happens to run on. It is
   # also the same path Claude Code's own preferredNotifChannel takes.
-  programs.herdr = {
-    enable = true;
-    settings.ui = {
-      agent_panel_sort = "spaces";
-      toast = {
-        delivery = "terminal";
-        delay_seconds = 1;  # suppresses blips that resolve on their own
-      };
-      sound.enabled = true;
-    };
-  };
+  # config.toml is APP-OWNED, not store-owned. herdr writes it back at runtime —
+  # the TUI persists ui.agent_panel_sort and custom keybindings there — so a
+  # /nix/store symlink makes those writes fail with EACCES. Using
+  # programs.herdr.settings did exactly that.
+  #
+  # Seed instead of manage: activation installs these defaults only when the
+  # file is absent, so a fresh machine comes up configured and herdr still owns
+  # the file afterwards. Same boundary as lazy-lock.json under nvim.
+  programs.herdr.enable = true;
+
+  home.activation.seedHerdrConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    cfg="$HOME/.config/herdr/config.toml"
+    # Drop a symlink left by the earlier store-managed arrangement.
+    if [ -L "$cfg" ]; then
+      $DRY_RUN_CMD rm -f "$cfg"
+    fi
+    if [ ! -e "$cfg" ]; then
+      $DRY_RUN_CMD mkdir -p "$(dirname "$cfg")"
+      $DRY_RUN_CMD cat > "$cfg" <<'TOML'
+[ui]
+agent_panel_sort = "spaces"
+
+[ui.sound]
+enabled = true
+
+[ui.toast]
+# Ships as "off": a default install raises no desktop notification when an
+# agent finishes or blocks. "terminal" asks the outer terminal to raise it, so
+# it carries Ghostty's identity and follows the client over SSH.
+delivery = "terminal"
+delay_seconds = 1
+TOML
+    fi
+  '';
 
   # Silence "generateCaches has no effect" warning on darwin
   programs.man.generateCaches = false;
