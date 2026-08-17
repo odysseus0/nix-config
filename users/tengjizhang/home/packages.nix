@@ -93,6 +93,69 @@ let
       exec ${env}/bin/python "$@"
     '';
 
+  # Sherlog (`shlog`) — full-text search over local agent session transcripts
+  # (Claude Code / Codex / pi JSONL) into a local SQLite FTS index. Read-only
+  # over the transcripts; `shlog sync` is the only command that writes, and it
+  # writes only its own index.
+  #
+  # Prebuilt release archive, NOT buildRustPackage. Upstream is Rust and no
+  # substituter serves it, so a source build would compile Rust from scratch —
+  # a defect under README §cache-hit discipline. Upstream publishes per-target
+  # archives plus a SHA256SUMS manifest; the hashes below are that manifest's,
+  # converted to SRI (verified against a local shasum 2026-08-17).
+  #
+  # Static except for libSystem (`otool -L` clean), so the archive drops
+  # straight into the store — no patching, no re-signing.
+  #
+  # Bump recipe:
+  #   v=0.5.3
+  #   curl -fsSL https://github.com/catoncat/sherlog/releases/download/v$v/SHA256SUMS
+  #   nix hash convert --hash-algo sha256 --to sri <hex-for-your-target>
+  sherlog =
+    let
+      version = "0.5.2";
+      # target triple + archive hash, keyed by Nix system. Extend when a
+      # platform is actually built for (see lib/mksystem.nix's darwin fork).
+      targets = {
+        aarch64-darwin = {
+          triple = "aarch64-apple-darwin";
+          hash = "sha256-QY9TqYZNnFQh3puhkVGMF0sd2YOjwQZI/r7PzJdxbqs=";
+        };
+        x86_64-linux = {
+          triple = "x86_64-unknown-linux-gnu";
+          hash = "sha256-UgOQk01/H9WzCC3BKcsBLVXiZnnJ/b8a5+eidPChQDo=";
+        };
+      };
+      system = pkgs.stdenv.hostPlatform.system;
+      target = targets.${system} or (throw "sherlog: no prebuilt archive pinned for ${system}");
+    in
+    pkgs.stdenvNoCC.mkDerivation {
+      pname = "sherlog";
+      inherit version;
+
+      src = pkgs.fetchurl {
+        url = "https://github.com/catoncat/sherlog/releases/download/v${version}/sherlog-v${version}-${target.triple}.tar.gz";
+        inherit (target) hash;
+      };
+
+      installPhase = ''
+        runHook preInstall
+        install -Dm755 shlog $out/bin/shlog
+        # Upstream ships `sherlog` as a symlink to the same binary; keep both names.
+        ln -s shlog $out/bin/sherlog
+        install -Dm644 LICENSE $out/share/licenses/sherlog/LICENSE
+        runHook postInstall
+      '';
+
+      meta = {
+        description = "Progressive full-text search over local agent session logs";
+        homepage = "https://sherlog.net";
+        license = lib.licenses.mit;
+        mainProgram = "shlog";
+        platforms = lib.attrNames targets;
+      };
+    };
+
   # MANIFEST-OWNED (uv): the manifest is ./uv-tools-manifest.nix; the
   # executor is pkgs.uv-tools-reconcile (flake.nix overlay ->
   # lib/uv-tools-reconcile.nix), added to home.packages below and run only
@@ -153,6 +216,7 @@ in {
     # they were brew-by-accident; Homebrew's jurisdiction is casks + MAS)
     sqlite      # CLI with FTS5 etc. (zk, chatlog/wechat queries)
     zk          # Zettelkasten CLI - backlinks, orphans, link analysis
+    sherlog     # `shlog` - search past agent session transcripts (in-tree derivation above)
     tdl         # Telegram message export/sync (was brew telegram-downloader)
     mas         # Mac App Store CLI (brew bundle shells out to it for masApps)
     taskwarrior3
