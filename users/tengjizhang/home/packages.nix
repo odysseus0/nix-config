@@ -276,7 +276,24 @@ in {
     # the default tier for agent CLIs now — reach for a manifest- or
     # vendor-owned exception (below) only when a tool genuinely isn't
     # packaged here or its update model requires it.
-    claude-code
+    # claude-code deliberately absent — VENDOR-OWNED as of 2026-08-17. It ships
+    # multiple times a week, and the store-owned path stacks two clocks against
+    # that (llm-agents.nix must build it, then this flake must bump to their
+    # build), so the pin is structurally days stale — 2.1.229 here vs 2.1.234
+    # published. Pinning buys reproducibility, and nothing builds against
+    # `claude`: it is an interactive tool whose version affects only the
+    # session in front of you. Native install owns ~/.local/share/claude and
+    # self-updates on the `latest` channel; `claude install <version>` is the
+    # rollback. PATH wiring is already correct (~/.local/bin precedes
+    # ~/.nix-profile/bin in home/environment.nix), and removing this entry is
+    # what makes that unambiguous — with both installed the Nix binary is
+    # silently shadowed (MIGRATION.md §stale copies).
+    # Note the Nix wrapper was also the only thing setting DISABLE_AUTOUPDATER=1
+    # and DISABLE_INSTALLATION_CHECKS=1; dropping it re-enables self-update with
+    # no config edit.
+    # Graduation trigger: none expected — this tier IS the right answer for a
+    # daily-shipping vendor CLI. Revisit only if something starts building
+    # against a pinned claude version.
     codex
     amp
     # pi deliberately absent: llm-agents' pi tracks the dead @mariozechner

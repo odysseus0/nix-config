@@ -9,6 +9,12 @@
   #
   # Build-gated on purpose: the lock is only committed if the whole system
   # still builds against it, so a bad upstream day reverts instead of landing.
+  # Green gate then activates the home layer — see the activation block below
+  # for why bump-without-activate was the defect worth fixing.
+  #
+  # Tools that ship faster than this clock can track do not belong here at all;
+  # they belong in the vendor-owned tier (claude-code, moved 2026-08-17 — see
+  # home/packages.nix). This agent is for the rest of the package set.
   home.file.".local/bin/nix-flake-bump" = {
     executable = true;
     text = ''
@@ -33,15 +39,34 @@
       fi
 
       echo "--- build gate ---"
-      if nix build --no-link ".#darwinConfigurations.macbook-m4-max.system"; then
-        git add flake.lock
-        git commit -m "flake.lock: monthly input bump (build-verified)"
-        git push || echo "push failed — commit is local"
-        echo "bumped and committed; run 'make switch' to apply"
-      else
+      system="$(nix build --no-link --print-out-paths ".#darwinConfigurations.macbook-m4-max.system")" || {
         echo "BUILD FAILED against new inputs — reverting lock"
         git checkout -- flake.lock
         exit 1
+      }
+
+      git add flake.lock
+      git commit -m "flake.lock: daily input bump (build-verified)"
+      git push || echo "push failed — commit is local"
+
+      # Bumping without activating was the old defect: the lock moved daily and
+      # the binaries never did, so currency lived in git and nowhere else.
+      # Activate the home layer here — it is sudo-free and it is where the
+      # fast-moving CLI tools live. Same evaluation as `make home-switch`, so
+      # there is still no second profile.
+      echo "--- activating home layer ---"
+      if generation="$(nix build --no-link --print-out-paths ".#darwinConfigurations.macbook-m4-max.config.home-manager.users.${config.home.username}.home.activationPackage")" \
+         && "$generation/activate"; then
+        echo "home layer activated"
+      else
+        echo "home activation failed — the commit stands; run 'make home-switch' by hand"
+      fi
+
+      # The system layer needs sudo, so it stays a supervised boundary (see
+      # README §The two clocks). Say when it has drifted rather than leaving
+      # the two layers silently skewed.
+      if [ "$system" != "$(readlink -f /run/current-system)" ]; then
+        echo "system layer changed — run 'make switch' when convenient"
       fi
     '';
   };
@@ -51,7 +76,12 @@
     config = {
       Label = "com.user.nix-flake-bump";
       ProgramArguments = [ "${config.home.homeDirectory}/.local/bin/nix-flake-bump" ];
-      StartCalendarInterval = [{ Day = 1; Hour = 9; Minute = 0; }];
+      # Daily, not monthly. A monthly bump against rolling channels is barely
+      # distinguishable from a frozen lock — it was set to Day 1 and had not
+      # fired once (no log file existed as of 2026-08-17). Daily keeps each
+      # bump small, which is also what makes the build gate a useful bisect:
+      # one day's inputs, not thirty.
+      StartCalendarInterval = [{ Hour = 9; Minute = 0; }];
       StandardOutPath = "${config.home.homeDirectory}/Library/Logs/nix-flake-bump.log";
       StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/nix-flake-bump.error.log";
     };
