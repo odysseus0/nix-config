@@ -71,21 +71,10 @@
     '';
   };
 
-  launchd.agents.nix-flake-bump = {
-    enable = true;
-    config = {
-      Label = "com.user.nix-flake-bump";
-      ProgramArguments = [ "${config.home.homeDirectory}/.local/bin/nix-flake-bump" ];
-      # Daily, not monthly. A monthly bump against rolling channels is barely
-      # distinguishable from a frozen lock — it was set to Day 1 and had not
-      # fired once (no log file existed as of 2026-08-17). Daily keeps each
-      # bump small, which is also what makes the build gate a useful bisect:
-      # one day's inputs, not thirty.
-      StartCalendarInterval = [{ Hour = 9; Minute = 0; }];
-      StandardOutPath = "${config.home.homeDirectory}/Library/Logs/nix-flake-bump.log";
-      StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/nix-flake-bump.error.log";
-    };
-  };
+  # Machine jobs are declared in home-ops/runtime/registry.toml, not here — the
+  # registry generates launchd.agents.<id> (runtime.nix) AND is what the observe
+  # loop diffs against, so a job declared directly in this file runs unwatched.
+  # nix-flake-bump and prune-meeting-recordings moved there 2026-08-17.
 
   # CLIProxyAPI - proxy so Amp can use Claude/Gemini/Codex via CLI OAuth sessions
   # Binary from Homebrew until a maintained Nix package exists. When moving it,
@@ -121,30 +110,4 @@
   # not hand-declared, and watched by the runtime layer.
   # Query: sqlite3 ~/.wechat/wechat.db "..."
 
-  # Prune meeting audio files older than 30 days.
-  # Audio Hijack writes two-track recordings here; transcripts land in vault inbox.
-  # Audio kept as a regenerate-from-source safety net; vault keeps only text.
-  launchd.agents.prune-meeting-recordings = {
-    enable = true;
-    config = {
-      Label = "com.user.prune-meeting-recordings";
-      ProgramArguments = [
-        "/usr/bin/find"
-        "${config.home.homeDirectory}/Recordings/meetings"
-        "-mindepth"
-        "1"
-        "-type"
-        "f"
-        "-mtime"
-        "+30"
-        "-delete"
-      ];
-      StartCalendarInterval = {
-        Hour = 3;
-        Minute = 0;
-      };
-      StandardOutPath = "${config.home.homeDirectory}/Library/Logs/prune-meeting-recordings.log";
-      StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/prune-meeting-recordings.error.log";
-    };
-  };
 }
