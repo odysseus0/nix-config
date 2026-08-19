@@ -152,6 +152,10 @@ function gh-dash -d "GitHub dashboard with auto light/dark theme"
     command gh-dash --config ~/.config/gh-dash/config-$theme.yml $argv
 end
 
+# Python 3.13 REPL/runner via uv, matching Coderpad's interview environment
+# (system python3 is macOS-bundled 3.9.6)
+abbr py313 "uv run --python 3.13 python3"
+
 # =============================================================================
 # PATH Configuration (Mitchell's approach)  
 # =============================================================================
