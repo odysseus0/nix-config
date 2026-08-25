@@ -1,4 +1,4 @@
-{ pkgs, lib, ... }:
+{ config, pkgs, lib, ... }:
 
 let
   # gh-dash base config (theme-agnostic)
@@ -131,5 +131,36 @@ in
     "gh-dash/config-light.yml".text = toYAML (mkGhDashConfig catppuccinLatte);
     "gh-dash/config-dark.yml".text = toYAML (mkGhDashConfig catppuccinFrappe);
 
-  };
+    #-------------------------------------------------------------------
+    # Neovim — everything except init.lua (programs.neovim owns that)
+    #-------------------------------------------------------------------
+    # The LazyVim tree lives in home-ops (PRIVATE — lua/plugins/obsidian.lua
+    # carries vault paths, which must not land in this public repo) and is
+    # linked OUT OF STORE. Two reasons, each sufficient alone:
+    #
+    #   1. lazy.nvim rewrites lazy-lock.json on every update, so a read-only
+    #      /nix/store path makes that write fail.
+    #   2. lua/** is edited iteratively; a store path would demand a
+    #      `make switch` before a keymap tweak could even be tried.
+    #
+    # mkOutOfStoreSymlink points at the home-ops WORKING TREE, so the files
+    # stay writable and git-tracked while nix still owns placement.
+    # Consequence: these paths need ~/home-ops checked out — the flake input
+    # alone is not enough.
+    #
+    # The general rule: partition config by ownership, not by application.
+    # Authored-and-app-reads-only -> store symlink. App rewrites it, or you
+    # iterate on it -> out of store, into a tracked repo. Regenerable or
+    # secret -> neither; leave it app-owned and ignored.
+  }
+  // lib.genAttrs [
+    "nvim/lua"
+    "nvim/lazy-lock.json"
+    "nvim/lazyvim.json"
+    "nvim/stylua.toml"
+    "nvim/.neoconf.json"
+  ] (path: {
+    source = config.lib.file.mkOutOfStoreSymlink
+      "${config.home.homeDirectory}/home-ops/${path}";
+  });
 }

@@ -151,9 +151,7 @@
   # home-manager owns init.lua. The module generates it, so LazyVim's bootstrap
   # has to be threaded THROUGH extraLuaConfig — otherwise the generated file
   # (provider toggles only) lands on top of `require("config.lazy")` and nvim
-  # silently starts as a bare editor. The rest of the LazyVim tree
-  # (~/.config/nvim/lua/**) and lazy-lock.json stay app-owned: lazy.nvim writes
-  # that lockfile itself and cannot be given a read-only store path.
+  # silently starts as a bare editor.
   programs.neovim = {
     enable = true;
     package = pkgs.neovim-unwrapped;
@@ -161,6 +159,9 @@
       require("config.lazy")
     '';
   };
+
+  # The rest of the tree (lua/**, lazy-lock.json, ...) lives in home-ops and is
+  # linked out of store from dotfiles.nix — see the Neovim block there.
 
   #---------------------------------------------------------------------
   # Herdr - agent multiplexer (replaces the tmux/zellij pair)
