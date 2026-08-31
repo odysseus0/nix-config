@@ -88,5 +88,38 @@
       user = "tengjizhang";
       darwin = true;
     };
+
+    # Minimal Linux worker shell for a Debian container (no NixOS host,
+    # no Home Manager, no systemd). `nix develop .#remote-worker`
+    # Packages come from this flake's nixpkgs pin plus llm-agents.nix
+    # (beads) so they hit cache.nixos.org / cache.numtide.com.
+    devShells.x86_64-linux =
+      let
+        system = "x86_64-linux";
+        pkgs = import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+        };
+        llmAgents = inputs.llm-agents.packages.${system};
+      in {
+        remote-worker = pkgs.mkShell {
+          name = "remote-worker";
+          packages = with pkgs; [
+            git
+            gh
+            bun
+            nodejs
+            dolt
+            syncthing
+            tmux
+            rsync
+            rclone
+            jq
+            ripgrep
+          ] ++ [
+            llmAgents.beads
+          ];
+        };
+      };
   };
 }
