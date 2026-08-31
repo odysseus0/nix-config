@@ -30,6 +30,7 @@
     secrets."trace-archive-r2-secret-access-key" = {};
     secrets."trace-archive-r2-crypt-password" = {};
     secrets."trace-archive-r2-crypt-salt" = {};
+    secrets."beads-cloudflared-tunnel-token" = {};
 
     # Shell environment variables — sourced by all shells via home.sessionVariablesExtra.
     # home-manager runs hm-session-vars.sh through babelfish for fish, sources directly for zsh.
@@ -88,6 +89,16 @@
         export RCLONE_CONFIG_TRACES_SECRET_ACCESS_KEY="${config.sops.placeholder."trace-archive-r2-secret-access-key"}"
         export TRACE_ARCHIVE_CRYPT_PASSWORD="${config.sops.placeholder."trace-archive-r2-crypt-password"}"
         export TRACE_ARCHIVE_CRYPT_SALT="${config.sops.placeholder."trace-archive-r2-crypt-salt"}"
+      '';
+    };
+
+    # The Cloudflare connector token belongs in the encrypted secret store,
+    # never in the public runtime registry or a launchd plist. The service
+    # starts only after Home Manager has rendered this 0600 file.
+    templates."beads-cloudflared-tunnel.env" = {
+      path = "${config.home.homeDirectory}/.config/beads/tunnel.env";
+      content = ''
+        export CLOUDFLARED_TUNNEL_TOKEN="${config.sops.placeholder."beads-cloudflared-tunnel-token"}"
       '';
     };
 

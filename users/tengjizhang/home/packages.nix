@@ -156,6 +156,51 @@ let
       };
     };
 
+  # Dolt is the Beads server engine. Pin the upstream 2.2.0 release rather
+  # than nixpkgs' rolling package: Beads documents this exact release as the
+  # safe standalone-server version; 2.3.x has a hard-reset regression that
+  # can leave a multi-writer database unable to settle a merge.
+  #
+  # This is an upstream prebuilt archive, so it remains store-owned without
+  # compiling Dolt's Go/Rust dependency graph. Hash verified locally against
+  # the downloaded v2.2.0 aarch64-darwin archive on 2026-08-31.
+  dolt =
+    let
+      version = "2.2.0";
+      targets = {
+        aarch64-darwin = {
+          asset = "dolt-darwin-arm64";
+          hash = "sha256-xnN9wsWAbi7u9IOa12woFnyGH4eK8wcd8SQqZYnYEmc=";
+        };
+      };
+      system = pkgs.stdenv.hostPlatform.system;
+      target = targets.${system} or (throw "dolt: no pinned release archive for ${system}");
+    in
+    pkgs.stdenvNoCC.mkDerivation {
+      pname = "dolt";
+      inherit version;
+
+      src = pkgs.fetchurl {
+        url = "https://github.com/dolthub/dolt/releases/download/v${version}/${target.asset}.tar.gz";
+        inherit (target) hash;
+      };
+
+      installPhase = ''
+        runHook preInstall
+        install -Dm755 bin/dolt $out/bin/dolt
+        install -Dm644 LICENSES $out/share/licenses/dolt/LICENSES
+        runHook postInstall
+      '';
+
+      meta = {
+        description = "Version-controlled SQL database for the shared Beads server";
+        homepage = "https://www.dolthub.com/";
+        license = lib.licenses.asl20;
+        mainProgram = "dolt";
+        platforms = lib.attrNames targets;
+      };
+    };
+
   # MANIFEST-OWNED (uv): the manifest is ./uv-tools-manifest.nix; the
   # executor is pkgs.uv-tools-reconcile (flake.nix overlay ->
   # lib/uv-tools-reconcile.nix), added to home.packages below and run only
@@ -221,6 +266,7 @@ in {
     mas         # Mac App Store CLI (brew bundle shells out to it for masApps)
     taskwarrior3
     rclone
+    dolt         # pinned server engine for the shared Beads authority
     uv          # pure Python projects; also runs uv-tools-reconcile above
     pixi        # ML/heavy native deps (conda-forge)
     yt-dlp
