@@ -9,7 +9,7 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     # beads (bd). No nixpkgs.follows — same cache-hit reason as the parent flake.
-    llm-agents.url = "github:numtide/llm-agents.nix";
+    llm-agents.url = "github:numtide/llm-agents.nix/8fa7a843ec7e8017ba9313f7b57dba8fd803b98d";
   };
 
   outputs = { self, nixpkgs, llm-agents }:
