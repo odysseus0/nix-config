@@ -28,6 +28,7 @@
           bun
           nodejs
           dolt
+          cloudflared
           syncthing
           tmux
           rsync
