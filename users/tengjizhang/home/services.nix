@@ -21,6 +21,15 @@
       #!/bin/bash
       set -uo pipefail
       export PATH=/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin
+
+      # launchd hands a job a 256-fd soft limit (`launchctl limit maxfiles`);
+      # an interactive shell gets 1048576. `nix flake update` blows through 256
+      # writing the nixpkgs packfile into ~/.cache/nix/tarball-cache and dies
+      # with "Too many open files", which is why this job failed silently every
+      # morning 2026-08-18 -> 09-01 while the same command by hand always
+      # worked. Raise the soft limit (hard limit is unlimited) — do not remove.
+      ulimit -n 65536
+
       REPO=${config.home.homeDirectory}/nix-config
       cd "$REPO" || exit 1
 
