@@ -59,6 +59,9 @@
     mkSystem = import ./lib/mksystem.nix {
       inherit nixpkgs inputs;
       overlays = [
+        (final: prev: {
+          herdr = final.callPackage ./lib/herdr-bin.nix { };
+        })
         # Workaround: jeepney check phase fails with exit code 127 (missing test runner)
         # on nixpkgs-unstable. This breaks yt-dlp -> secretstorage -> jeepney chain.
         # Remove once upstream nixpkgs fixes python313Packages.jeepney.
