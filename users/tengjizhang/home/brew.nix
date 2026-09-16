@@ -98,7 +98,6 @@ let
     "zotero@beta"
 
     # System & Utilities
-    "rectangle"
     "hammerspoon"
     "imageoptim"
     "istat-menus"
@@ -106,7 +105,6 @@ let
     "the-unarchiver"
     "aldente"
     "appcleaner"
-    "jordanbaird-ice"
     "qlmarkdown"
     "swiftbar"  # menu-bar glance surface for the runtime layer (~/home-ops/runtime/runtime.30s.ts)
     "keymapp"
@@ -114,7 +112,6 @@ let
     "qflipper"
     "mrkai77/cask/loop"
     "stretchly"
-    "macwhisper"
 
     # Media & Design
     "figma"

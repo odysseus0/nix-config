@@ -10,4 +10,7 @@
 # the same run.
 [
   "mlx-qwen3-asr"   # Qwen3-ASR speech recognition for Apple Silicon
+  "mlx-whisper"     # local bulk Whisper transcription on Apple Silicon (MLX);
+                    # manifest-owned: not in nixpkgs (no python3Packages.mlx-whisper).
+                    # Graduate to home.packages when it lands in nixpkgs.
 ]
