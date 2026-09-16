@@ -69,7 +69,6 @@ let
 
     # Development
     "ghostty@tip"
-    "visual-studio-code@insiders"
     "orbstack"
     "tableplus"
     "zed"
