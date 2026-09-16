@@ -74,6 +74,7 @@ let
     "tableplus"
     "zed"
     "proxyman"
+    "chromedriver"  # browser automation; kept on purpose
 
     # Network & Security
     "tailscale-app"
