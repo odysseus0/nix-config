@@ -159,8 +159,7 @@ let
     # Specialized Tools
     "Flighty" = 1358823008;
     "Focus for YouTube" = 1514703160;
-    "MarginNote 3" = 1423522373;
-    "Portal" = 1436994560;
+"Portal" = 1436994560;
     "Quantumult X" = 1443988620;
   };
 
