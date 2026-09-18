@@ -41,7 +41,7 @@
     # cache.numtide.com hit (substituter wired in machines/).
     llm-agents.url = "github:numtide/llm-agents.nix";
 
-    # Personal-ops monorepo (runtime layer + chatlog config + future life-ops
+    # Personal-ops monorepo (runtime layer + future life-ops
     # machinery). Private repo — was users/tengjizhang/runtime/ in-tree here,
     # moved out because it carries a WeChat account id + personal ritual
     # entries this (public) repo must not contain. Renamed runtime -> home-ops

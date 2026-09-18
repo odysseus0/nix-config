@@ -19,6 +19,9 @@
     age.keyFile = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
 
     secrets."cliproxyapi-upstream-api-key" = {};
+    # WeChat SQLCipher master key (pre-KDF). Sole consumer since 2026-09-18
+    # is the vault wechat skill's seed-keys script, which derives wx-cli's
+    # per-shard keys from it. Kept in sops as the recovery source.
     secrets."chatlog-data-key" = {};
     secrets."chatlog-img-key" = {};
     secrets."tg-app-id" = {};
@@ -76,7 +79,7 @@
     # Migrated 2026-07-20 from op-at-runtime per the runtime-layer design
     # doc's "same-day amendments" secrets-tiering note: an unattended
     # scheduled run must not depend on the 1Password app being unlocked.
-    # No account-identifying content here (unlike chatlog-server.json), so
+    # No account-identifying content here, so
     # this stays entirely in the public nix-config tree — only the
     # *encrypted values* are sensitive, and sops handles that. sync.sh
     # sources this file when present and falls back to `op read` otherwise
@@ -102,12 +105,5 @@
       '';
     };
 
-    # chatlog-server.json (WeChat account id + these two secrets' placeholders)
-    # is rendered by the private `home-ops` flake input's chatlog module now —
-    # see users/tengjizhang/home-manager.nix and home-ops/README.md "chatlog".
-    # The secret *declarations* above (chatlog-data-key, chatlog-img-key)
-    # stay here: names aren't sensitive, and sops-nix's placeholder
-    # substitution works across the merged config tree regardless of which
-    # module declares the `sops.templates` entry that consumes them.
   };
 }

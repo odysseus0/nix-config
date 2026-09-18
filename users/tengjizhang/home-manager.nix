@@ -18,19 +18,13 @@
     # private `home-ops` flake input (was `runtime`, renamed 2026-07-20);
     # was ./runtime/runtime.nix in-tree originally.
     inputs.home-ops.homeManagerModules.default
-    # WeChat/chatlog config — also lives in home-ops (account id + Tencent
-    # container path, not fit for this public repo). See
-    # home-ops/README.md "chatlog" for the sops-placeholder wiring: this
-    # module reads config.sops.placeholder.* directly, so the secret
-    # *declarations* in ./home/secrets.nix are what actually wire it up.
-    inputs.home-ops.homeManagerModules.chatlog
     # Accepted code-mode gateway pilot. Install-only: connections and OAuth
     # remain app-owned runtime state, never Nix declarations.
     inputs.home-ops.homeManagerModules.executor
     # bird: packaged in home-ops, not here. The tool name is public (it's a
     # published npm package); what stays private is its upstream repo, the
     # fork it's built from, and the packaging — all of which live behind the
-    # home-ops seam for the same reason chatlog does (see comment above).
+    # home-ops seam (see the home-ops comment above).
     inputs.home-ops.homeManagerModules.bird
   ];
 

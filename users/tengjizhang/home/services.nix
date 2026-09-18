@@ -106,17 +106,10 @@
     };
   };
 
-  # Chatlog - WeChat chat history sync
-  # Secrets: sops-nix → secrets/secrets.yaml (chatlog-data-key, chatlog-img-key)
-  # Config + the (superseded, disabled) old launchd.agents.chatlog now live
-  # in the private `home-ops` flake input's chatlog module — both embedded
-  # the WeChat account id and its Tencent-app container path, which this
-  # public repo must not contain. See users/tengjizhang/home-manager.nix
-  # (inputs.home-ops.homeManagerModules.chatlog) and home-ops/README.md
-  # "chatlog". The live agent is launchd.agents.chatlog-sync (Label
-  # com.runtime.chatlog-sync), generated from that repo's
-  # runtime/registry.toml [entries.chatlog-sync.exec] block — registered,
-  # not hand-declared, and watched by the runtime layer.
-  # Query: sqlite3 ~/.wechat/wechat.db "..."
+  # WeChat history: no launchd agent since 2026-09-18. `wx-cli` (hand-built
+  # at ~/.local/bin/wx from ~/projects/wx-cli) reads the encrypted WeChat
+  # DBs on demand through its own daemon; its config is app-owned in
+  # ~/.wx-cli. The sops secret `chatlog-data-key` is the master key the
+  # per-shard wx keys derive from — see the vault skill .agents/skills/wechat.
 
 }

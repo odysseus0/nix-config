@@ -259,7 +259,7 @@ in {
 
     # Additional tools (sqlite/zk/tdl/mas moved from Homebrew 2026-08-05 —
     # they were brew-by-accident; Homebrew's jurisdiction is casks + MAS)
-    sqlite      # CLI with FTS5 etc. (zk, chatlog/wechat queries)
+    sqlite      # CLI with FTS5 etc. (zk)
     zk          # Zettelkasten CLI - backlinks, orphans, link analysis
     sherlog     # `shlog` - search past agent session transcripts (in-tree derivation above)
     tdl         # Telegram message export/sync (was brew telegram-downloader)
