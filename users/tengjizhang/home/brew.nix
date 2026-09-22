@@ -81,6 +81,7 @@ let
     # AI Tools
     "chatgpt"
     "lm-studio"
+    "t3-code"
 
     # Productivity
     "1password"
