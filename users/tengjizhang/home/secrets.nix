@@ -18,7 +18,6 @@
     defaultSopsFile = ../../../secrets/secrets.yaml;
     age.keyFile = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
 
-    secrets."cliproxyapi-upstream-api-key" = {};
     # WeChat SQLCipher master key (pre-KDF). Sole consumer since 2026-09-18
     # is the vault wechat skill's seed-keys script, which derives wx-cli's
     # per-shard keys from it. Kept in sops as the recovery source.
@@ -66,11 +65,6 @@
 
         request-retry: 3
         max-retry-interval: 30
-
-        ampcode:
-          upstream-url: "https://ampcode.com"
-          upstream-api-key: "${config.sops.placeholder."cliproxyapi-upstream-api-key"}"
-          restrict-management-to-localhost: true
       '';
     };
 
