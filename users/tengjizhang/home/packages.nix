@@ -341,7 +341,13 @@ in {
     # daily-shipping vendor CLI. Revisit only if something starts building
     # against a pinned claude version.
     codex
-    amp
+    # amp deliberately absent — VENDOR-OWNED as of 2026-09-23. Same story as
+    # claude-code: Amp ships a self-updating single-file binary via
+    # `curl -fsSL https://ampcode.com/install.sh | bash` into ~/.amp/bin with
+    # a symlink at ~/.local/bin/amp. The llm-agents.nix npm pin was weeks stale
+    # (0.0.1788307300 vs latest) and silently won PATH over the vendor install.
+    # `amp update` is the upgrade path; reinstall script is the rollback.
+    # Graduation trigger: none expected for a daily-shipping vendor CLI.
     # pi deliberately absent: llm-agents' pi tracks the dead @mariozechner
     # scope — see the vendor-owned `pi` wrapper above for the story.
     qmd
