@@ -85,7 +85,7 @@
   # loop diffs against, so a job declared directly in this file runs unwatched.
   # nix-flake-bump and prune-meeting-recordings moved there 2026-08-17.
 
-  # CLIProxyAPI - proxy so Amp can use Claude/Gemini/Codex via CLI OAuth sessions
+  # CLIProxyAPI - unified proxy for AI coding CLIs (Claude, Gemini, Codex, etc.)
   # Binary from Homebrew until a maintained Nix package exists. When moving it,
   # replace /opt/homebrew/bin/cliproxyapi and remove "cliproxyapi" from
   # darwin.nix brews in the same change.
