@@ -20,16 +20,7 @@ let
       { title = "Participating"; filters = "reason:participating"; }
     ];
     repoPaths = {
-      "argonavis-labs/orchestrator-electron" = "~/projects/orchestrator-electron";
       "odysseus0/nix-config" = "~/nix-config";
-      "flashbots/mev-share-node-pareto" = "~/projects/mev-share-node-pareto";
-      "flashbots/protect-rpc" = "~/projects/protect-rpc";
-      "flashbots/devops" = "~/projects/devops";
-      "flashbots/go-utils" = "~/projects/go-utils";
-      "flashbots/protect-of-api" = "~/projects/protect-of-api";
-      # bird's upstream repo entry removed — the repo is private; the tool
-      # ships via the home-ops input (see home-manager.nix).
-      "openclaw/openclaw" = "~/projects/openclaw";
     };
     keybindings = {
       universal = [{ key = "g"; name = "lazygit"; command = "cd {{.RepoPath}} && lazygit"; }];
