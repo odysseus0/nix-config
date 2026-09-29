@@ -33,6 +33,7 @@
     secrets."trace-archive-r2-crypt-password" = {};
     secrets."trace-archive-r2-crypt-salt" = {};
     secrets."beads-cloudflared-tunnel-token" = {};
+    secrets."restic-password" = {};
 
     # Shell environment variables — sourced by all shells via home.sessionVariablesExtra.
     # home-manager runs hm-session-vars.sh through babelfish for fish, sources directly for zsh.
@@ -86,6 +87,18 @@
         export RCLONE_CONFIG_TRACES_SECRET_ACCESS_KEY="${config.sops.placeholder."trace-archive-r2-secret-access-key"}"
         export TRACE_ARCHIVE_CRYPT_PASSWORD="${config.sops.placeholder."trace-archive-r2-crypt-password"}"
         export TRACE_ARCHIVE_CRYPT_SALT="${config.sops.placeholder."trace-archive-r2-crypt-salt"}"
+      '';
+    };
+
+    # restic.env — the snapshot backup to R2 (home-ops/backup/bin/restic-backup.sh).
+    # Same R2 key as trace-archive; its own repository password. The repository
+    # URL carries the account id, so it lives in home-ops, not this public tree.
+    templates."restic.env" = {
+      path = "${config.home.homeDirectory}/.config/restic/restic.env";
+      content = ''
+        export AWS_ACCESS_KEY_ID="${config.sops.placeholder."trace-archive-r2-access-key-id"}"
+        export AWS_SECRET_ACCESS_KEY="${config.sops.placeholder."trace-archive-r2-secret-access-key"}"
+        export RESTIC_PASSWORD="${config.sops.placeholder."restic-password"}"
       '';
     };
 

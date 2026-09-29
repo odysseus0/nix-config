@@ -267,6 +267,7 @@ in {
     taskwarrior3
     rclone
     dolt         # pinned server engine for the shared Beads authority
+    restic       # snapshot backups to R2 (home-ops/backup)
     uv          # pure Python projects; also runs uv-tools-reconcile above
     pixi        # ML/heavy native deps (conda-forge)
     yt-dlp
