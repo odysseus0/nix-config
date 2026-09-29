@@ -46,7 +46,6 @@ let
   brews = [
     "mole"  # Mac system optimization (mo command) — mole.fit, NOT nixpkgs mole
     "openclaw/tap/gogcli"  # Google Workspace CLI (gog); Clawdbot skill dependency
-    "cliproxyapi"  # Unified proxy for AI coding CLIs (Claude, Gemini, Amp, Codex)
     # beads lives in the store-owned tier (llm-agents.nix) — do not re-add here.
   ];
 

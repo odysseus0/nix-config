@@ -85,28 +85,6 @@
   # loop diffs against, so a job declared directly in this file runs unwatched.
   # nix-flake-bump and prune-meeting-recordings moved there 2026-08-17.
 
-  # CLIProxyAPI - unified proxy for AI coding CLIs (Claude, Gemini, Codex, etc.)
-  # Binary from Homebrew until a maintained Nix package exists. When moving it,
-  # replace /opt/homebrew/bin/cliproxyapi and remove "cliproxyapi" from
-  # darwin.nix brews in the same change.
-
-  launchd.agents.cliproxyapi = {
-    enable = true;
-    waitForNixStore = false; # listed by name, not "sh"; KeepAlive retries a pre-mount start
-    config = {
-      Label = "com.cliproxyapi";
-      ProgramArguments = [
-        "/opt/homebrew/bin/cliproxyapi"
-        "-config"
-        "${config.home.homeDirectory}/.cli-proxy-api/config.yaml"
-      ];
-      RunAtLoad = true;
-      KeepAlive = true;
-      StandardOutPath = "${config.home.homeDirectory}/Library/Logs/cliproxyapi.log";
-      StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/cliproxyapi.error.log";
-    };
-  };
-
   # WeChat history: no launchd agent since 2026-09-18. `wx-cli` (hand-built
   # at ~/.local/bin/wx from ~/projects/wx-cli) reads the encrypted WeChat
   # DBs on demand through its own daemon; its config is app-owned in

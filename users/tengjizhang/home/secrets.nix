@@ -45,30 +45,6 @@
       export LINEAR_API_KEY="${config.sops.placeholder."linear-api-key"}"
     '';
 
-    templates."cliproxyapi-config.yaml" = {
-      path = "${config.home.homeDirectory}/.cli-proxy-api/config.yaml";
-      content = ''
-        # CLIProxyAPI config — managed by sops-nix (secrets.nix)
-        # Edit users/tengjizhang/home/secrets.nix to change this file.
-
-        host: ""
-        port: 8317
-        auth-dir: "~/.cli-proxy-api"
-        api-keys:
-          - "amp-local-proxy-key"
-
-        routing:
-          strategy: "round-robin"
-
-        quota-exceeded:
-          switch-project: true
-          switch-preview-model: true
-
-        request-retry: 3
-        max-retry-interval: 30
-      '';
-    };
-
     # trace-archive-r2.env — machine-tier R2 credentials for the
     # trace-archive-sync launchd job (home-ops/trace-archive/bin/sync.sh).
     # Migrated 2026-07-20 from op-at-runtime per the runtime-layer design
