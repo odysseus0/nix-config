@@ -92,6 +92,7 @@
 
   launchd.agents.cliproxyapi = {
     enable = true;
+    waitForNixStore = false; # listed by name, not "sh"; KeepAlive retries a pre-mount start
     config = {
       Label = "com.cliproxyapi";
       ProgramArguments = [
