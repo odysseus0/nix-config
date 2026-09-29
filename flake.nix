@@ -91,5 +91,14 @@
       user = "tengjizhang";
       darwin = true;
     };
+
+    # Headless Mac mini: the shared Beads authority and a remote-shell host.
+    # role = "server" selects users/<user>/{darwin,home-manager}-server.nix.
+    darwinConfigurations.sietch = mkSystem "sietch" {
+      system = "aarch64-darwin";
+      user = "tengjizhang";
+      darwin = true;
+      role = "server";
+    };
   };
 }

@@ -7,13 +7,19 @@ name:
   system,
   user,
   darwin ? false,
+  # Selects the user layers: "workstation" uses users/<user>/{darwin,nixos}.nix
+  # and home-manager.nix; any other role uses the same files suffixed with
+  # "-<role>" (e.g. darwin-server.nix, home-manager-server.nix). The machine
+  # layer is always machines/<name>.nix.
+  role ? "workstation",
 }:
 
 let
   # The config files for this system.
   machineConfig = ../machines/${name}.nix;
-  userOSConfig = ../users/${user}/${if darwin then "darwin" else "nixos" }.nix;
-  userHMConfig = ../users/${user}/home-manager.nix;
+  roleSuffix = if role == "workstation" then "" else "-${role}";
+  userOSConfig = ../users/${user}/${if darwin then "darwin" else "nixos" }${roleSuffix}.nix;
+  userHMConfig = ../users/${user}/home-manager${roleSuffix}.nix;
 
   # NixOS vs nix-darwin functions
   systemFunc = if darwin then inputs.darwin.lib.darwinSystem else nixpkgs.lib.nixosSystem;

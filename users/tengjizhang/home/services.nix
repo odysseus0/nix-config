@@ -53,6 +53,13 @@
         git checkout -- flake.lock
         exit 1
       }
+      # Sietch shares this lock; a bump that breaks the server must not land
+      # either. Build-only here: Sietch activates on its own supervised switch.
+      nix build --no-link ".#darwinConfigurations.sietch.system" || {
+        echo "SIETCH BUILD FAILED against new inputs — reverting lock"
+        git checkout -- flake.lock
+        exit 1
+      }
 
       git add flake.lock
       git commit -m "flake.lock: daily input bump (build-verified)"

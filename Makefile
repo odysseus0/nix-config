@@ -1,7 +1,10 @@
 # Nix-darwin configuration management
 # Based on Mitchell Hashimoto's approach
 
-NIXNAME = macbook-m4-max
+# The flake output for THIS machine, chosen by LocalHostName so a bare `make`
+# on Sietch can never activate the workstation profile there. Override with
+# `make NIXNAME=<output> ...` (e.g. to build Sietch's output on the MacBook).
+NIXNAME ?= $(if $(filter Sietch,$(shell /usr/sbin/scutil --get LocalHostName 2>/dev/null)),sietch,macbook-m4-max)
 NIXSYSTEM = .\#darwinConfigurations.${NIXNAME}.system
 HOME_ACTIVATION = .\#darwinConfigurations.${NIXNAME}.config.home-manager.users.${USER}.home.activationPackage
 # --impure and NIXPKGS_ALLOW_UNFREE were redundant with the declarative
