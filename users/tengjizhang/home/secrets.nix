@@ -35,6 +35,7 @@
     secrets."beads-cloudflared-tunnel-token" = {};
     secrets."restic-password" = {};
     secrets."ear-token" = {};
+    secrets."alchemy-password" = {};
 
     # Shell environment variables — sourced by all shells via home.sessionVariablesExtra.
     # home-manager runs hm-session-vars.sh through babelfish for fish, sources directly for zsh.
@@ -73,6 +74,14 @@
       path = "${config.home.homeDirectory}/.config/runtime/ear.env";
       content = ''
         EAR_TOKEN="${config.sops.placeholder."ear-token"}"
+      '';
+    };
+
+    # alchemy.env — encrypts secrets in local Alchemy state (home-ops ear deploy).
+    templates."alchemy.env" = {
+      path = "${config.home.homeDirectory}/.config/alchemy/alchemy.env";
+      content = ''
+        export ALCHEMY_PASSWORD="${config.sops.placeholder."alchemy-password"}"
       '';
     };
 
