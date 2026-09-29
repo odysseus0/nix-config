@@ -108,22 +108,22 @@ let
   # straight into the store — no patching, no re-signing.
   #
   # Bump recipe:
-  #   v=0.5.3
+  #   v=0.6.0
   #   curl -fsSL https://github.com/catoncat/sherlog/releases/download/v$v/SHA256SUMS
   #   nix hash convert --hash-algo sha256 --to sri <hex-for-your-target>
   sherlog =
     let
-      version = "0.5.2";
+      version = "0.6.0";
       # target triple + archive hash, keyed by Nix system. Extend when a
       # platform is actually built for (see lib/mksystem.nix's darwin fork).
       targets = {
         aarch64-darwin = {
           triple = "aarch64-apple-darwin";
-          hash = "sha256-QY9TqYZNnFQh3puhkVGMF0sd2YOjwQZI/r7PzJdxbqs=";
+          hash = "sha256-rc+7UIEDCl3cWM+yVSILi0obRv6Dkhv21ceiApRHO2Q=";
         };
         x86_64-linux = {
           triple = "x86_64-unknown-linux-gnu";
-          hash = "sha256-UgOQk01/H9WzCC3BKcsBLVXiZnnJ/b8a5+eidPChQDo=";
+          hash = "sha256-/jN3wzZdm268e33VLpV9NkllJMsgwkRS3qNmH2cA3EM=";
         };
       };
       system = pkgs.stdenv.hostPlatform.system;
