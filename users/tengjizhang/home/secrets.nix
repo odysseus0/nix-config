@@ -34,6 +34,7 @@
     secrets."trace-archive-r2-crypt-salt" = {};
     secrets."beads-cloudflared-tunnel-token" = {};
     secrets."restic-password" = {};
+    secrets."ear-token" = {};
 
     # Shell environment variables — sourced by all shells via home.sessionVariablesExtra.
     # home-manager runs hm-session-vars.sh through babelfish for fish, sources directly for zsh.
@@ -63,6 +64,15 @@
         export RCLONE_CONFIG_TRACES_SECRET_ACCESS_KEY="${config.sops.placeholder."trace-archive-r2-secret-access-key"}"
         export TRACE_ARCHIVE_CRYPT_PASSWORD="${config.sops.placeholder."trace-archive-r2-crypt-password"}"
         export TRACE_ARCHIVE_CRYPT_SALT="${config.sops.placeholder."trace-archive-r2-crypt-salt"}"
+      '';
+    };
+
+    # ear.env — bearer token the runtime dispatcher sends with each job's
+    # success ping (home-ops runtime.nix); the Worker URL lives in home-ops.
+    templates."ear.env" = {
+      path = "${config.home.homeDirectory}/.config/runtime/ear.env";
+      content = ''
+        EAR_TOKEN="${config.sops.placeholder."ear-token"}"
       '';
     };
 
