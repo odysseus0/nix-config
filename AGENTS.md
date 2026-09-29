@@ -11,7 +11,9 @@ This is a nix-darwin configuration repository that declaratively manages a macOS
 ```bash
 # Apply configuration changes (requires sudo for system-level changes)
 make switch
-# or: sudo darwin-rebuild switch --flake ".#macbook-m4-max"
+# or: sudo darwin-rebuild switch --flake ".#macbook-m4-max"   (".#sietch" on Sietch)
+# NIXNAME defaults from LocalHostName; `make NIXNAME=sietch build` builds
+# Sietch's output from the MacBook.
 # Pure — no --impure, no NIXPKGS_ALLOW_UNFREE needed (removed 2026-07-20,
 # audit F5: nixpkgs.config.allowUnfree = true is declared in the module
 # system and pkgs-stable is re-imported with the same config; see
@@ -45,36 +47,41 @@ make clean
 
 ### Three-Layer Configuration System
 
-1. **Machine Layer** (`machines/<name>.nix`)
+1. **Machine Layer** (`machines/<name>.nix`, sharing `machines/darwin-common.nix`)
    - System-level Nix settings (experimental features, binary caches via `determinateNix.customSettings`)
    - Shell program enablement (zsh, fish)
    - System packages (minimal — cachix, mosh, tmux)
    - Sets `system.stateVersion`
 
-2. **User OS Layer** (`users/<user>/darwin.nix`)
+2. **User OS Layer** (`users/<user>/darwin.nix`; `darwin-server.nix` for the server role; both import `darwin-common.nix`)
    - (Homebrew moved to the user layer 2026-08-04 — see home/brew.nix)
    - macOS-specific system settings (Touch ID for sudo)
    - User shell setup and activation scripts
 
-3. **User Home Layer** (`users/<user>/home-manager.nix` + `users/<user>/home/*.nix`)
+3. **User Home Layer** (`users/<user>/home-manager.nix` + `users/<user>/home/*.nix`; `home-manager-server.nix` for the server role)
    - CLI packages, tiered by ownership (see below)
    - Program configurations (git, neovim, fish)
    - Dotfiles management
    - Environment variables
 
-`lib/mksystem.nix` forks on `darwin ? false` between this Darwin machine and
-a future NixOS machine (see README §Server-readiness) — keep that fork and
-the `machines/`/`users/` layering intact even though only one machine exists
-today.
+Two machines exist: `macbook-m4-max` (workstation) and `sietch` (headless
+server: the shared Beads authority and an agent host) — see README §Machines.
+`lib/mksystem.nix` selects the user layers by `role` and forks on
+`darwin ? false` for a future NixOS machine; keep both and the
+`machines/`/`users/` layering intact. Sietch's output must not import the
+private `home-ops` input (it builds without private-repo access), and every
+item it declares needs a reason tied to its role.
 
 ### Key Files
 
 - `flake.nix` — flake inputs/outputs, defines system configurations
 - `lib/mksystem.nix` — system builder function that composes all layers
 - `lib/uv-tools-reconcile.nix` — MANIFEST-OWNED tier executor, exposed via overlay as `pkgs.uv-tools-reconcile`
-- `machines/macbook-m4-max.nix` — machine-specific config, binary caches
-- `users/tengjizhang/darwin.nix` — macOS system config
+- `machines/darwin-common.nix` — shared Darwin baseline, binary caches
+- `machines/macbook-m4-max.nix`, `machines/sietch.nix` — per-machine config
+- `users/tengjizhang/darwin.nix`, `darwin-server.nix` — macOS system config per role
 - `users/tengjizhang/home-manager.nix` — module imports, home-ops wiring
+- `users/tengjizhang/home-manager-server.nix` — Sietch's home layer (shell, packages, `home/beads-server.nix`)
 - `users/tengjizhang/home/packages.nix` — CLI packages, tiered (see below)
 - `users/tengjizhang/home/uv-tools-manifest.nix` — MANIFEST-OWNED tier's source of truth
 - `users/tengjizhang/config.fish` — Fish shell configuration
@@ -132,7 +139,7 @@ local cleanup, like `removeInstallerPlannotatorCli`.
 ### Shell Integration
 
 - nix-darwin handles Nix daemon integration automatically
-- Fish/zsh init scripts are in machine config (`machines/*.nix`)
+- Fish/zsh init scripts are in machine config (`machines/darwin-common.nix`)
 - Personal PATH additions go in `users/*/home/environment.nix` via `home.sessionPath`; `config.fish` only keeps MANPATH/INFOPATH setup that needs prepend semantics
 
 ### Git Configuration

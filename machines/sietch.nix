@@ -1,7 +1,8 @@
-# Sietch: headless, always-on Mac mini. Its only jobs are hosting the shared
-# Beads Dolt authority over the tailnet (users/tengjizhang/home/beads-server.nix)
-# and accepting remote shells. Everything declared here serves one of those two
-# roles; anything else found on the machine is purged, not adopted.
+# Sietch: headless, always-on Mac mini. Its jobs: hosting the shared Beads
+# Dolt authority over the tailnet (users/tengjizhang/home/beads-server.nix) and
+# serving as an agent host (remote-execution node) reached over remote shells.
+# Everything declared serves one of those; anything else found on the machine
+# is purged (machines/sietch-cutover.sh), not adopted.
 { pkgs, ... }: {
   imports = [
     ./darwin-common.nix

@@ -127,16 +127,31 @@ unstable *and* stable pins — see that file's comment). Marked in
 `home/packages.nix` as pending George's veto — not yet moved, because the
 actual per-project boundaries haven't been drawn.
 
-## Server-readiness
+## Machines
 
-This machine (`machines/macbook-m4-max.nix`) is nix-darwin. A NixOS home
-server is planned as a second machine under `machines/`; `lib/mksystem.nix`
-already forks on `darwin ? false` and layers `machines/<name>.nix` +
-`users/<user>/{darwin,nixos}.nix` + `users/<user>/home-manager.nix` to
-support it without restructuring. When that machine lands, its config should
-set `programs.nix-ld.enable = true;` — the vendor-owned tier ships prebuilt
-Linux binaries that expect an FHS-ish dynamic linker, and nix-ld is the
-standard NixOS fix (not needed on Darwin, which is why it isn't set here).
+Two nix-darwin machines, one flake output each:
+
+| Output | Machine | Role | User layers |
+|---|---|---|---|
+| `macbook-m4-max` | MacBook Pro | workstation | `darwin.nix`, `home-manager.nix` |
+| `sietch` | Mac mini, headless | server: the shared Beads Dolt authority over Tailscale, and an agent host | `darwin-server.nix`, `home-manager-server.nix` |
+
+`lib/mksystem.nix` composes `machines/<name>.nix` with the user layers its
+`role` selects (`"workstation"` by default; any other role picks the
+`-<role>`-suffixed files). Both roles share `machines/darwin-common.nix`
+(Determinate Nix, caches, shells) and `users/<user>/darwin-common.nix` (the
+account and its login shell); the server's home layer shares only
+`home/shell.nix` with the workstation. Everything else on Sietch is declared
+for its role or purged: Homebrew there holds one cask (the Codex app) with
+`cleanup = "zap"`, so anything undeclared is removed on activation.
+`machines/sietch-cutover.sh` was the one-time purge and switch that brought it
+under this repo. The Makefile picks the output from the host's LocalHostName;
+override with `make NIXNAME=<output> ...`.
+
+`lib/mksystem.nix` also forks on `darwin ? false` for a future NixOS machine.
+When one lands, its config should set `programs.nix-ld.enable = true;` — the
+vendor-owned tier ships prebuilt Linux binaries that expect an FHS-ish dynamic
+linker, and nix-ld is the standard NixOS fix (not needed on Darwin).
 
 ## Architecture
 
@@ -145,13 +160,21 @@ standard NixOS fix (not needed on Darwin, which is why it isn't set here).
 ├── lib/
 │   ├── mksystem.nix             # System builder function (darwin/nixos fork)
 │   └── uv-tools-reconcile.nix   # Manifest-owned tier executor
-├── machines/macbook-m4-max.nix  # Machine-specific config, binary caches
+├── machines/
+│   ├── darwin-common.nix        # Shared baseline: Determinate Nix, caches, shells
+│   ├── macbook-m4-max.nix       # Workstation
+│   ├── sietch.nix               # Headless server: Tailscale, power, Remote Login
+│   └── sietch-cutover.sh        # One-time purge + switch that adopted Sietch
 └── users/tengjizhang/
-    ├── darwin.nix                    # macOS system config (Homebrew, system settings)
-    ├── home-manager.nix              # Module imports, home-ops wiring
+    ├── darwin-common.nix             # Account and login shell (both roles)
+    ├── darwin.nix                    # Workstation macOS config (fonts, Touch ID)
+    ├── darwin-server.nix             # Server macOS config (Homebrew: one cask, zap)
+    ├── home-manager.nix              # Workstation home: module imports, home-ops wiring
+    ├── home-manager-server.nix       # Server home: shell, packages, Beads authority
     ├── home/
     │   ├── packages.nix               # CLI packages, tiered (see Ownership tiers)
     │   ├── uv-tools-manifest.nix      # Manifest-owned tier's source of truth
+    │   ├── server-packages.nix, beads-server.nix   # Sietch only
     │   ├── programs.nix, shell.nix, dotfiles.nix, environment.nix, services.nix, secrets.nix
     └── config.fish               # Fish shell config
 ```
@@ -191,7 +214,7 @@ standard NixOS fix (not needed on Darwin, which is why it isn't set here).
 **Determinate Nix:** uses the Determinate installer with its official
 nix-darwin module for daemon management; `nix.enable = false`, so binary
 cache config goes through `determinateNix.customSettings`
-(`machines/macbook-m4-max.nix`), not `nix.settings`.
+(`machines/darwin-common.nix`), not `nix.settings`.
 
 ## Inspiration
 

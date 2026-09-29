@@ -1,7 +1,7 @@
-# Home layer for the headless server role (Sietch). Shares only the shell with
-# the workstation (home-manager.nix); packages, services and secrets are the
-# server's own. Imports nothing from the private home-ops input, so building
-# this output needs no private-repo credentials.
+# Home layer for the server role (Sietch: Beads authority and agent host).
+# Shares only the shell with the workstation (home-manager.nix); packages,
+# services and secrets are the server's own. Imports nothing from the private
+# home-ops input, so building this output needs no private-repo credentials.
 { inputs, ... }:
 
 { ... }:
