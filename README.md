@@ -144,8 +144,7 @@ account and its login shell); the server's home layer shares only
 `home/shell.nix` with the workstation. Everything else on Sietch is declared
 for its role or purged: Homebrew there holds one cask (the Codex app) with
 `cleanup = "zap"`, so anything undeclared is removed on activation.
-`machines/sietch-cutover.sh` was the one-time purge and switch that brought it
-under this repo. The Makefile picks the output from the host's LocalHostName;
+The Makefile picks the output from the host's LocalHostName;
 override with `make NIXNAME=<output> ...`.
 
 `lib/mksystem.nix` also forks on `darwin ? false` for a future NixOS machine.
@@ -163,8 +162,7 @@ linker, and nix-ld is the standard NixOS fix (not needed on Darwin).
 ├── machines/
 │   ├── darwin-common.nix        # Shared baseline: Determinate Nix, caches, shells
 │   ├── macbook-m4-max.nix       # Workstation
-│   ├── sietch.nix               # Headless server: Tailscale, power, Remote Login
-│   └── sietch-cutover.sh        # One-time purge + switch that adopted Sietch
+│   └── sietch.nix               # Headless server: Tailscale, power, Remote Login
 └── users/tengjizhang/
     ├── darwin-common.nix             # Account and login shell (both roles)
     ├── darwin.nix                    # Workstation macOS config (fonts, Touch ID)

@@ -7,8 +7,9 @@
   # Ensure the login shell for the primary user is the nix-managed path.
   # Darwin intentionally does NOT change shells for existing accounts via users.users.*,
   # so we do it declaratively here during activation. Safe and idempotent.
-  system.activationScripts.fixUserShell.text = ''
-    set -e
+  # It must be postActivation: nix-darwin runs only its fixed activation-script
+  # names, so a custom-named script never runs.
+  system.activationScripts.postActivation.text = ''
     USERNAME="tengjizhang"
     DESIRED="/run/current-system/sw/bin/fish"
 
@@ -16,7 +17,7 @@
     CURRENT=$(/usr/bin/dscl . -read /Users/"$USERNAME" UserShell 2>/dev/null | /usr/bin/awk '{print $2}')
 
     if [ "$CURRENT" != "$DESIRED" ]; then
-      echo "Updating login shell for $USERNAME: ${CURRENT:-<unset>} -> $DESIRED"
+      echo "Updating login shell for $USERNAME: ''${CURRENT:-<unset>} -> $DESIRED"
       # chsh requires the shell to be present in /etc/shells; nix-darwin's environment.shells ensures this.
       /usr/bin/chsh -s "$DESIRED" "$USERNAME" \
         || /usr/bin/dscl . -create "/Users/$USERNAME" UserShell "$DESIRED"

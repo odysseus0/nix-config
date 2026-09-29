@@ -14,6 +14,7 @@ in
     git             # clone/pull ~/nix-config to rebuild this machine
     herdr           # agent multiplexer for remote sessions
     llmAgents.codex # codex CLI for agent runs outside the desktop app
+    ghostty-bin.terminfo # xterm-ghostty, the TERM George's SSH sessions arrive with
 
     # Runtime dependencies of the shared shell config (shell.nix, config.fish):
     # the `ls`/`ll` aliases, fzf.fish and its preview/diff commands.
