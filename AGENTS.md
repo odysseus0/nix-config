@@ -1,6 +1,6 @@
-# CLAUDE.md
+# nix-config
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Instructions for agents working in this repository.
 
 ## Repository Overview
 

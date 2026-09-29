@@ -54,6 +54,16 @@ Python CLIs had drifted onto this machine outside the manifest before this
 tier existed (gam7, poetry, visidata, ...); the reconciler now uninstalls
 anything not on the list instead of accumulating strays forever.
 
+### Config ownership
+
+Nix owns a tool's binary; its config is one of three classes. Authored intent
+the app only reads is a store symlink. A file the app rewrites, or that you
+iterate on, is tracked in a repo and linked with `mkOutOfStoreSymlink` to the
+working tree. Derived or secret state is app-owned and ignored. The test is
+whether the app writes the file at runtime; for an app-written file, seed
+defaults once rather than manage it. Verify the effective config through the
+app (`ghostty +show-config`), not by reading the file.
+
 ## The two clocks
 
 Before this restructure, `home.activation` scripts reached out to pnpm, uv,
