@@ -18,6 +18,8 @@
 
       # Basic settings
       init.defaultBranch = "main";
+      # Source checkouts live at ~/src/<host>/<owner>/<repo>; `ghq get` clones there.
+      ghq.root = "~/src";
       push.default = "simple";
       pull.rebase = false;
       branch.autosetuprebase = "always";

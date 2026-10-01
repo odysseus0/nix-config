@@ -147,6 +147,7 @@ in {
     jq          # JSON processor
     delta       # better git diff
     lefthook    # git hook runner (the vault's hooks)
+    ghq         # clones to ~/src/<host>/<owner>/<repo> (programs.git ghq.root)
     pnpm        # tj-zhang-web; switches to each project's pinned packageManager version
 
     # Secret management
