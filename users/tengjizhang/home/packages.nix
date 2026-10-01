@@ -230,6 +230,7 @@ in {
     btop        # system monitor (better than htop)
     jq          # JSON processor
     delta       # better git diff
+    lefthook    # git hook runner (the vault's hooks)
 
     # Secret management
     sops
