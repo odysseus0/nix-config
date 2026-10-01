@@ -231,6 +231,7 @@ in {
     jq          # JSON processor
     delta       # better git diff
     lefthook    # git hook runner (the vault's hooks)
+    pnpm        # tj-zhang-web; switches to each project's pinned packageManager version
 
     # Secret management
     sops
