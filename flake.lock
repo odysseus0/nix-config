@@ -212,15 +212,12 @@
       }
     },
     "home-ops": {
-      "inputs": {
-        "nixpkgs": "nixpkgs_3"
-      },
       "locked": {
-        "lastModified": 1790813708,
-        "narHash": "sha256-ppKY5+K8L+tvh6MDjJNoq9mi6cDQpjf4vhLcff1+hrc=",
+        "lastModified": 1790817114,
+        "narHash": "sha256-o73BVloqpGFYGHMFlN9BtqGKB5Fc0NTbhqhDCxgzDGM=",
         "owner": "odysseus0",
         "repo": "home-ops",
-        "rev": "f9b741c43bf7f33b31987e18472a124f68f51491",
+        "rev": "2e1b518b54b61b12c91f38279548b9ba8f1e80db",
         "type": "github"
       },
       "original": {
@@ -233,7 +230,7 @@
       "inputs": {
         "bun2nix": "bun2nix",
         "flake-parts": "flake-parts_2",
-        "nixpkgs": "nixpkgs_4",
+        "nixpkgs": "nixpkgs_3",
         "systems": "systems",
         "treefmt-nix": "treefmt-nix"
       },
@@ -334,19 +331,6 @@
     },
     "nixpkgs_3": {
       "locked": {
-        "lastModified": 1785747939,
-        "narHash": "sha256-NqaCaIITVSDaBYdcWcfCyEu1erL7paTPEQbISQp9xwQ=",
-        "rev": "104240a772428cc2e20d8fd86c9ddbb886bbaff2",
-        "type": "tarball",
-        "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1046984.104240a77242/nixexprs.tar.xz"
-      },
-      "original": {
-        "type": "tarball",
-        "url": "https://channels.nixos.org/nixpkgs-unstable/nixexprs.tar.xz"
-      }
-    },
-    "nixpkgs_4": {
-      "locked": {
         "lastModified": 1790570722,
         "narHash": "sha256-Avcz96Q+8OkfUIUXipBBVsQn19L622BtKP7mk6M+uls=",
         "owner": "NixOS",
@@ -361,7 +345,7 @@
         "type": "github"
       }
     },
-    "nixpkgs_5": {
+    "nixpkgs_4": {
       "locked": {
         "lastModified": 1787964612,
         "narHash": "sha256-0N9nghg3nwzX6b6qc77EzjR9cu/Z+UR66FlfsCqiURs=",
@@ -384,7 +368,7 @@
         "home-manager": "home-manager",
         "home-ops": "home-ops",
         "llm-agents": "llm-agents",
-        "nixpkgs": "nixpkgs_5",
+        "nixpkgs": "nixpkgs_4",
         "sops-nix": "sops-nix"
       }
     },
