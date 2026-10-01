@@ -55,11 +55,9 @@
   programs.ssh = {
     enable = true;
     enableDefaultConfig = false;
-    matchBlocks."*" = {
-      extraOptions = {
-        AddKeysToAgent = "yes";
-        IdentityFile = "~/.ssh/id_ed25519";
-      };
+    settings."*" = {
+      AddKeysToAgent = "yes";
+      IdentityFile = "~/.ssh/id_ed25519";
     };
   };
 
@@ -101,6 +99,7 @@
     enableFishIntegration = false;  # using fzf.fish plugin
     defaultCommand = "fd --hidden --type f";
     defaultOptions = [ "--ansi" "--layout=reverse" ];
+    historyWidget.command = "";  # Atuin owns Ctrl-R
   };
 
   #---------------------------------------------------------------------
@@ -144,13 +143,13 @@
   #---------------------------------------------------------------------
 
   # home-manager owns init.lua. The module generates it, so LazyVim's bootstrap
-  # has to be threaded THROUGH extraLuaConfig — otherwise the generated file
+  # has to be threaded THROUGH initLua — otherwise the generated file
   # (provider toggles only) lands on top of `require("config.lazy")` and nvim
   # silently starts as a bare editor.
   programs.neovim = {
     enable = true;
     package = pkgs.neovim-unwrapped;
-    extraLuaConfig = ''
+    initLua = ''
       require("config.lazy")
     '';
   };
