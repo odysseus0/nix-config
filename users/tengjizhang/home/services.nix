@@ -93,7 +93,7 @@
   # nix-flake-bump and prune-meeting-recordings moved there 2026-08-17.
 
   # WeChat history: no launchd agent since 2026-09-18. `wx-cli` (hand-built
-  # at ~/.local/bin/wx from ~/projects/wx-cli) reads the encrypted WeChat
+  # at ~/.local/bin/wx from ~/src/github.com/jackwener/wx-cli-again) reads the encrypted WeChat
   # DBs on demand through its own daemon; its config is app-owned in
   # ~/.wx-cli. The sops secret `chatlog-data-key` is the master key the
   # per-shard wx keys derive from — see the vault skill .agents/skills/wechat.

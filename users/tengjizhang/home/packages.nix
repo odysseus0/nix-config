@@ -64,7 +64,7 @@ let
   #
   # Runs George's fork until upstream merges the session-identity fixes
   # (catoncat/sherlog#124 and the Codex segment fix): source in
-  # ~/projects/sherlog on branch `local`, built with `cargo build --release` and
+  # ~/src/github.com/odysseus0/sherlog on branch `local`, built with `cargo build --release` and
   # installed at $XDG_DATA_HOME/sherlog/shlog. Same shape as bird. When a
   # release carries both fixes, return to the pinned release archive.
   sherlog = pkgs.writeShellScriptBin "shlog" ''
