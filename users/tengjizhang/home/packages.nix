@@ -60,67 +60,17 @@ let
   # these change.
 
   # Sherlog (`shlog`) — full-text search over local agent session transcripts
-  # (Claude Code / Codex / pi JSONL) into a local SQLite FTS index. Read-only
-  # over the transcripts; `shlog sync` is the only command that writes, and it
-  # writes only its own index.
+  # (Claude Code / Codex / pi JSONL) into a local SQLite FTS index.
   #
-  # Prebuilt release archive, NOT buildRustPackage. Upstream is Rust and no
-  # substituter serves it, so a source build would compile Rust from scratch —
-  # a defect under README §cache-hit discipline. Upstream publishes per-target
-  # archives plus a SHA256SUMS manifest; the hashes below are that manifest's,
-  # converted to SRI (verified against a local shasum 2026-08-17).
-  #
-  # Static except for libSystem (`otool -L` clean), so the archive drops
-  # straight into the store — no patching, no re-signing.
-  #
-  # Bump recipe:
-  #   v=0.6.0
-  #   curl -fsSL https://github.com/catoncat/sherlog/releases/download/v$v/SHA256SUMS
-  #   nix hash convert --hash-algo sha256 --to sri <hex-for-your-target>
-  sherlog =
-    let
-      version = "0.6.0";
-      # target triple + archive hash, keyed by Nix system. Extend when a
-      # platform is actually built for (see lib/mksystem.nix's darwin fork).
-      targets = {
-        aarch64-darwin = {
-          triple = "aarch64-apple-darwin";
-          hash = "sha256-rc+7UIEDCl3cWM+yVSILi0obRv6Dkhv21ceiApRHO2Q=";
-        };
-        x86_64-linux = {
-          triple = "x86_64-unknown-linux-gnu";
-          hash = "sha256-/jN3wzZdm268e33VLpV9NkllJMsgwkRS3qNmH2cA3EM=";
-        };
-      };
-      system = pkgs.stdenv.hostPlatform.system;
-      target = targets.${system} or (throw "sherlog: no prebuilt archive pinned for ${system}");
-    in
-    pkgs.stdenvNoCC.mkDerivation {
-      pname = "sherlog";
-      inherit version;
-
-      src = pkgs.fetchurl {
-        url = "https://github.com/catoncat/sherlog/releases/download/v${version}/sherlog-v${version}-${target.triple}.tar.gz";
-        inherit (target) hash;
-      };
-
-      installPhase = ''
-        runHook preInstall
-        install -Dm755 shlog $out/bin/shlog
-        # Upstream ships `sherlog` as a symlink to the same binary; keep both names.
-        ln -s shlog $out/bin/sherlog
-        install -Dm644 LICENSE $out/share/licenses/sherlog/LICENSE
-        runHook postInstall
-      '';
-
-      meta = {
-        description = "Progressive full-text search over local agent session logs";
-        homepage = "https://sherlog.net";
-        license = lib.licenses.mit;
-        mainProgram = "shlog";
-        platforms = lib.attrNames targets;
-      };
-    };
+  # Runs George's fork until upstream merges the session-identity fixes
+  # (catoncat/sherlog#124 and the Codex segment fix): source in
+  # ~/projects/sherlog on branch `local`, built with `cargo build --release` and
+  # installed at $XDG_DATA_HOME/sherlog/shlog. Same shape as bird. When a
+  # release carries both fixes, return to the pinned release archive.
+  sherlog = pkgs.writeShellScriptBin "shlog" ''
+    case "''${XDG_DATA_HOME:-}" in /*) data=$XDG_DATA_HOME ;; *) data=$HOME/.local/share ;; esac
+    exec "$data/sherlog/shlog" "$@"
+  '';
 
   # Dolt is the Beads server engine. Pin the upstream 2.2.0 release rather
   # than nixpkgs' rolling package: Beads documents this exact release as the
@@ -226,7 +176,7 @@ in {
     # they were brew-by-accident; Homebrew's jurisdiction is casks + MAS)
     sqlite      # CLI with FTS5 etc. (zk)
     zk          # Zettelkasten CLI - backlinks, orphans, link analysis
-    sherlog     # `shlog` - search past agent session transcripts (in-tree derivation above)
+    sherlog     # `shlog` - search past agent session transcripts (fork wrapper above)
     tdl         # Telegram message export/sync (was brew telegram-downloader)
     mas         # Mac App Store CLI (brew bundle shells out to it for masApps)
     taskwarrior3
