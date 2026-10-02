@@ -7,13 +7,16 @@
 NIXNAME ?= $(if $(filter Sietch,$(shell /usr/sbin/scutil --get LocalHostName 2>/dev/null)),sietch,macbook-m4-max)
 NIXSYSTEM = .\#darwinConfigurations.${NIXNAME}.system
 HOME_ACTIVATION = .\#darwinConfigurations.${NIXNAME}.config.home-manager.users.${USER}.home.activationPackage
+# Sietch has no GitHub token for the private home-ops input; it reads its own
+# clone (~/home-ops, pulled with a read-only deploy key) instead.
+OVERRIDE = $(if $(filter sietch,${NIXNAME}),--override-input home-ops git+file://${HOME}/home-ops,)
 # --impure and NIXPKGS_ALLOW_UNFREE were redundant with the declarative
 # `nixpkgs.config.allowUnfree = true` (machines/macbook-m4-max.nix +
 # lib/mksystem.nix) — removed 2026-07-20 (audit F5) after verifying a pure
 # `nix build .#darwinConfigurations.macbook-m4-max.system --dry-run`
 # evaluates cleanly with neither flag nor env var set.
-NIXBUILD = nix build "${NIXSYSTEM}"
-HOMEBUILD = nix build --no-link "${HOME_ACTIVATION}"
+NIXBUILD = nix build "${NIXSYSTEM}" ${OVERRIDE}
+HOMEBUILD = nix build --no-link "${HOME_ACTIVATION}" ${OVERRIDE}
 
 .PHONY: help home-switch home-build switch system-switch test build clean update update-tools brew-apply brew-upgrade update-commit update-commit-push dry-run update-nixpkgs
 
@@ -22,7 +25,7 @@ HOMEBUILD = nix build --no-link "${HOME_ACTIVATION}"
 # of truth, and routine user-level changes remain remotely operable without
 # administrator authentication.
 home-switch:
-	@generation="$$(nix build --no-link --print-out-paths "${HOME_ACTIVATION}")"; \
+	@generation="$$(nix build --no-link --print-out-paths "${HOME_ACTIVATION}" ${OVERRIDE})"; \
 	"$$generation/activate"
 
 # Build only the user activation package (no activation, no result symlink).
@@ -34,7 +37,7 @@ home-build:
 switch: system-switch
 
 system-switch:
-	sudo darwin-rebuild switch --flake ".#${NIXNAME}"
+	sudo darwin-rebuild switch --flake ".#${NIXNAME}" ${OVERRIDE}
 
 # Test the configuration without switching
 test:

@@ -21,9 +21,14 @@
     # bird: the private X client, packaged in home-ops with its Chrome-read
     # X session (see home-ops bird.nix).
     inputs.home-ops.homeManagerModules.bird
+    # `sietch` and the forwarded `feed`: Sietch owns the X state's databases.
+    inputs.home-ops.homeManagerModules.sietch-client
   ];
 
+  runtime.host = "macbook";
   bird.enable = true;
+  bird.archiveOnSietch = true;
+  sietchClient.enable = true;
 
   # Make inputs available to all imported modules
   _module.args.inputs = inputs;
