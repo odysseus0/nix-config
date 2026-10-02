@@ -11,6 +11,7 @@
     ./home/shell.nix
     ./home/server-packages.nix
     ./home/beads-server.nix
+    ./home/vault-events-server.nix
   ];
 
   # Make inputs available to all imported modules
