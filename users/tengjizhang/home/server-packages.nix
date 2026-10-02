@@ -12,6 +12,7 @@ in
 {
   home.packages = with pkgs; [
     git             # clone/pull ~/nix-config to rebuild this machine
+    git-lfs         # the vault clone's media (global git config names its filter)
     herdr           # agent multiplexer for remote sessions
     llmAgents.codex # codex CLI for agent runs outside the desktop app
     ghostty-bin.terminfo # xterm-ghostty, the TERM George's SSH sessions arrive with
