@@ -1,4 +1,4 @@
-{ inputs, pkgs, lib, ... }:
+{ pkgs, lib, facts, ... }:
 
 {
   #---------------------------------------------------------------------
@@ -11,10 +11,7 @@
 
     settings = {
       # User configuration
-      user = {
-        name = "tengjizhang";
-        email = "odysseus0@users.noreply.github.com";
-      };
+      user = { inherit (facts.identity) name email; };
 
       # Basic settings
       init.defaultBranch = "main";
@@ -122,10 +119,7 @@
   programs.jujutsu = {
     enable = true;
     settings = {
-      user = {
-        name = "tengjizhang";
-        email = "odysseus0@users.noreply.github.com";
-      };
+      user = { inherit (facts.identity) name email; };
     };
   };
 

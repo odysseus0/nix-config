@@ -1,6 +1,12 @@
 # Facts more than one module needs, declared once. Public on purpose: the
 # tailnet ACL, not obscurity, decides who reaches these.
 {
+  # The name and email commits carry, in git and jj alike.
+  identity = {
+    name = "tengjizhang";
+    email = "odysseus0@users.noreply.github.com";
+  };
+
   sietch = {
     host = "sietch.tail99865c.ts.net";
     beadsPort = 3307;
