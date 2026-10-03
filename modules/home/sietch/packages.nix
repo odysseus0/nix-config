@@ -1,5 +1,5 @@
 # Store-owned CLI set for the server role. Each entry has a Sietch-specific
-# reason; workstation tooling (home/packages.nix) is deliberately absent.
+# reason; workstation tooling (modules/home/workstation) is deliberately absent.
 # Sietch is an agent host (remote-execution node): agents run here under
 # herdr and the Codex app (the `chatgpt` cask in modules/darwin/server.nix).
 { inputs, pkgs, ... }:
@@ -20,13 +20,5 @@ in
     ghostty-bin.terminfo # xterm-ghostty, the TERM George's SSH sessions arrive with
     ghostty-bin     # George's terminal over Screen Sharing, same config as the MacBook
     nerd-fonts.jetbrains-mono # the font that config names
-
-    # Runtime dependencies of the shared shell config (shell.nix, config.fish):
-    # the `ls`/`ll` aliases, fzf.fish and its preview/diff commands.
-    eza
-    bat
-    fzf
-    fd
-    delta
   ];
 }

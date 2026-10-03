@@ -15,7 +15,7 @@
     imports = [
       ../modules/home/workstation/packages.nix
       ../modules/home/workstation/programs.nix
-      ../modules/home/shell.nix
+      ../modules/home/core.nix
       ../modules/home/workstation/dotfiles.nix
       ../modules/home/workstation/environment.nix
       ../modules/home/workstation/secrets.nix

@@ -1,4 +1,7 @@
-{ inputs, pkgs, config, ... }:
+# The shell both Macs share: fish (primary) and zsh, their aliases, and the
+# tools config.fish calls, so a host that imports this needs nothing else
+# for its shell to work.
+{ pkgs, config, ... }:
 
 let
   shellAliases = {
@@ -49,4 +52,14 @@ in {
     shellAliases = shellAliases;
     initContent = "";
   };
+
+  # config.fish and the aliases above run these: the `ls`/`ll` aliases,
+  # fzf.fish and its preview and diff commands.
+  home.packages = with pkgs; [
+    eza
+    bat
+    fzf
+    fd
+    delta
+  ];
 }

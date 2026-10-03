@@ -29,17 +29,12 @@ in
     lefthook         # git hook runner (the vault's hooks)
     ghq              # clones to ~/src/<host>/<owner>/<repo> (programs.git ghq.root)
 
-    # Modern CLI alternatives
-    bat
-    eza
-    fd
-    fzf
+    # Modern CLI alternatives (eza, bat, fzf, fd, delta come with core.nix)
     gum              # TUI toolkit for shell scripts
     ripgrep
     tree
     btop
     jq
-    delta
 
     # Secret management
     sops

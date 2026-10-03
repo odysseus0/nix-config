@@ -24,7 +24,7 @@
 
   home = {
     imports = [
-      ../modules/home/shell.nix
+      ../modules/home/core.nix
       ../modules/home/sietch/packages.nix
       ../modules/home/beads-server.nix
       ../modules/home/sietch/vault-events.nix
