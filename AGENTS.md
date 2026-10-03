@@ -66,6 +66,9 @@ make clean
 
 Two machines exist: `macbook-m4-max` (workstation) and `sietch` (headless
 server: the shared Beads authority and an agent host) — see README §Machines.
+Agent boxes (disposable Linux) get `homeConfigurations.agent-<system>` from
+`hosts/agent.nix`, built by `lib/default.nix`'s `mkHome` and brought up with
+`nix run .#agent`; they carry only the Beads client and `agent-net`.
 `lib/mksystem.nix` selects the user layers by `role` and forks on
 `darwin ? false` for a future NixOS machine; keep both and the
 `machines/`/`users/` layering intact. Sietch's output must not import the

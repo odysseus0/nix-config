@@ -1,0 +1,23 @@
+name: agent
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  agent:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: DeterminateSystems/nix-installer-action@main
+      # The same command a fresh agent box runs, on a fresh runner. Building
+      # it proves the output evaluates without the private home-ops input.
+      - run: nix run .#agent
+      - run: |
+          ~/.nix-profile/bin/bd version
+          ~/.nix-profile/bin/agent-net 2>&1 | grep -q usage

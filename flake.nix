@@ -56,6 +56,24 @@
   };
 
   outputs = { self, nixpkgs, home-manager, darwin, ... }@inputs: let
+    hosts = import ./lib { inherit inputs; };
+    forLinux = nixpkgs.lib.genAttrs hosts.linuxSystems;
+
+    # `nix run .#agent`: build this box's agent configuration and activate it.
+    # The app itself is pure; the build it runs is the flake's only --impure
+    # evaluation, so modules/home/identity.nix can read USER and HOME.
+    agentBootstrap = system: (hosts.pkgsFor system).writeShellApplication {
+      name = "agent-bootstrap";
+      text = ''
+        USER="''${USER:-$(id -un)}"
+        export USER HOME
+        generation="$(nix --extra-experimental-features 'nix-command flakes' build \
+          --no-link --print-out-paths --impure \
+          '${self}#homeConfigurations.agent-${system}.activationPackage')"
+        exec "$generation/activate"
+      '';
+    };
+
     mkSystem = import ./lib/mksystem.nix {
       inherit nixpkgs inputs;
       overlays = [
@@ -86,6 +104,27 @@
       ];
     };
   in {
+    homeConfigurations = nixpkgs.lib.listToAttrs (map (system: {
+      name = "agent-${system}";
+      value = hosts.mkHome { inherit system; path = ./hosts/agent.nix; };
+    }) hosts.linuxSystems);
+
+    apps = forLinux (system: {
+      agent = {
+        type = "app";
+        program = nixpkgs.lib.getExe (agentBootstrap system);
+      };
+    });
+
+    # CI builds every public output; a fixed account stands in for the box's.
+    checks = forLinux (system: {
+      agent = (hosts.mkHome {
+        inherit system;
+        path = ./hosts/agent.nix;
+        modules = [ { home.username = "agent"; home.homeDirectory = "/home/agent"; } ];
+      }).activationPackage;
+    });
+
     darwinConfigurations.macbook-m4-max = mkSystem "macbook-m4-max" {
       system = "aarch64-darwin";
       user = "tengjizhang";
