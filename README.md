@@ -76,14 +76,16 @@ tool has two. Homebrew runs with `cleanup = "zap"`
 ([`homebrew.nix`](modules/darwin/homebrew.nix)), so an app that is not declared
 is uninstalled, and declared equals installed.
 
-## Nothing compiles
+## Every package has a cache story
 
-A package enters only with a cache story: nixpkgs from `cache.nixos.org`, the
-agent CLIs from [llm-agents.nix](https://github.com/numtide/llm-agents.nix)'s
-cache, and `pkgs/` from upstream release archives (the exception is `feed`, a
-small Go build). llm-agents.nix is consumed without `inputs.nixpkgs.follows`:
-building it against my nixpkgs would change every derivation hash and miss its
-cache. Determinate Nix owns the daemon, so the substituters are declared in
+A switch that compiles Rust or C++ takes minutes where a download takes
+seconds, so a package enters only when a cache serves it: nixpkgs from
+`cache.nixos.org`, the agent CLIs from
+[llm-agents.nix](https://github.com/numtide/llm-agents.nix)'s cache, and
+`pkgs/` from upstream release archives (the exception is `feed`, a small Go
+build). llm-agents.nix is consumed without `inputs.nixpkgs.follows`: building
+it against my nixpkgs would change every derivation hash and miss its cache.
+Determinate Nix owns the daemon, so the substituters are declared in
 `determinateNix.customSettings` ([`base.nix`](modules/darwin/base.nix)); a
 `nix.settings` block would be ignored.
 
@@ -120,7 +122,7 @@ runtime layer that watches the machines) lives in a private flake input,
 `home-ops`. Nix fetches an input only when an output reads it, and the agent
 output never does, so anyone can build it;
 [CI](.github/workflows/agent.yml) runs `nix run .#agent` on fresh x86_64 and
-aarch64 Ubuntu runners on every push. Sietch's tailnet name and port are public
+aarch64 Ubuntu runners for every push to main and every pull request. Sietch's tailnet name and port are public
 on purpose ([`lib/facts.nix`](lib/facts.nix)): the tailnet's access policy, not
 obscurity, decides who reaches them.
 
