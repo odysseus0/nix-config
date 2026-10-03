@@ -1,22 +1,15 @@
+# The workstation's CLI tools that Nix owns (README §One owner per tool): a
+# switch is the only way one changes. A tool belongs here only if it is used
+# in a directory with no project; a project's toolchain lives in that
+# project's flake devShell, and a one-off is `nix run nixpkgs#<tool>`. Never
+# add a tool the vendor installs in ~/.local/bin: that copy would shadow
+# this one.
 { pkgs, inputs, ... }:
-
-# What every shell needs, store-owned: Nix builds and pins the exact binary,
-# and a switch is the only way it changes. A tool belongs here only if you
-# would use it in a directory with no project; a project's toolchain lives in
-# that project's flake devShell (loaded by direnv), and a one-off is
-# `nix run nixpkgs#<tool>`.
-#
-# The one other tier is vendor-owned: a tool whose own installer and updater
-# own its install root (claude, amp, pi in ~/.local/bin). Nix only puts
-# ~/.local/bin on PATH ahead of the Nix profile (environment.nix), so never
-# install a vendor-owned tool here as well: one of the two copies would be
-# silently shadowed.
 
 let
   # llm-agents.nix's own packages output, built against its own nixpkgs pin
   # so cache.numtide.com serves it (see flake.nix on the llm-agents input).
   llmAgents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
-
 in
 {
   home.packages = with pkgs; [
@@ -29,7 +22,7 @@ in
     lefthook         # git hook runner (the vault's hooks)
     ghq              # clones to ~/src/<host>/<owner>/<repo> (programs.git ghq.root)
 
-    # Modern CLI alternatives (eza, bat, fzf, fd, delta come with core.nix)
+    # CLI tools (eza, bat, fzf, fd and delta come with core.nix)
     gum              # TUI toolkit for shell scripts
     ripgrep
     tree
