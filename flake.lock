@@ -213,11 +213,11 @@
     },
     "home-ops": {
       "locked": {
-        "lastModified": 1790992130,
-        "narHash": "sha256-c8DnkUwXrbw8zS1mKPjIg2udqcR2rqz11eb9doNB3hE=",
+        "lastModified": 1790994301,
+        "narHash": "sha256-gwVIIIrrGKOmVkuLr+u5Pt8HkYX9g3/w/noaLmAkZUI=",
         "owner": "odysseus0",
         "repo": "home-ops",
-        "rev": "27e0263430bfce30cd8f96e3d00a6960fc2d3c7a",
+        "rev": "ec26583f046dd6fbfd9c52f1d7ceb441568aab80",
         "type": "github"
       },
       "original": {
