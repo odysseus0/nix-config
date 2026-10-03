@@ -7,31 +7,13 @@
 { config, lib, pkgs, osConfig, ... }:
 
 let
-  # Beads documents Dolt 2.2.0 as the safe standalone-server release. Pinned
-  # to the upstream prebuilt binary: the authority's server version changes
-  # only by editing this pin, and nothing compiles.
-  dolt = pkgs.stdenvNoCC.mkDerivation {
-    pname = "dolt";
-    version = "2.2.0";
-    src = pkgs.fetchurl {
-      url = "https://github.com/dolthub/dolt/releases/download/v2.2.0/dolt-darwin-arm64.tar.gz";
-      hash = "sha256-xnN9wsWAbi7u9IOa12woFnyGH4eK8wcd8SQqZYnYEmc=";
-    };
-    installPhase = ''
-      runHook preInstall
-      install -Dm755 bin/dolt $out/bin/dolt
-      install -Dm644 LICENSES $out/share/licenses/dolt/LICENSES
-      runHook postInstall
-    '';
-  };
-
   # Mutable state, outside the store. Back it up through the MacBook's daily
   # beads-export (home-ops runtime registry), not by snapshotting this path.
   dataDir = "${config.home.homeDirectory}/.local/share/beads/shared-server";
 
   doltServer = pkgs.writeShellApplication {
     name = "beads-dolt-server";
-    runtimeInputs = [ dolt ];
+    runtimeInputs = [ pkgs.dolt ];
     text = ''
       mkdir -p ${lib.escapeShellArg dataDir}
       exec dolt sql-server --host 127.0.0.1 --port 3307 --data-dir ${lib.escapeShellArg dataDir}
@@ -66,7 +48,7 @@ let
 in
 {
   # dolt on PATH for supervised maintenance (dolt sql, backups) on this host.
-  home.packages = [ dolt ];
+  home.packages = [ pkgs.dolt ];
 
   # User agents, so they start at login. FileVault's pre-boot unlock logs the
   # account in, which is what brings the authority back after a reboot.

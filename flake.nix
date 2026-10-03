@@ -76,11 +76,7 @@
 
     mkSystem = import ./lib/mksystem.nix {
       inherit nixpkgs inputs;
-      overlays = [
-        (final: prev: {
-          herdr = final.callPackage ./lib/herdr-bin.nix { };
-        })
-      ];
+      inherit (hosts) overlays;
     };
   in {
     homeConfigurations = nixpkgs.lib.listToAttrs (map (system: {

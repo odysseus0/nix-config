@@ -12,7 +12,7 @@
   home.packages = with pkgs; [
     bun                                 # keep-up (vault .agents/skills/keep-up)
     litestream                          # the registry's litestream daemon
-    (callPackage ../../../lib/feed.nix { }) # RSS candidates for keep-up
+    feed                                # RSS candidates for keep-up
     # bird reads its X session from Chrome's cookies. George signs in to x.com
     # here over Screen Sharing; Chrome sync does not carry cookies.
     google-chrome

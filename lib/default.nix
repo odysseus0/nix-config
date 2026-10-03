@@ -6,6 +6,8 @@ let
   overlays = [ (import ../pkgs) ];
 in
 rec {
+  inherit overlays;
+
   linuxSystems = [ "x86_64-linux" "aarch64-linux" ];
 
   pkgsFor = system: import inputs.nixpkgs { inherit system overlays; };
