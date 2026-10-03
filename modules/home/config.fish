@@ -71,65 +71,11 @@ set -gx FZF_DEFAULT_OPTS "--ansi --layout=reverse --color=$color_scheme"
 # Custom Functions
 # =============================================================================
 
-# Package manager overview (Nix pro style)
-function managed -d "List packages managed by various package managers (Nix pro style)"
-    # Output format: category:manager:package for better organization
-
-    # === CORE INFRASTRUCTURE (Nix-managed) ===
-    if command -q nix-env
-        echo "# Core Infrastructure (Nix)"
-        nix-env -q 2>/dev/null | sed 's/^/core:nix:/'
-        echo
-    end
-
-    # === PLATFORM INTEGRATION (Homebrew) ===
-    echo "# Platform Integration (Homebrew)"
-    brew list --formula 2>/dev/null | sed 's/^/platform:brew:/'
-    brew list --cask 2>/dev/null | sed 's/^/platform:cask:/'
-    echo
-
-    # === LANGUAGE ECOSYSTEMS ===
-    echo "# Language Ecosystems"
-    # UV tools (Python)
-    uv tool list 2>/dev/null | grep '^[a-zA-Z]' | awk '{print "lang:uv:" $1}'
-
-    # Cargo (Rust)
-    ls ~/.cargo/bin 2>/dev/null | grep -v rustup | sed 's/^/lang:cargo:/'
-
-    # NPM global (Node.js)
-    npm list -g --depth=0 2>/dev/null | grep '^[├└]' | sed 's/^[├└]── //' | awk '{print "lang:npm:" $1}'
-
-    # Go binaries
-    if test -d ~/go/bin
-        ls ~/go/bin 2>/dev/null | sed 's/^/lang:go:/'
-    end
-
-    # Conda (Python/Data Science)
-    if command -q conda
-        conda list 2>/dev/null | grep -v '^#' | awk '{print "lang:conda:" $1}'
-    end
-    echo
-
-    # === EDITOR EXTENSIONS ===
-    echo "# Editor Extensions"
-    if command -q code-insiders
-        code-insiders --list-extensions 2>/dev/null | sed 's/^/editor:vscode:/'
-    end
-    echo
-
-    # === MANUAL INSTALLS (Moving targets) ===
-    echo "# Manual Installs (Nightly/Beta/Auto-updating)"
-    ls /Applications 2>/dev/null | grep -iE "(nightly|beta|canary|discord)" | sed 's/^/manual:app:/' | sed 's/\.app$//'
-end
-
 # AI-friendly TaskWarrior output
 function taskai --description "AI-friendly flat output for TaskWarrior"
     task rc.defaultwidth=0 rc.verbose=nothing rc.color=off $argv | tr -s ' '
 end
 
-
-# SSH keys are now managed locally at ~/.ssh/id_ed25519
-# No need for 1Password integration - keys are loaded automatically
 
 #-------------------------------------------------------------------------------
 # Terminal Integration
@@ -166,13 +112,3 @@ set -q MANPATH; or set MANPATH ''
 set -gx MANPATH /opt/homebrew/share/man $MANPATH
 set -q INFOPATH; or set INFOPATH ''
 set -gx INFOPATH /opt/homebrew/share/info $INFOPATH
-
-# PATH for personal, language, and app CLIs managed via home.sessionPath in environment.nix
-# Only Homebrew remains here due to MANPATH/INFOPATH co-setup
-
-# =============================================================================
-# Auto-Generated Tool Configuration
-# =============================================================================
-# Tools like conda, pnpm, LM Studio, etc. will automatically add their 
-# initialization code below. You can periodically clean this up by moving
-# their sections to conf.d/paths.fish if they get too messy.

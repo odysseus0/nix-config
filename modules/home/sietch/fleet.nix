@@ -3,12 +3,9 @@
 # dotfiles, defaults and launchd jobs. Desired state lives as Fleet GitOps YAML
 # in home-ops/infra/fleet; this module only runs the server.
 #
-# Shape matches vault-events-server.nix: loopback-only services plus a
-# tailnet-only Serve forward. Apple devices require HTTPS with a trusted
-# certificate, so the forward is HTTPS Serve on the tailnet name (needs HTTPS
-# certificates enabled for the tailnet). Dolt holds 127.0.0.1:3307, so MySQL
-# takes 3308.
-{ config, lib, pkgs, osConfig, ... }:
+# Loopback-only services plus a tailnet-only forward, like vault-events.nix.
+# Dolt holds 127.0.0.1:3307, so MySQL takes 3308.
+{ config, lib, pkgs, ... }:
 
 let
   mysql = pkgs.mysql84;
@@ -80,39 +77,22 @@ let
       exec fleet serve
     '';
   };
-
-  tailscale = osConfig.services.tailscale.package;
-
-  forward = pkgs.writeShellApplication {
-    name = "fleet-tailscale-forward";
-    text = ''
-      # Foreground Serve: no Serve config persists after this job stops.
-      exec ${lib.getExe tailscale} serve --https=443 http://127.0.0.1:${fleetPort}
-    '';
-  };
-
-  agent = label: program: extra: {
-    enable = true;
-    config = {
-      Label = "com.runtime.${label}";
-      ProgramArguments = [ program ];
-      RunAtLoad = true;
-      KeepAlive = true;
-      ProcessType = "Background";
-      StandardOutPath = "${config.home.homeDirectory}/Library/Logs/runtime-${label}.log";
-      StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/runtime-${label}.error.log";
-      Umask = 63; # 0077
-      ThrottleInterval = 10;
-    } // extra;
-  };
 in
 {
+  imports = [ ../tailscale-forward.nix ];
+
   home.packages = [ pkgs.fleetctl ];
 
-  launchd.agents = {
-    fleet-mysql = agent "fleet-mysql" (lib.getExe mysqld) { };
-    fleet-redis = agent "fleet-redis" (lib.getExe redis) { };
-    fleet-server = agent "fleet-server" (lib.getExe server) { };
-    fleet-tailscale-forward = agent "fleet-tailscale-forward" (lib.getExe forward) { };
+  services.background = {
+    fleet-mysql.program = lib.getExe mysqld;
+    fleet-redis.program = lib.getExe redis;
+    fleet-server.program = lib.getExe server;
+  };
+
+  # Apple devices require HTTPS with a trusted certificate: HTTPS Serve on
+  # the tailnet name (HTTPS certificates must be enabled for the tailnet).
+  services.tailscale-forward.fleet = {
+    serve = "--https=443";
+    target = "http://127.0.0.1:${fleetPort}";
   };
 }

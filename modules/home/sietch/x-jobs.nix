@@ -2,7 +2,7 @@
 # runtime/registry.toml, host = "sietch") and alone writes their SQLite state,
 # streamed to R2 by Litestream. The MacBook reaches that state through
 # `sietch` (home-ops sietch-client.nix).
-# home-manager-server.nix imports the home-ops modules this sets.
+# hosts/sietch.nix imports the home-ops modules this sets.
 { pkgs, ... }:
 
 {
@@ -12,7 +12,7 @@
   home.packages = with pkgs; [
     bun                                 # keep-up (vault .agents/skills/keep-up)
     litestream                          # the registry's litestream daemon
-    (callPackage ../../../lib/feed.nix { }) # RSS candidates for keep-up
+    feed                                # RSS candidates for keep-up
     # bird reads its X session from Chrome's cookies. George signs in to x.com
     # here over Screen Sharing; Chrome sync does not carry cookies.
     google-chrome

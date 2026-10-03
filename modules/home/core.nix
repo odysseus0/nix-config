@@ -1,4 +1,7 @@
-{ inputs, pkgs, config, ... }:
+# The shell both Macs share: fish (primary) and zsh, their aliases, and the
+# tools config.fish calls, so a host that imports this needs nothing else
+# for its shell to work.
+{ pkgs, config, ... }:
 
 let
   shellAliases = {
@@ -32,22 +35,7 @@ in {
   programs.fish = {
     enable = true;
     shellAliases = shellAliases;
-    interactiveShellInit = builtins.readFile ../config.fish;
-    # Vite+ wrapper: `vp env use` prints shell code that sets VP_NODE_VERSION
-    # in the calling shell, so it must be eval'd here rather than exec'd.
-    functions.vp = ''
-      if test (count $argv) -ge 2; and test "$argv[1]" = env; and test "$argv[2]" = use
-          if contains -- -h $argv; or contains -- --help $argv
-              command vp $argv; return
-          end
-          set -lx VP_ENV_USE_EVAL_ENABLE 1
-          set -lx VP_SHELL fish
-          set -l out (command vp $argv); or return $status
-          eval (string join ';' $out)
-      else
-          command vp $argv
-      end
-    '';
+    interactiveShellInit = builtins.readFile ./config.fish;
     plugins = [
       { name = "hydro"; src = pkgs.fishPlugins.hydro.src; }
       { name = "fzf.fish"; src = pkgs.fishPlugins.fzf-fish.src; }
@@ -64,4 +52,14 @@ in {
     shellAliases = shellAliases;
     initContent = "";
   };
+
+  # config.fish and the aliases above run these: the `ls`/`ll` aliases,
+  # fzf.fish and its preview and diff commands.
+  home.packages = with pkgs; [
+    eza
+    bat
+    fzf
+    fd
+    delta
+  ];
 }

@@ -69,14 +69,6 @@ let
   };
 
   toYAML = lib.generators.toYAML {};
-  homebrewTrust = builtins.toJSON {
-    trustedformulae = [
-      "openclaw/tap/gogcli"
-    ];
-    trustedcasks = [
-      "mrkai77/cask/loop"
-    ];
-  };
 in
 {
   #---------------------------------------------------------------------
@@ -91,14 +83,10 @@ in
     };
 
     # Tier 1 dotfiles - simple, high-impact configurations
-    ".taskrc".source = ../taskrc;
-    ".fdignore".source = ../fdignore;
-    ".rgignore".source = ../rgignore;
-    ".gitignore".source = ../gitignore;  # Global gitignore
-
-    # sudo darwin-rebuild does not preserve XDG_CONFIG_HOME, so Homebrew falls
-    # back to ~/.homebrew/trust.json during activation.
-    ".homebrew/trust.json".text = homebrewTrust;
+    ".taskrc".source = ../dotfiles/taskrc;
+    ".fdignore".source = ../dotfiles/fdignore;
+    ".rgignore".source = ../dotfiles/rgignore;
+    ".gitignore".source = ../dotfiles/gitignore;  # Global gitignore
 
   };
 
@@ -108,15 +96,8 @@ in
 
   xdg.enable = true;
   xdg.configFile = {
-    "gh/config.yml".source = ../gh-config.yml;
-    "ghostty/config".source = ../ghostty;
-
-    # pnpm config removed 2026-08-04 with the pnpm tier (agent CLIs are
-    # store-owned via llm-agents.nix now).
-
-    # Homebrew tap trust is required by HOMEBREW_REQUIRE_TAP_TRUST.
-    # Keep approvals scoped to the third-party entries declared in darwin.nix.
-    "homebrew/trust.json".text = homebrewTrust;
+    "gh/config.yml".source = ../dotfiles/gh-config.yml;
+    "ghostty/config".source = ../dotfiles/ghostty;
 
     # gh-dash configs - generated from single source with theme variants
     "gh-dash/config-light.yml".text = toYAML (mkGhDashConfig catppuccinLatte);

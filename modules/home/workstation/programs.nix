@@ -1,4 +1,4 @@
-{ inputs, pkgs, lib, ... }:
+{ pkgs, lib, facts, ... }:
 
 {
   #---------------------------------------------------------------------
@@ -11,10 +11,7 @@
 
     settings = {
       # User configuration
-      user = {
-        name = "tengjizhang";
-        email = "odysseus0@users.noreply.github.com";
-      };
+      user = { inherit (facts.identity) name email; };
 
       # Basic settings
       init.defaultBranch = "main";
@@ -39,7 +36,6 @@
         format = "ssh";
         ssh.program = "ssh-keygen";
       };
-      commit.gpgsign = true;
       merge.conflictstyle = "diff3";
     };
 
@@ -76,19 +72,9 @@
   # Direnv - Per-directory environment management
   #---------------------------------------------------------------------
 
-  # Backs the "project-scope demotion candidates" tier in home/packages.nix
-  # (cloud/infra CLIs moving to per-project devShells loaded via .envrc).
-  # CGO_ENABLED override: direnv's Makefile links with `-linkmode=external`
-  # while buildGoModule defaults CGO off under Go 1.26, so the stock package
-  # fails on BOTH unstable and stable pins (nixpkgs #503298; verified
-  # 2026-08-04 — `-linkmode=external requires external (cgo) linking`).
-  # Forcing cgo on builds clean. Drop the override once nixpkgs' direnv
-  # builds stock again; `make build` is the gate.
+  # Per-project toolchains: a project's flake devShell loads on cd.
   programs.direnv = {
     enable = true;
-    package = pkgs.direnv.overrideAttrs (o: {
-      env = (o.env or { }) // { CGO_ENABLED = "1"; };
-    });
     nix-direnv.enable = true;
   };
 
@@ -133,10 +119,7 @@
   programs.jujutsu = {
     enable = true;
     settings = {
-      user = {
-        name = "tengjizhang";
-        email = "odysseus0@users.noreply.github.com";
-      };
+      user = { inherit (facts.identity) name email; };
     };
   };
 
@@ -160,7 +143,7 @@
   # linked out of store from dotfiles.nix — see the Neovim block there.
 
   #---------------------------------------------------------------------
-  # Herdr - agent multiplexer (replaces the tmux/zellij pair)
+  # Herdr - agent multiplexer
   #---------------------------------------------------------------------
   # ui.toast.delivery ships as "off", so a default install does NOT do the one
   # thing herdr was chosen for.
@@ -177,7 +160,7 @@
   # config.toml is APP-OWNED, not store-owned. herdr writes it back at runtime —
   # the TUI persists ui.agent_panel_sort and custom keybindings there — so a
   # /nix/store symlink makes those writes fail with EACCES. Using
-  # programs.herdr.settings did exactly that.
+  # programs.herdr.settings would do exactly that.
   #
   # Seed instead of manage: activation installs these defaults only when the
   # file is absent, so a fresh machine comes up configured and herdr still owns
@@ -186,10 +169,6 @@
 
   home.activation.seedHerdrConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     cfg="$HOME/.config/herdr/config.toml"
-    # Drop a symlink left by the earlier store-managed arrangement.
-    if [ -L "$cfg" ]; then
-      $DRY_RUN_CMD rm -f "$cfg"
-    fi
     if [ ! -e "$cfg" ]; then
       $DRY_RUN_CMD mkdir -p "$(dirname "$cfg")"
       $DRY_RUN_CMD cat > "$cfg" <<'TOML'
@@ -220,14 +199,4 @@ TOML
 
   # Silence "generateCaches has no effect" warning on darwin
   programs.man.generateCaches = false;
-
-  #---------------------------------------------------------------------
-  # mise - polyglot version manager
-  # Always use prebuilt binaries — never compile from source
-  #---------------------------------------------------------------------
-
-  home.file.".config/mise/config.toml".text = ''
-    [settings]
-    ruby.compile = false
-  '';
 }

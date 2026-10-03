@@ -1,206 +1,142 @@
 # nix-config
 
-Instructions for agents working in this repository.
+Instructions for agents working in this repository. README owns the
+argument (layout, tiers, clocks, seam); this file owns commands, paths and
+rules. Read README before a package-placement or structural decision.
 
-## Repository Overview
-
-This is a nix-darwin configuration repository that declaratively manages a macOS development environment using Nix flakes, nix-darwin, and home-manager. Structural layering follows Mitchell Hashimoto's pattern (see README §Inspiration); tool management follows this repo's own ownership-tier model (see README §Ownership tiers) — read the README before making a package-placement decision, it has the full argument.
-
-## Common Commands
+## Common commands
 
 ```bash
-# Apply configuration changes (requires sudo for system-level changes)
-make switch
-# or: sudo darwin-rebuild switch --flake ".#macbook-m4-max"   (".#sietch" on Sietch)
-# NIXNAME defaults from LocalHostName; `make NIXNAME=sietch build` builds
-# Sietch's output from the MacBook.
-# Pure — no --impure, no NIXPKGS_ALLOW_UNFREE needed (removed 2026-07-20,
-# audit F5: nixpkgs.config.allowUnfree = true is declared in the module
-# system and pkgs-stable is re-imported with the same config; see
-# users/tengjizhang/home/packages.nix's comment on pkgs-stable).
-
-# Test configuration without activating
-make test
-
-# Build configuration only (no activation) — the CI-equivalent gate
-make build
-
-# Reconcile MANIFEST-OWNED tools (currently just uv) to their manifest.
-# Network-dependent, explicit — never runs from switch/activation.
-make update-tools
-
-# Update flake inputs to latest versions
-make update
-# or: nix flake update
-
-# Update flake inputs and auto-commit changes
-make update-commit
-
-# Update, commit, and push to remote
-make update-commit-push
-
-# Clean build artifacts
-make clean
+make              # = make home-switch: activate the home layer only, no sudo
+make switch       # sudo darwin-rebuild switch --flake .#<output>
+make build        # build only: the hard gate for any structural change
+make test         # activate temporarily
+make dry-run      # what would be fetched vs built
+make update       # nix flake update (all inputs)
+make update-nixpkgs
+make brew-upgrade # upgrade Homebrew apps; never part of a switch
 ```
 
-## Architecture
+`NIXNAME` defaults from LocalHostName (`macbook-m4-max`, or `sietch` on
+Sietch); `make NIXNAME=sietch build` builds Sietch's output from the
+MacBook. On Sietch the Makefile overrides `home-ops` with `~/home-ops`.
+Every evaluation is pure except the agent bootstrap's (below).
 
-### Three-Layer Configuration System
+## Layout
 
-1. **Machine Layer** (`machines/<name>.nix`, sharing `machines/darwin-common.nix`)
-   - System-level Nix settings (experimental features, binary caches via `determinateNix.customSettings`)
-   - Shell program enablement (zsh, fish)
-   - System packages (minimal — cachix, mosh, tmux)
-   - Sets `system.stateVersion`
+- `flake.nix`: inputs, and outputs as a table of contents.
+- `lib/default.nix`: `mkDarwin` (a Mac: overlay, unfree, Determinate,
+  home-manager, the host's modules) and `mkHome` (a standalone home).
+  `inputs`, `facts` and (on Macs) `user` reach every module as
+  `specialArgs`; never route them through `_module.args`.
+- `lib/facts.nix`: facts more than one module needs (identity, Sietch's
+  tailnet name and Beads port, the board id), declared once.
+- `pkgs/`: every package this repo builds, as `pkgs.<name>` through the one
+  overlay (`pkgs/default.nix`): beads, dolt, feed, herdr, nix-flake-bump,
+  sherlog.
+- `hosts/<output>.nix`: identity plus import lists. `macbook-m4-max.nix`
+  and `sietch.nix` give `system`, `user`, a `darwin` module list and a
+  `home` module; `agent.nix` is a home module for `mkHome`.
+- `modules/darwin/`: `base` (Determinate, caches, shells), `account` (the
+  user, login shell via `users.knownUsers`), `homebrew` (zap,
+  materialize-only), `workstation`, `server`.
+- `modules/home/`: `core` (fish/zsh, `config.fish`, the tools they call),
+  `workstation/*` (packages, programs, dotfiles, environment, secrets),
+  `sietch/*`, `beads-server`, `beads-client`, `agent/tailscaled`,
+  `background`, `tailscale-forward`, `identity`, `dotfiles/` (raw files).
 
-2. **User OS Layer** (`users/<user>/darwin.nix`; `darwin-server.nix` for the server role; both import `darwin-common.nix`)
-   - (Homebrew moved to the user layer 2026-08-04 — see home/brew.nix)
-   - macOS-specific system settings (Touch ID for sudo)
-   - User shell setup and activation scripts
+A host is its import list. Add a capability by writing a module and
+importing it; add an option only when a shape repeats with different values
+(`services.background`, `services.tailscale-forward`,
+`programs.beads-client.server`). Never add enable flags to turn modules on.
 
-3. **User Home Layer** (`users/<user>/home-manager.nix` + `users/<user>/home/*.nix`; `home-manager-server.nix` for the server role)
-   - CLI packages, tiered by ownership (see below)
-   - Program configurations (git, neovim, fish)
-   - Dotfiles management
-   - Environment variables
+Machines (README §Machines): `macbook-m4-max` (workstation), `sietch`
+(headless server: Beads authority, Fleet, vault events, X jobs, agent host)
+and `homeConfigurations.agent-<system>` (disposable Linux agent boxes).
+Both Macs import `home-ops` modules; Sietch reads its own clone, so it
+needs no GitHub token. The agent output must never import `home-ops`: it
+builds without private-repo access. Every item Sietch declares needs a
+reason tied to its role.
 
-Two machines exist: `macbook-m4-max` (workstation) and `sietch` (headless
-server: the shared Beads authority and an agent host) — see README §Machines.
-Agent boxes (disposable Linux) get `homeConfigurations.agent-<system>` from
-`hosts/agent.nix`, built by `lib/default.nix`'s `mkHome` and brought up with
-`nix run .#agent`; they carry only the Beads client and `agent-net`.
-`lib/mksystem.nix` selects the user layers by `role` and forks on
-`darwin ? false` for a future NixOS machine; keep both and the
-`machines/`/`users/` layering intact. Sietch's output must not import the
-private `home-ops` input (it builds without private-repo access), and every
-item it declares needs a reason tied to its role.
+## Adding things: pick the tier first
 
-### Key Files
+- **Store-owned (default)**: `modules/home/workstation/packages.nix`. AI
+  agent CLIs come from `llmAgents.<name>` when llm-agents.nix packages them
+  (`nix eval github:numtide/llm-agents.nix#packages.aarch64-darwin --apply builtins.attrNames`).
+  A tool with no Nix packaging gets a derivation in `pkgs/` that unpacks a
+  pinned release archive.
+- **Vendor-owned**: nothing in Nix. Its installer puts it in
+  `~/.local/bin`, which is already on PATH ahead of the profile. Never
+  install it store-owned as well.
+- **Per-project tools** (cloud CLIs, language toolchains): the project's
+  own flake `devShells`, not the global profile.
+- **GUI apps**: `homebrew.casks` in `modules/darwin/workstation.nix` (or
+  `server.nix` for Sietch); App Store apps in `homebrew.masApps`. Then
+  `make switch`.
+- **A long-running job on Sietch**: `services.background.<name>.program`;
+  publish a loopback service to the tailnet with
+  `services.tailscale-forward.<name> = { serve; target; }`.
 
-- `flake.nix` — flake inputs/outputs, defines system configurations
-- `lib/mksystem.nix` — system builder function that composes all layers
-- `lib/uv-tools-reconcile.nix` — MANIFEST-OWNED tier executor, exposed via overlay as `pkgs.uv-tools-reconcile`
-- `machines/darwin-common.nix` — shared Darwin baseline, binary caches
-- `machines/macbook-m4-max.nix`, `machines/sietch.nix` — per-machine config
-- `users/tengjizhang/darwin.nix`, `darwin-server.nix` — macOS system config per role
-- `users/tengjizhang/home-manager.nix` — module imports, home-ops wiring
-- `users/tengjizhang/home-manager-server.nix` — Sietch's home layer (shell, packages, `home/beads-server.nix`)
-- `users/tengjizhang/home/packages.nix` — CLI packages, tiered (see below)
-- `users/tengjizhang/home/uv-tools-manifest.nix` — MANIFEST-OWNED tier's source of truth
-- `users/tengjizhang/config.fish` — Fish shell configuration
+## Rules
 
-### Package Strategy
+### Cache-hit discipline (hard rule)
 
-- **nixpkgs-unstable**: default for CLI tools, recent versions
-- **nixpkgs-stable (25.11)**: cherry-picked for packages that break on unstable (currently just `_1password-cli`, via the `pkgs-stable` binding in `home/packages.nix` — read its comment before reaching for `pkgs.unstable.*`-style overlays, which this repo does NOT use)
-- **llm-agents.nix** (`github:numtide/llm-agents.nix`): store-owned AI agent CLIs, consumed via its `packages.<system>` output (NOT its overlay — see `flake.nix`'s comment on the `llm-agents` input for the nixpkgs version-skew reason)
-- **Homebrew**: GUI apps and Mac App Store apps
+Source compilation, especially Rust or C++, is a defect, not a cost.
+Nothing enters this config (package, input, overlay, override) without a
+cache story: before adding, check the substituter serves it (`nix path-info
+--store https://<cache> <output>`, or whether `make build` says "copying
+path" or "building"). An override changes the derivation hash and forfeits
+the cache, so one exists only with an expiry:
+`lib.throwIf (lib.versionAtLeast pkg.version "<fixed in>") "obsolete"`.
 
-### Binary Caches
+Substituters take effect only after a switch writes them to
+`/etc/nix/nix.custom.conf`. On a fresh Mac, pre-seed that file by hand and
+`launchctl kickstart -k system/systems.determinate.nix-daemon` before the
+first build, or llm-agents packages compile from source.
 
-Pre-configured via `determinateNix.customSettings` in `machines/*.nix` (NOT `nix.settings` — Determinate Nix manages the daemon, `nix.enable = false`):
-- `cache.nixos.org` — official Nix cache (included by default)
-- `nix-community.cachix.org` — community packages
-- `cache.numtide.com` — `llm-agents.nix` packages
+### No network in activation
 
-**Cache-hit discipline (hard rule)**: source compilation — especially Rust/C++ — is treated as a defect, not a cost. Nothing enters this config (package, input, overlay, override) without a cache story: before adding, verify the substituter actually serves it (`nix path-info --store https://<cache> <drv-output>`, or just watch whether `make build` says "copying path" vs "building"). Two scars back this rule: the neovim-nightly-overlay (removed Oct 2025 — stale cache meant 2-3GB downloads and 30+ min builds) and the 2026-08-04 llm-agents bootstrap (codex compiled Rust from scratch because `cache.numtide.com` was declared in the new config but not yet trusted by the *running* daemon — substituters take effect only after a switch writes them to `/etc/nix/nix.custom.conf`; on a fresh machine, pre-seed that file by hand and `launchctl kickstart -k system/systems.determinate.nix-daemon` before the first build). Small Go/shell builds (e.g. the direnv CGO override while nixpkgs #503298 is open) are tolerated; anything that would compile for minutes is not — pin to a cached rev or don't ship it.
+`home.activation.*` runs on every switch. It stays offline and never
+soft-fails (`|| echo continuing` is banned). Anything that calls out to a
+package manager or vendor installer belongs to that tool's own clock, not
+to activation. The activation scripts that exist are local: seeding
+herdr's config, the Beads profile's mode.
 
-## Configuration Patterns
+### Determinate Nix
 
-### Adding Packages — pick the ownership tier first
+`nix.enable = false`; Determinate manages the daemon. Cache settings go in
+`determinateNix.customSettings` (`modules/darwin/base.nix`), never
+`nix.settings`, which is ignored. `ids.gids.nixbld = 30000`.
 
-See README §Ownership tiers for the full argument. In short:
+### Docs and comments
 
-**STORE-OWNED (default)** → `users/tengjizhang/home/packages.nix`, `home.packages`. AI agent CLIs specifically go through `llmAgents.<name>` (the `inputs.llm-agents.packages.${system}` binding at the top of that file) if `llm-agents.nix` packages them — check `nix eval github:numtide/llm-agents.nix#packages.aarch64-darwin --apply builtins.attrNames` or its README before assuming a tool isn't covered.
+A comment says why, in the present tense. What changed on which date is a
+commit message. Delete dead config the day its consumer goes, with no
+tombstone. Every claim in README or this file must be checkable against
+the tree.
 
-**MANIFEST-OWNED** → add to the list in `users/tengjizhang/home/uv-tools-manifest.nix` (currently the only manifest-owned domain is uv). Never add an activation script for this — the executor runs from `make update-tools` only.
+### Public repo
 
-**VENDOR-OWNED** → PATH wiring only, in `users/tengjizhang/home/environment.nix` (`home.sessionPath`). Every vendor-owned exception needs a code comment stating why it can't be store-owned and what would let it graduate — see the `vitePlusHome` comment in that file for the template.
-
-**GUI apps** → `users/tengjizhang/home/brew.nix` `casks` (then `make home-switch && make brew-apply` — sudo-free)
-**Mac App Store apps** → `users/tengjizhang/home/brew.nix` `masApps`
-
-### Program Configuration (Mitchell's Pattern)
-
-- Simple shell aliases: Define in Nix (`programs.fish.shellAliases`)
-- Complex shell config: Separate file (`config.fish`) loaded via `interactiveShellInit`
-- Program settings: Use home-manager's `programs.*` modules when available
-- Dotfiles: Simple files in `home.file.*`, XDG-aware configs in `xdg.configFile.*`
-
-## Important Implementation Details
-
-### The two clocks — do not put network calls in activation
-
-`home.activation.*` scripts run on every `make switch`. That phase must stay
-offline and must not soft-fail (`|| echo continuing` is banned there) — see
-README §The two clocks for why. If you're tempted to add an activation
-script that calls out to pnpm/uv/curl/a vendor installer, it belongs in the
-manifest-owned tier (`make update-tools`) or the vendor-owned tier (no Nix
-activation at all) instead. The only activation scripts that should exist are
-local cleanup, like `removeInstallerPlannotatorCli`.
-
-### Shell Integration
-
-- nix-darwin handles Nix daemon integration automatically
-- Fish/zsh init scripts are in machine config (`machines/darwin-common.nix`)
-- Personal PATH additions go in `users/*/home/environment.nix` via `home.sessionPath`; `config.fish` only keeps MANPATH/INFOPATH setup that needs prepend semantics
-
-### Git Configuration
-
-Uses structured `settings` attribute (new format as of home-manager updates):
-- `programs.git.settings.*` instead of `programs.git.extraConfig`
-- SSH signing with local key configured
-- Delta pager with auto light/dark detection
-
-### Homebrew Integration
-
-- Homebrew is OUT of activation entirely (2026-08-04): manifest in `home/brew.nix` renders `~/.config/homebrew/Brewfile`; `make brew-apply` (sudo-free) materializes it, never upgrades
-- Run `brew bundle cleanup --force --file=$HOME/.config/homebrew/Brewfile` manually when you intentionally want to remove unmanaged formulae/casks/apps
-- Requires Mac App Store login for MAS apps
-- Activation script warns if not signed in
-- `make brew-upgrade` is the explicit upgrade step; `HOMEBREW_BUNDLE_NO_UPGRADE=1` in brew-apply keeps materialization upgrade-free
-
-### Determinate Nix Installer
-
-This config uses the Determinate Nix installer with its official nix-darwin module:
-- `determinate` flake input from FlakeHub
-- `inputs.determinate.darwinModules.default` added in `lib/mksystem.nix`
-- `nix.enable = false` in machine config (Determinate manages Nix daemon)
-- `determinateNix.customSettings` for cache configuration (writes to `/etc/nix/nix.custom.conf`)
-- `ids.gids.nixbld = 30000` for compatibility
-
-**Note**: Do NOT use `nix.settings` for caches when `nix.enable = false` — those settings are ignored. Use `determinateNix.customSettings` instead.
-
-### Known nixpkgs breakage
-
-- `direnv` fails to build stock on BOTH the unstable and stable pins
-  (nixpkgs #503298, Go 1.26 cgo linkmode bug). `programs.direnv` is enabled
-  in `home/programs.nix` via an `overrideAttrs` forcing `CGO_ENABLED=1`;
-  drop that override once nixpkgs' direnv builds stock again (`make build`
-  is the gate).
+Nothing personal (account IDs, private automation) belongs here; it goes in
+the private `home-ops` input (README §Public/private seam).
 
 ## Workflow
 
-**Always commit before `make switch`.** The switch can modify working tree state (Homebrew cleanup, activation scripts), making it hard to separate your intended changes from switch side effects. Commit first so you have a clean rollback point.
+Commit before `make switch`: activation can change working-tree state, and
+a commit is the clean rollback point.
 
 ```bash
 git add -A && git commit -m "description" && make switch
 ```
 
-## Testing Changes
+For a restructure (moving files, renaming modules), prove the Macs did not
+change: `nix eval .#darwinConfigurations.<output>.system.drvPath` before and
+after must print the same path (run where `home-ops` is reachable).
 
-1. Build first: `make build` (validates syntax, doesn't activate — this is the hard gate for any structural change)
-2. Test: `make test` (activates temporarily)
-3. Apply: commit, then `make switch` (activates and makes default)
+## Agent boxes
 
-`make switch` is offline and rollback-complete (see README §The two clocks)
-— it should never need retrying for network reasons. If it does, something
-regressed back into activation.
-
-## Development Notes
-
-- All configurations are managed in git — no manual file editing outside this repo
-- Fish is the primary shell; zsh is enabled for macOS compatibility
-- Public repo: nothing personal (account IDs, private automation) belongs
-  here — see README §Public/private seam. That goes in the private `home-ops`
-  flake input instead.
+`nix run .#agent` runs `apps.agent`, a pure script whose one `nix build
+--impure` evaluates `homeConfigurations.agent-<system>` with the box's
+`USER` and `HOME` (`modules/home/identity.nix`), then activates it. CI
+(`.github/workflows/agent.yml`) runs the same command on fresh Ubuntu
+runners. `checks.<system>.agent` builds it with a fixed account.
