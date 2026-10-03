@@ -100,32 +100,44 @@
       darwin = true;
       role = "server";
     };
-
-    # Linux remote-worker: standalone HM (no systemd → no nixos-rebuild).
-    # Shared pkgs: lib/remote-worker-packages.nix. Host-only: Tailscale + Beads→Sietch.
-    # Auth out of band. Switch: make remote-worker-switch / nix run .#remote-worker-switch
-    homeConfigurations.remote-worker =
-      let
-        system = "x86_64-linux";
-        pkgs = import nixpkgs {
-          inherit system;
-          config.allowUnfree = true;
-        };
-      in home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
-        modules = [ ./machines/remote-worker.nix ./users/box/home.nix ];
+  } // (
+    let
+      linux = "x86_64-linux";
+      linuxPkgs = import nixpkgs {
+        system = linux;
+        config.allowUnfree = true;
+      };
+      remoteWorkerTools = import ./lib/remote-worker-packages.nix { pkgs = linuxPkgs; };
+    in {
+      # Shared tool profile also as a buildEnv for inspection / nix profile install.
+      packages.${linux}.remote-worker-tools = linuxPkgs.buildEnv {
+        name = "remote-worker-tools";
+        paths = remoteWorkerTools;
       };
 
-    apps.x86_64-linux.remote-worker-switch =
-      let
-        pkgs = import nixpkgs { system = "x86_64-linux"; };
-        act = self.homeConfigurations.remote-worker.activationPackage;
-      in {
+      # `nix develop .#remote-worker` — shared tools + cloudflared/beads (shell only).
+      devShells.${linux}.remote-worker = linuxPkgs.mkShell {
+        name = "remote-worker";
+        packages = remoteWorkerTools ++ [
+          linuxPkgs.cloudflared
+          inputs.llm-agents.packages.${linux}.beads
+        ];
+      };
+
+      # Thin HM host (user box). Machine-specific: Tailscale + Beads→Sietch in users/box/home.nix.
+      homeConfigurations.remote-worker =
+        home-manager.lib.homeManagerConfiguration {
+          pkgs = linuxPkgs;
+          modules = [ ./users/box/home.nix ];
+        };
+
+      apps.${linux}.remote-worker-switch = {
         type = "app";
-        program = "${pkgs.writeShellApplication {
+        program = "${linuxPkgs.writeShellApplication {
           name = "remote-worker-switch";
-          text = ''exec "${act}/activate"'';
+          text = ''exec "${self.homeConfigurations.remote-worker.activationPackage}/activate"'';
         }}/bin/remote-worker-switch";
       };
-  };
+    }
+  );
 }

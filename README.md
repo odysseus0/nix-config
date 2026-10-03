@@ -135,7 +135,7 @@ Two nix-darwin machines, one flake output each:
 |---|---|---|---|
 | `macbook-m4-max` | MacBook Pro | workstation | `darwin.nix`, `home-manager.nix` |
 | `sietch` | Mac mini, headless | server: the shared Beads Dolt authority over Tailscale, and an agent host | `darwin-server.nix`, `home-manager-server.nix` |
-| `homeConfigurations.remote-worker` | Linux remote-worker | agent host: shared toolchain + Tailscale + Beads→Sietch | `lib/remote-worker-packages.nix`, `users/box/home.nix` → `make remote-worker-switch` |
+| `homeConfigurations.remote-worker` | Linux remote-worker | thin HM on shared tool profile + Tailscale + Beads→Sietch | `lib/remote-worker-packages.nix`, `users/box/home.nix` → `make remote-worker-switch` |
 
 `lib/mksystem.nix` composes `machines/<name>.nix` with the user layers its
 `role` selects (`"workstation"` by default; any other role picks the
@@ -165,11 +165,10 @@ linker, and nix-ld is the standard NixOS fix (not needed on Darwin).
 ├── machines/
 │   ├── darwin-common.nix        # Shared baseline: Determinate Nix, caches, shells
 │   ├── macbook-m4-max.nix       # Workstation
-│   ├── sietch.nix               # Headless server: Tailscale, power, Remote Login
-│   └── remote-worker.nix        # Linux HM host inventory
-├── lib/remote-worker-packages.nix # Shared Linux remote-worker CLI set
+│   └── sietch.nix               # Headless server: Tailscale, power, Remote Login
+├── lib/remote-worker-packages.nix # Shared Linux remote-worker tool profile
 └── users/
-    ├── box/home.nix             # Linux remote-worker HM (thin host layer)
+    ├── box/home.nix             # Linux remote-worker HM (Tailscale + Beads→Sietch)
     └── tengjizhang/
     ├── darwin-common.nix             # Account and login shell (both roles)
     ├── darwin.nix                    # Workstation macOS config (fonts, Touch ID)
