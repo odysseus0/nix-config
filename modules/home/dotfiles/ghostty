@@ -14,6 +14,5 @@ macos-option-as-alt = true
 # oversaturates them.
 minimum-contrast = 1.1
 
-# Font configuration (from Mitchell's setup)
 font-family = JetBrains Mono Nerd Font
 font-size = 14
