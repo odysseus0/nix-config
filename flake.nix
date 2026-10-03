@@ -80,13 +80,6 @@
         (final: prev: {
           herdr = final.callPackage ./lib/herdr-bin.nix { };
         })
-        # No llm-agents overlay here — deliberate; see the `llm-agents` input.
-
-        # MANIFEST-OWNED tier executor, exposed as pkgs.uv-tools-reconcile so
-        # `make update-tools` can address it directly by flake output path.
-        (final: prev: {
-          uv-tools-reconcile = final.callPackage ./lib/uv-tools-reconcile.nix { };
-        })
       ];
     };
   in {

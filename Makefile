@@ -18,7 +18,7 @@ OVERRIDE = $(if $(filter sietch,${NIXNAME}),--override-input home-ops git+file:/
 NIXBUILD = nix build "${NIXSYSTEM}" ${OVERRIDE}
 HOMEBUILD = nix build --no-link "${HOME_ACTIVATION}" ${OVERRIDE}
 
-.PHONY: help home-switch home-build switch system-switch test build clean update update-tools brew-apply brew-upgrade dry-run update-nixpkgs
+.PHONY: help home-switch home-build switch system-switch test build clean update brew-apply brew-upgrade dry-run update-nixpkgs
 
 # Activate only the existing Home Manager subconfiguration. This evaluates the
 # exact module embedded in nix-darwin, so there is no second profile or source
@@ -64,19 +64,6 @@ update:
 update-nixpkgs:
 	nix flake update nixpkgs
 
-# The other clock: reconcile MANIFEST-OWNED tools (currently just uv) against
-# their manifest (users/tengjizhang/home/uv-tools-manifest.nix). Network-
-# dependent, explicit, never run from `switch`/activation — that's the whole
-# point of the two-clock split (see README §The two clocks). VENDOR-OWNED
-# tools (Vite+) are not touched here; they update themselves.
-# Built via `nix build` rather than assuming uv-tools-reconcile is on PATH:
-# that works before the first switch and can't be shadowed by a stale PATH
-# entry — don't "simplify" this to a bare command invocation.
-update-tools:
-	@bin="$$(nix build --no-link --print-out-paths '.#darwinConfigurations.${NIXNAME}.pkgs.uv-tools-reconcile')/bin/uv-tools-reconcile"; \
-	"$$bin"
-	@if command -v executor-update >/dev/null 2>&1; then executor-update; fi  # home-ops executor module's clock
-
 # Show help
 help:
 	@echo "Available targets:"
@@ -89,7 +76,6 @@ help:
 	@echo "  dry-run             - Show what needs to be built/downloaded"
 	@echo "  update              - Update ALL flake inputs (use sparingly)"
 	@echo "  update-nixpkgs      - Update only nixpkgs-unstable"
-	@echo "  update-tools        - Reconcile MANIFEST-OWNED tools (uv) to their manifest"
 	@echo "  brew-apply          - Materialize declared Homebrew apps (sudo-free, no upgrades)"
 	@echo "  brew-upgrade        - Upgrade Homebrew formulae/casks (explicit, out of switch path)"
 	@echo "  clean               - Remove build artifacts"
