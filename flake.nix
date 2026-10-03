@@ -80,20 +80,6 @@
         (final: prev: {
           herdr = final.callPackage ./lib/herdr-bin.nix { };
         })
-        # Workaround: jeepney check phase fails with exit code 127 (missing test runner)
-        # on nixpkgs-unstable. This breaks yt-dlp -> secretstorage -> jeepney chain.
-        # Remove once upstream nixpkgs fixes python313Packages.jeepney.
-        (final: prev: {
-          pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
-            (pyFinal: pyPrev: {
-              jeepney = pyPrev.jeepney.overridePythonAttrs {
-                doCheck = false;
-                # jeepney.io.trio imports 'outcome' which isn't a runtime dep
-                pythonImportsCheck = [ "jeepney" "jeepney.auth" "jeepney.io" ];
-              };
-            })
-          ];
-        })
         # No llm-agents overlay here — deliberate; see the `llm-agents` input.
 
         # MANIFEST-OWNED tier executor, exposed as pkgs.uv-tools-reconcile so

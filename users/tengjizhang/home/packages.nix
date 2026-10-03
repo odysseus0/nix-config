@@ -159,7 +159,6 @@ in {
     curl
     wget
     unzip
-    (ast-grep.overrideAttrs { doCheck = false; })  # test_scan_invalid_rule_id fails in sandbox
     fx          # JSON explorer
     pandoc      # document converter
     typst       # modern typesetting system
@@ -186,7 +185,6 @@ in {
     restic       # snapshot backups to R2 (home-ops/backup)
     uv          # pure Python projects; also runs uv-tools-reconcile above
     pixi        # ML/heavy native deps (conda-forge)
-    yt-dlp
     # herdr is NOT here — programs.herdr in programs.nix owns both the package
     # and config.toml.
 
