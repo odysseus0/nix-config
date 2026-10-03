@@ -210,14 +210,4 @@ TOML
 
   # Silence "generateCaches has no effect" warning on darwin
   programs.man.generateCaches = false;
-
-  #---------------------------------------------------------------------
-  # mise - polyglot version manager
-  # Always use prebuilt binaries — never compile from source
-  #---------------------------------------------------------------------
-
-  home.file.".config/mise/config.toml".text = ''
-    [settings]
-    ruby.compile = false
-  '';
 }

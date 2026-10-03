@@ -18,7 +18,7 @@ OVERRIDE = $(if $(filter sietch,${NIXNAME}),--override-input home-ops git+file:/
 NIXBUILD = nix build "${NIXSYSTEM}" ${OVERRIDE}
 HOMEBUILD = nix build --no-link "${HOME_ACTIVATION}" ${OVERRIDE}
 
-.PHONY: help home-switch home-build switch system-switch test build clean update update-tools brew-apply brew-upgrade update-commit update-commit-push dry-run update-nixpkgs
+.PHONY: help home-switch home-build switch system-switch test build clean update update-tools brew-apply brew-upgrade dry-run update-nixpkgs
 
 # Activate only the existing Home Manager subconfiguration. This evaluates the
 # exact module embedded in nix-darwin, so there is no second profile or source
@@ -77,25 +77,6 @@ update-tools:
 	"$$bin"
 	@if command -v executor-update >/dev/null 2>&1; then executor-update; fi  # home-ops executor module's clock
 
-# Update flake inputs and auto-commit
-update-commit: update
-	@if git diff --quiet --exit-code flake.lock; then \
-		echo "No changes to commit"; \
-	else \
-		echo "Committing flake.lock update..."; \
-		git add flake.lock; \
-		git commit -m "Update flake.lock: dependency version bumps"; \
-	fi
-
-# Update, commit, and push to remote
-update-commit-push: update-commit
-	@if [ -n "$$(git log origin/main..HEAD 2>/dev/null)" ]; then \
-		echo "Pushing to remote..."; \
-		git push; \
-	else \
-		echo "No new commits to push"; \
-	fi
-
 # Show help
 help:
 	@echo "Available targets:"
@@ -111,8 +92,6 @@ help:
 	@echo "  update-tools        - Reconcile MANIFEST-OWNED tools (uv) to their manifest"
 	@echo "  brew-apply          - Materialize declared Homebrew apps (sudo-free, no upgrades)"
 	@echo "  brew-upgrade        - Upgrade Homebrew formulae/casks (explicit, out of switch path)"
-	@echo "  update-commit       - Update flake inputs and auto-commit changes"
-	@echo "  update-commit-push  - Update, commit, and push to remote"
 	@echo "  clean               - Remove build artifacts"
 	@echo "  help                - Show this help message"
 

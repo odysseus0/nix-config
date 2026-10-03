@@ -277,6 +277,8 @@ in {
   ];
 
   home.file = {
+    # The path home-ops' runtime registry schedules.
+    ".local/bin/nix-flake-bump".source = "${pkgs.callPackage ../../../pkgs/nix-flake-bump.nix { }}/bin/nix-flake-bump";
     # Shipped inside the herdr package; wired here so agents running in a herdr
     # pane can actually drive it. The skill self-gates on HERDR_ENV=1, so it
     # stays inert everywhere else.
