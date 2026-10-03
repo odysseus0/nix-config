@@ -39,8 +39,7 @@ Every evaluation is pure except the agent bootstrap's (below).
   `home` module; `agent.nix` is a home module for `mkHome`.
 - `modules/darwin/`: `base` (Determinate, caches, shells), `account` (the
   user, login shell via `users.knownUsers`), `homebrew` (zap,
-  materialize-only), `workstation`, `server`, `tailscale-set` (compat for
-  `services.tailscale.extraSetFlags`).
+  materialize-only), `workstation`, `server`.
 - `modules/home/`: `core` (fish/zsh, `config.fish`, the tools they call),
   `workstation/*` (packages, programs, dotfiles, environment, secrets),
   `sietch/*`, `beads-server`, `beads-client`, `agent/tailscaled`,
