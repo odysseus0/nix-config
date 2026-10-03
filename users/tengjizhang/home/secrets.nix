@@ -1,69 +1,63 @@
 { config, ... }:
 
+# sops-nix: secrets encrypted in git, decrypted at activation with the age
+# key. One secret, one reader: each consumer gets its own 0600 file, and
+# nothing is exported into the shell environment, where every process
+# (every agent, every npx) would inherit it.
+#
+#   Edit:     sops secrets/secrets.yaml
+#   Re-key:   sops updatekeys secrets/secrets.yaml
+#   Bootstrap (after restoring ~/.ssh/id_ed25519 from 1Password):
+#     mkdir -p ~/.config/sops/age
+#     ssh-to-age --private-key -i ~/.ssh/id_ed25519 -o ~/.config/sops/age/keys.txt
+#     chmod 600 ~/.config/sops/age/keys.txt
+let
+  p = config.sops.placeholder;
+  home = config.home.homeDirectory;
+in
 {
-  # sops-nix: secrets encrypted in git, decrypted at activation via age key.
-  # To add/edit secrets: sops ~/nix-config/secrets/secrets.yaml
-  # To re-encrypt after key rotation: sops updatekeys secrets/secrets.yaml
-  #
-  # Bootstrap (one-time, after restoring ~/.ssh/id_ed25519 from 1Password):
-  #   mkdir -p ~/.config/sops/age
-  #   ssh-to-age --private-key -i ~/.ssh/id_ed25519 -o ~/.config/sops/age/keys.txt
-  #   chmod 600 ~/.config/sops/age/keys.txt
-
-  home.sessionVariablesExtra = ''
-    source ${config.sops.templates."session-secrets.sh".path}
-  '';
-
   sops = {
     defaultSopsFile = ../../../secrets/secrets.yaml;
-    age.keyFile = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
+    age.keyFile = "${home}/.config/sops/age/keys.txt";
 
-    # WeChat SQLCipher master key (pre-KDF). Sole consumer since 2026-09-18
-    # is the vault wechat skill's seed-keys script, which derives wx-cli's
-    # per-shard keys from it. Kept in sops as the recovery source.
-    secrets."chatlog-data-key" = {};
-    secrets."chatlog-img-key" = {};
-    secrets."tg-app-id" = {};
-    secrets."tg-app-hash" = {};
-    secrets."discord-user-token" = {};
-    secrets."discord-bot-token" = {};
-    secrets."linear-api-key" = {};
-    secrets."trace-archive-r2-access-key-id" = {};
-    secrets."trace-archive-r2-secret-access-key" = {};
-    secrets."beads-cloudflared-tunnel-token" = {};
-    secrets."restic-password" = {};
+    # WeChat SQLCipher master key (pre-KDF): the vault wechat skill's
+    # seed-keys script derives wx-cli's per-shard keys from it.
+    secrets."chatlog-data-key" = { };
+    secrets."chatlog-img-key" = { };
+    secrets."tg-app-id" = { };
+    secrets."tg-app-hash" = { };
+    secrets."discord-user-token" = { };
+    secrets."discord-bot-token" = { };
+    secrets."trace-archive-r2-access-key-id" = { };
+    secrets."trace-archive-r2-secret-access-key" = { };
+    secrets."restic-password" = { };
 
-    # Shell environment variables — sourced by all shells via home.sessionVariablesExtra.
-    # home-manager runs hm-session-vars.sh through babelfish for fish, sources directly for zsh.
-    templates."session-secrets.sh".content = ''
-      export TG_APP_ID="${config.sops.placeholder."tg-app-id"}"
-      export TG_APP_HASH="${config.sops.placeholder."tg-app-hash"}"
-      export DISCORD_TOKEN="${config.sops.placeholder."discord-user-token"}"
-      export DISCORD_BOT_TOKEN="${config.sops.placeholder."discord-bot-token"}"
-      export LINEAR_API_KEY="${config.sops.placeholder."linear-api-key"}"
-    '';
+    templates."telegram.env" = {
+      path = "${home}/.config/telegram/telegram.env";
+      content = ''
+        export TG_APP_ID="${p."tg-app-id"}"
+        export TG_APP_HASH="${p."tg-app-hash"}"
+      '';
+    };
 
-    # restic.env — the snapshot backup to R2 (home-ops/backup/bin/restic-backup.sh):
-    # the R2 key scoped to the trace-archive bucket, and the repository password. The repository
-    # URL carries the account id, so it lives in home-ops, not this public tree.
+    templates."discord.env" = {
+      path = "${home}/.config/discord/discord.env";
+      content = ''
+        export DISCORD_TOKEN="${p."discord-user-token"}"
+        export DISCORD_BOT_TOKEN="${p."discord-bot-token"}"
+      '';
+    };
+
+    # The snapshot backup to R2 (home-ops/backup/bin/restic-backup.sh): the
+    # R2 key scoped to the trace-archive bucket and the repository password.
+    # The repository URL carries the account id, so it lives in home-ops.
     templates."restic.env" = {
-      path = "${config.home.homeDirectory}/.config/restic/restic.env";
+      path = "${home}/.config/restic/restic.env";
       content = ''
-        export AWS_ACCESS_KEY_ID="${config.sops.placeholder."trace-archive-r2-access-key-id"}"
-        export AWS_SECRET_ACCESS_KEY="${config.sops.placeholder."trace-archive-r2-secret-access-key"}"
-        export RESTIC_PASSWORD="${config.sops.placeholder."restic-password"}"
+        export AWS_ACCESS_KEY_ID="${p."trace-archive-r2-access-key-id"}"
+        export AWS_SECRET_ACCESS_KEY="${p."trace-archive-r2-secret-access-key"}"
+        export RESTIC_PASSWORD="${p."restic-password"}"
       '';
     };
-
-    # The Cloudflare connector token belongs in the encrypted secret store,
-    # never in the public runtime registry or a launchd plist. The service
-    # starts only after Home Manager has rendered this 0600 file.
-    templates."beads-cloudflared-tunnel.env" = {
-      path = "${config.home.homeDirectory}/.config/beads/tunnel.env";
-      content = ''
-        export CLOUDFLARED_TUNNEL_TOKEN="${config.sops.placeholder."beads-cloudflared-tunnel-token"}"
-      '';
-    };
-
   };
 }
