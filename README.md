@@ -147,6 +147,29 @@ for its role or purged: Homebrew there holds one cask (the Codex app) with
 The Makefile picks the output from the host's LocalHostName;
 override with `make NIXNAME=<output> ...`.
 
+### Agent boxes
+
+Disposable Linux machines that come with a personal agent get a standalone
+home-manager output, `homeConfigurations.agent-<system>` (`hosts/agent.nix`),
+for `x86_64-linux` and `aarch64-linux`. It holds exactly two things: a pinned
+`bd` pointed at Sietch's board (`modules/home/beads-client.nix`) and
+`agent-net`, which runs `tailscaled` in userspace mode with a local forward
+to Sietch's Dolt (`modules/home/agent/tailscaled.nix`). It reads nothing from
+`home-ops`, so it builds without private-repo access.
+
+```bash
+# Nix first, if the image lacks it:
+curl -fsSL https://install.determinate.systems/nix | sh -s -- install --no-confirm
+nix run github:odysseus0/nix-config#agent
+agent-net up --auth-key=tskey-auth-...   # reusable, ephemeral, tag:beads-client
+bd ready
+```
+
+`agent-net up` is idempotent: with Tailscale state left from an earlier run
+the node resumes and needs no key. Nothing supervises `tailscaled`; rerun
+`agent-net up` after a restart. CI (`.github/workflows/agent.yml`) runs the
+same `nix run .#agent` on fresh Ubuntu runners for both architectures.
+
 `lib/mksystem.nix` also forks on `darwin ? false` for a future NixOS machine.
 When one lands, its config should set `programs.nix-ld.enable = true;` — the
 vendor-owned tier ships prebuilt Linux binaries that expect an FHS-ish dynamic
