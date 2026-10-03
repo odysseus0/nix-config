@@ -83,10 +83,10 @@ in
     };
 
     # Tier 1 dotfiles - simple, high-impact configurations
-    ".taskrc".source = ../taskrc;
-    ".fdignore".source = ../fdignore;
-    ".rgignore".source = ../rgignore;
-    ".gitignore".source = ../gitignore;  # Global gitignore
+    ".taskrc".source = ../dotfiles/taskrc;
+    ".fdignore".source = ../dotfiles/fdignore;
+    ".rgignore".source = ../dotfiles/rgignore;
+    ".gitignore".source = ../dotfiles/gitignore;  # Global gitignore
 
   };
 
@@ -96,8 +96,8 @@ in
 
   xdg.enable = true;
   xdg.configFile = {
-    "gh/config.yml".source = ../gh-config.yml;
-    "ghostty/config".source = ../ghostty;
+    "gh/config.yml".source = ../dotfiles/gh-config.yml;
+    "ghostty/config".source = ../dotfiles/ghostty;
 
     # gh-dash configs - generated from single source with theme variants
     "gh-dash/config-light.yml".text = toYAML (mkGhDashConfig catppuccinLatte);

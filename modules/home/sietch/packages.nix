@@ -1,16 +1,16 @@
 # Store-owned CLI set for the server role. Each entry has a Sietch-specific
 # reason; workstation tooling (home/packages.nix) is deliberately absent.
 # Sietch is an agent host (remote-execution node): agents run here under
-# herdr and the Codex app (declared as the `chatgpt` cask in darwin-server.nix).
+# herdr and the Codex app (the `chatgpt` cask in modules/darwin/server.nix).
 { inputs, pkgs, ... }:
 
 let
   # Same store-owned tier as the MacBook: llm-agents.nix's packages output,
-  # served by cache.numtide.com (machines/darwin-common.nix).
+  # served by cache.numtide.com (modules/darwin/base.nix).
   llmAgents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
 in
 {
-  xdg.configFile."ghostty/config".source = ../ghostty;
+  xdg.configFile."ghostty/config".source = ../dotfiles/ghostty;
 
   home.packages = with pkgs; [
     git             # clone/pull ~/nix-config to rebuild this machine

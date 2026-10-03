@@ -3,7 +3,7 @@
 # dotfiles, defaults and launchd jobs. Desired state lives as Fleet GitOps YAML
 # in home-ops/infra/fleet; this module only runs the server.
 #
-# Shape matches vault-events-server.nix: loopback-only services plus a
+# Shape matches vault-events.nix: loopback-only services plus a
 # tailnet-only Serve forward. Apple devices require HTTPS with a trusted
 # certificate, so the forward is HTTPS Serve on the tailnet name (needs HTTPS
 # certificates enabled for the tailnet). Dolt holds 127.0.0.1:3307, so MySQL

@@ -1,15 +1,9 @@
-# Shared Darwin machine baseline: every nix-darwin host in this repo runs
-# Determinate Nix with the same cache policy and the same shells. Imported by
-# machines/<name>.nix; per-machine identity, packages and services stay there.
+# Every Mac: Determinate Nix with one cache policy, and the same shells.
 { pkgs, ... }: {
-  # Set in Sept 2025 as part of the macOS Sequoia release (following Mitchell's pattern)
   system.stateVersion = 5;
 
   # This makes it work with the Determinate Nix installer
   ids.gids.nixbld = 30000;
-
-  # We use proprietary software on this machine
-  nixpkgs.config.allowUnfree = true;
 
   # Determinate Nix manages the nix daemon; nix-darwin should not.
   nix.enable = false;

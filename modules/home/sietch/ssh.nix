@@ -17,7 +17,7 @@ let
   };
 in
 {
-  # The MacBook's key (George, 2026-10-02).
+  # The MacBook's key.
   home.file.".ssh/authorized_keys".text = ''
     ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICxs3TzUNZN53OhwIOYDcs2fc3xdba7lgdlk9ZcZ+gsa tengjizhang@macbook-m4-max
   '';

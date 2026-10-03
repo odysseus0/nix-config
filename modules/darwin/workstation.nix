@@ -1,7 +1,12 @@
+# The workstation's system layer: terminal tools for remote shells, fonts,
+# Touch ID, and the GUI and App Store apps.
 { pkgs, ... }:
 
 {
-  imports = [ ./darwin-common.nix ];
+  environment.systemPackages = with pkgs; [
+    mosh  # system-level so non-interactive SSH can find mosh-server
+    tmux  # scroll mode works with touch in iOS terminals
+  ];
 
   # Fonts install to /Library/Fonts/Nix Fonts, so they are system-scoped.
   fonts.packages = [

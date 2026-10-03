@@ -2,7 +2,7 @@
 # runtime/registry.toml, host = "sietch") and alone writes their SQLite state,
 # streamed to R2 by Litestream. The MacBook reaches that state through
 # `sietch` (home-ops sietch-client.nix).
-# home-manager-server.nix imports the home-ops modules this sets.
+# hosts/sietch.nix imports the home-ops modules this sets.
 { pkgs, ... }:
 
 {
