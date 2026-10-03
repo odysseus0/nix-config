@@ -15,6 +15,7 @@
     ./home/beads-server.nix
     ./home/vault-events-server.nix
     ./home/fleet-server.nix
+    ./home/ssh-server.nix
     ./home/sietch-x.nix
     inputs.home-ops.homeManagerModules.default
     inputs.home-ops.homeManagerModules.bird
