@@ -10,7 +10,6 @@
     ./home/dotfiles.nix
     ./home/environment.nix
     ./home/secrets.nix
-    ./home/brew.nix
     inputs.home-ops.homeManagerModules.default
     # bird: the private X client, packaged in home-ops with its Chrome-read
     # X session (see home-ops bird.nix).
