@@ -61,8 +61,6 @@
       AddKeysToAgent = "yes";
       IdentityFile = "~/.ssh/id_ed25519";
     };
-    # Apple's sshd on Sietch (home/ssh-server.nix); Tailscale SSH stays on 22.
-    settings.sietch.Port = 2222;
   };
 
   #---------------------------------------------------------------------
