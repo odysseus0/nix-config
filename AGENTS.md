@@ -12,6 +12,7 @@ This is a nix-darwin configuration repository that declaratively manages a macOS
 # Apply configuration changes (requires sudo for system-level changes)
 make switch
 # or: sudo darwin-rebuild switch --flake ".#macbook-m4-max"   (".#sietch" on Sietch)
+make remote-worker-switch   # Linux HM host (user box)
 # NIXNAME defaults from LocalHostName; `make NIXNAME=sietch build` builds
 # Sietch's output from the MacBook.
 # Pure — no --impure, no NIXPKGS_ALLOW_UNFREE needed (removed 2026-07-20,
@@ -64,8 +65,7 @@ make clean
    - Dotfiles management
    - Environment variables
 
-Two machines exist: `macbook-m4-max` (workstation) and `sietch` (headless
-server: the shared Beads authority and an agent host) — see README §Machines.
+Hosts: `macbook-m4-max`, `sietch`, and Linux `homeConfigurations.remote-worker` (`make remote-worker-switch`; auth out of band) — see README §Machines.
 `lib/mksystem.nix` selects the user layers by `role` and forks on
 `darwin ? false` for a future NixOS machine; keep both and the
 `machines/`/`users/` layering intact. Sietch's output must not import the

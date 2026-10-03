@@ -18,7 +18,7 @@ OVERRIDE = $(if $(filter sietch,${NIXNAME}),--override-input home-ops git+file:/
 NIXBUILD = nix build "${NIXSYSTEM}" ${OVERRIDE}
 HOMEBUILD = nix build --no-link "${HOME_ACTIVATION}" ${OVERRIDE}
 
-.PHONY: help home-switch home-build switch system-switch test build clean update update-tools brew-apply brew-upgrade update-commit update-commit-push dry-run update-nixpkgs
+.PHONY: help home-switch home-build switch system-switch test build clean update update-tools brew-apply brew-upgrade update-commit update-commit-push dry-run update-nixpkgs remote-worker-switch
 
 # Activate only the existing Home Manager subconfiguration. This evaluates the
 # exact module embedded in nix-darwin, so there is no second profile or source
@@ -31,6 +31,10 @@ home-switch:
 # Build only the user activation package (no activation, no result symlink).
 home-build:
 	${HOMEBUILD}
+
+# Linux remote-worker (standalone HM). Auth/login out of band.
+remote-worker-switch:
+	@g="$$(nix build --no-link --print-out-paths '.#homeConfigurations.remote-worker.activationPackage')"; "$$g/activate"
 
 # Full-system activation remains an explicit supervised boundary. Keep the old
 # target as a compatibility alias for muscle memory and external instructions.
@@ -101,6 +105,7 @@ help:
 	@echo "Available targets:"
 	@echo "  home-switch         - Activate user configuration without sudo (default)"
 	@echo "  home-build          - Build user configuration without activation"
+	@echo "  remote-worker-switch - Linux remote-worker home-manager (user box)"
 	@echo "  system-switch       - Build and activate the full system (requires sudo)"
 	@echo "  switch              - Compatibility alias for system-switch"
 	@echo "  test                - Build and test configuration without activation"

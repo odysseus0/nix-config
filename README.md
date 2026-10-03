@@ -1,6 +1,6 @@
 # nix-config
 
-My entire computing environment, version-controlled. Declarative macOS using nix-darwin and home-manager.
+My entire computing environment, version-controlled. Declarative macOS (nix-darwin + home-manager) plus a Linux remote-worker host (standalone home-manager).
 
 ## Quick Reference
 
@@ -135,6 +135,7 @@ Two nix-darwin machines, one flake output each:
 |---|---|---|---|
 | `macbook-m4-max` | MacBook Pro | workstation | `darwin.nix`, `home-manager.nix` |
 | `sietch` | Mac mini, headless | server: the shared Beads Dolt authority over Tailscale, and an agent host | `darwin-server.nix`, `home-manager-server.nix` |
+| `homeConfigurations.remote-worker` | Linux remote-worker | agent host: shared toolchain + Tailscale + Beads→Sietch | `lib/remote-worker-packages.nix`, `users/box/home.nix` → `make remote-worker-switch` |
 
 `lib/mksystem.nix` composes `machines/<name>.nix` with the user layers its
 `role` selects (`"workstation"` by default; any other role picks the
@@ -146,6 +147,8 @@ for its role or purged: Homebrew there holds one cask (the Codex app) with
 `cleanup = "zap"`, so anything undeclared is removed on activation.
 The Makefile picks the output from the host's LocalHostName;
 override with `make NIXNAME=<output> ...`.
+
+Linux remote-worker has no systemd, so there is no `nixos-rebuild`. Activate with `make remote-worker-switch`. Packages are shared via `lib/remote-worker-packages.nix`; host-only additions are Tailscale (not logged in) and Beads client coords to `sietch.tail99865c.ts.net:3307`. Login/auth is out of band.
 
 `lib/mksystem.nix` also forks on `darwin ? false` for a future NixOS machine.
 When one lands, its config should set `programs.nix-ld.enable = true;` — the
@@ -162,8 +165,12 @@ linker, and nix-ld is the standard NixOS fix (not needed on Darwin).
 ├── machines/
 │   ├── darwin-common.nix        # Shared baseline: Determinate Nix, caches, shells
 │   ├── macbook-m4-max.nix       # Workstation
-│   └── sietch.nix               # Headless server: Tailscale, power, Remote Login
-└── users/tengjizhang/
+│   ├── sietch.nix               # Headless server: Tailscale, power, Remote Login
+│   └── remote-worker.nix        # Linux HM host inventory
+├── lib/remote-worker-packages.nix # Shared Linux remote-worker CLI set
+└── users/
+    ├── box/home.nix             # Linux remote-worker HM (thin host layer)
+    └── tengjizhang/
     ├── darwin-common.nix             # Account and login shell (both roles)
     ├── darwin.nix                    # Workstation macOS config (fonts, Touch ID)
     ├── darwin-server.nix             # Server macOS config (Homebrew: one cask, zap)

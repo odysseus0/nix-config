@@ -100,5 +100,32 @@
       darwin = true;
       role = "server";
     };
+
+    # Linux remote-worker: standalone HM (no systemd → no nixos-rebuild).
+    # Shared pkgs: lib/remote-worker-packages.nix. Host-only: Tailscale + Beads→Sietch.
+    # Auth out of band. Switch: make remote-worker-switch / nix run .#remote-worker-switch
+    homeConfigurations.remote-worker =
+      let
+        system = "x86_64-linux";
+        pkgs = import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+        };
+      in home-manager.lib.homeManagerConfiguration {
+        inherit pkgs;
+        modules = [ ./machines/remote-worker.nix ./users/box/home.nix ];
+      };
+
+    apps.x86_64-linux.remote-worker-switch =
+      let
+        pkgs = import nixpkgs { system = "x86_64-linux"; };
+        act = self.homeConfigurations.remote-worker.activationPackage;
+      in {
+        type = "app";
+        program = "${pkgs.writeShellApplication {
+          name = "remote-worker-switch";
+          text = ''exec "${act}/activate"'';
+        }}/bin/remote-worker-switch";
+      };
   };
 }
