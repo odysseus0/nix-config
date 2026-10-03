@@ -33,7 +33,7 @@
     # Formulae only when nixpkgs cannot supply them.
     brews = [
       "mole"                 # mole.fit, the Mac cleaner (nixpkgs' mole is an unrelated SSH tool)
-      "openclaw/tap/gogcli"  # gog, the Google Workspace CLI the /calendar skill runs on
+      "openclaw/tap/gogcli"  # gog, a Google Workspace CLI
     ];
 
     casks = [
@@ -75,7 +75,7 @@
       "raycast"
       "cleanshot"
       "claude"
-      "anarlog"  # meeting recorder: local transcription, one markdown file per meeting in ~/archive/recordings
+      "anarlog"  # meeting recorder with local transcription
 
       # Learning & research
       "anki"
@@ -91,7 +91,7 @@
       "aldente"
       "appcleaner"
       "qlmarkdown"
-      "swiftbar"  # menu-bar glance surface for the runtime layer (~/home-ops/runtime/runtime.30s.ts)
+      "swiftbar"  # menu-bar status for home-ops' runtime layer
       "keymapp"
       "pika"
       "qflipper"
@@ -103,7 +103,7 @@
       "spotify"
       "iina"
 
-      # Auto-updating; greedy keeps it visible to an explicit upgrade.
+      # brew upgrade skips a self-updating cask unless it is greedy.
       { name = "google-drive"; greedy = true; }
     ];
 

@@ -17,8 +17,8 @@ in
     git-lfs         # the vault clone's media (global git config names its filter)
     herdr           # agent multiplexer for remote sessions
     llmAgents.codex # codex CLI for agent runs outside the desktop app
-    ghostty-bin.terminfo # xterm-ghostty, the TERM George's SSH sessions arrive with
-    ghostty-bin     # George's terminal over Screen Sharing, same config as the MacBook
+    ghostty-bin.terminfo # xterm-ghostty, the TERM SSH sessions from Ghostty arrive with
+    ghostty-bin     # the terminal over Screen Sharing, same config as the MacBook
     nerd-fonts.jetbrains-mono # the font that config names
   ];
 }

@@ -5,7 +5,6 @@
 
 let
   shellAliases = {
-    # Git shortcuts
     ga = "git add";
     gc = "git commit";
     gco = "git checkout";
@@ -13,25 +12,18 @@ let
     gp = "git push";
     gl = "git log --oneline -10";
 
-    # Jujutsu shortcuts
     js = "jj st";
     jl = "jj log --limit 10";
     jd = "jj diff";
 
-    # Modern CLI tools
     ls = "eza";
     ll = "eza -la";
     la = "eza -la";
 
-    # Task management
     t = "task";
-
   };
 in {
-  #---------------------------------------------------------------------
-  # Fish shell - Primary shell
-  #---------------------------------------------------------------------
-
+  # The login shell (modules/darwin/account.nix).
   programs.fish = {
     enable = true;
     shellAliases = shellAliases;
@@ -42,10 +34,7 @@ in {
     ];
   };
 
-  #---------------------------------------------------------------------
-  # Zsh - Secondary shell (Claude Code, macOS compatibility)
-  #---------------------------------------------------------------------
-
+  # For programs that run commands through zsh, such as Claude Code.
   programs.zsh = {
     enable = true;
     dotDir = "${config.xdg.configHome}/zsh";

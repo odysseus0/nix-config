@@ -11,10 +11,9 @@
     HOMEBREW_REPOSITORY = "/opt/homebrew";
   };
 
-  # PATH is the tier list: the Nix profile (added by nix-darwin), Homebrew,
-  # and ~/.local/bin for vendor-owned tools and local scripts. Nothing else,
-  # so no install channel outside the tiers can win or lose against the
-  # profile. Prepended in this order.
+  # One PATH entry per owner of tools (README): sessionPath prepends these,
+  # in this order, ahead of the Nix profile that nix-darwin adds. A tool
+  # installed by two owners is shadowed by the earlier one, so none is.
   home.sessionPath = [
     "/opt/homebrew/bin"
     "$HOME/.local/bin"

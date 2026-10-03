@@ -1,19 +1,13 @@
 { pkgs, lib, facts, ... }:
 
 {
-  #---------------------------------------------------------------------
-  # Git - Version control with SSH signing
-  #---------------------------------------------------------------------
-
   programs.git = {
     enable = true;
     lfs.enable = true;
 
     settings = {
-      # User configuration
       user = { inherit (facts.identity) name email; };
 
-      # Basic settings
       init.defaultBranch = "main";
       # Source checkouts live at ~/src/<host>/<owner>/<repo>; `ghq get` clones there.
       ghq.root = "~/src";
@@ -22,7 +16,6 @@
       branch.autosetuprebase = "always";
       color.ui = true;
 
-      # Delta - minimal config with auto light/dark detection
       core.pager = "delta";
       interactive.diffFilter = "delta --color-only";
       delta = {
@@ -30,7 +23,6 @@
         navigate = true;
       };
 
-      # SSH signing with local key
       credential.helper = "osxkeychain";
       gpg = {
         format = "ssh";
@@ -39,16 +31,12 @@
       merge.conflictstyle = "diff3";
     };
 
-    # SSH signing with local key
+    # Commits are signed with the SSH key, not GPG.
     signing = {
       signByDefault = true;
       key = "~/.ssh/id_ed25519.pub";
     };
   };
-
-  #---------------------------------------------------------------------
-  # SSH - Centralized SSH configuration
-  #---------------------------------------------------------------------
 
   programs.ssh = {
     enable = true;
@@ -59,49 +47,29 @@
     };
   };
 
-  #---------------------------------------------------------------------
-  # Zoxide - Smart directory navigation
-  #---------------------------------------------------------------------
-
   programs.zoxide = {
     enable = true;
     enableFishIntegration = true;
   };
 
-  #---------------------------------------------------------------------
-  # Direnv - Per-directory environment management
-  #---------------------------------------------------------------------
-
-  # Per-project toolchains: a project's flake devShell loads on cd.
+  # A project's toolchain: its flake devShell loads on cd.
   programs.direnv = {
     enable = true;
     nix-direnv.enable = true;
   };
 
-  #---------------------------------------------------------------------
-  # FZF - Fuzzy finder
-  #---------------------------------------------------------------------
-
   programs.fzf = {
     enable = true;
-    enableFishIntegration = false;  # using fzf.fish plugin
+    enableFishIntegration = false;  # the fzf.fish plugin owns the bindings
     defaultCommand = "fd --hidden --type f";
     defaultOptions = [ "--ansi" "--layout=reverse" ];
     historyWidget.command = "";  # Atuin owns Ctrl-R
   };
 
-  #---------------------------------------------------------------------
-  # Bat - Better cat with syntax highlighting
-  #---------------------------------------------------------------------
-
   programs.bat = {
     enable = true;
     config.style = "numbers";
   };
-
-  #---------------------------------------------------------------------
-  # Atuin - Shell history search
-  #---------------------------------------------------------------------
 
   programs.atuin = {
     enable = true;
@@ -112,10 +80,6 @@
     };
   };
 
-  #---------------------------------------------------------------------
-  # Jujutsu - Modern VCS
-  #---------------------------------------------------------------------
-
   programs.jujutsu = {
     enable = true;
     settings = {
@@ -123,14 +87,9 @@
     };
   };
 
-  #---------------------------------------------------------------------
-  # Neovim - Editor
-  #---------------------------------------------------------------------
-
-  # home-manager owns init.lua. The module generates it, so LazyVim's bootstrap
-  # has to be threaded THROUGH initLua — otherwise the generated file
-  # (provider toggles only) lands on top of `require("config.lazy")` and nvim
-  # silently starts as a bare editor.
+  # home-manager generates init.lua, so LazyVim's bootstrap goes through
+  # initLua; a hand-written init.lua would be replaced by one that only
+  # toggles providers, and nvim would start as a bare editor.
   programs.neovim = {
     enable = true;
     package = pkgs.neovim-unwrapped;
@@ -138,33 +97,13 @@
       require("config.lazy")
     '';
   };
+  # The rest of the tree is linked out of store in dotfiles.nix.
 
-  # The rest of the tree (lua/**, lazy-lock.json, ...) lives in home-ops and is
-  # linked out of store from dotfiles.nix — see the Neovim block there.
-
-  #---------------------------------------------------------------------
-  # Herdr - agent multiplexer
-  #---------------------------------------------------------------------
-  # ui.toast.delivery ships as "off", so a default install does NOT do the one
-  # thing herdr was chosen for.
-  #
-  # "terminal" over "system": both work — "system" shells out to
-  # terminal-notifier when it can find one and /usr/bin/osascript otherwise,
-  # borrowing a bundled host's notification permission. "terminal" emits an
-  # escape sequence and lets Ghostty raise it, which wins on three counts: the
-  # notification carries Ghostty's identity instead of an anonymous script
-  # icon, there is no osascript fork per notification, and it follows the
-  # CLIENT rather than the server — so an SSH-driven session notifies the
-  # laptop in front of you, not the box the server happens to run on. It is
-  # also the same path Claude Code's own preferredNotifChannel takes.
-  # config.toml is APP-OWNED, not store-owned. herdr writes it back at runtime —
-  # the TUI persists ui.agent_panel_sort and custom keybindings there — so a
-  # /nix/store symlink makes those writes fail with EACCES. Using
-  # programs.herdr.settings would do exactly that.
-  #
-  # Seed instead of manage: activation installs these defaults only when the
-  # file is absent, so a fresh machine comes up configured and herdr still owns
-  # the file afterwards. Same boundary as lazy-lock.json under nvim.
+  # herdr writes config.toml back at runtime (panel sort, keybindings), so a
+  # store symlink, which programs.herdr.settings would create, fails those
+  # writes. Activation seeds the defaults only when the file is absent, and
+  # herdr owns it from then on. The seed's comments say why each value
+  # differs from herdr's default.
   programs.herdr.enable = true;
 
   home.activation.seedHerdrConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
@@ -197,6 +136,6 @@ TOML
     fi
   '';
 
-  # Silence "generateCaches has no effect" warning on darwin
+  # It has no effect on darwin, and warns unless off.
   programs.man.generateCaches = false;
 }
