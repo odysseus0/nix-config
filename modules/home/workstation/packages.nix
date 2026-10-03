@@ -68,8 +68,12 @@ in
     tdl              # Telegram message export/sync
     taskwarrior3
     rclone
-    dolt             # pinned server engine for the shared Beads authority
     restic           # snapshot backups to R2 (home-ops/backup)
+
+    # The shared board's client. Every Beads client builds bd from pkgs/,
+    # so they move together: a newer bd migrates the shared schema and
+    # older clients then refuse the database.
+    beads            # mainProgram is `bd`
 
     # Runtimes for scripts outside any project
     uv
@@ -79,7 +83,6 @@ in
   ++ (with llmAgents; [
     codex
     qmd
-    beads            # mainProgram is `bd`
   ]);
 
   home.file = {
