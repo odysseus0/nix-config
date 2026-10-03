@@ -4,29 +4,12 @@
 { pkgs, ... }:
 
 {
-  # Ensure the login shell for the primary user is the nix-managed path.
-  # Darwin intentionally does NOT change shells for existing accounts via users.users.*,
-  # so we do it declaratively here during activation. Safe and idempotent.
-  # It must be postActivation: nix-darwin runs only its fixed activation-script
-  # names, so a custom-named script never runs.
-  system.activationScripts.postActivation.text = ''
-    USERNAME="tengjizhang"
-    DESIRED="/run/current-system/sw/bin/fish"
-
-    # Read current login shell from Directory Services (returns: "UserShell: <path>")
-    CURRENT=$(/usr/bin/dscl . -read /Users/"$USERNAME" UserShell 2>/dev/null | /usr/bin/awk '{print $2}')
-
-    if [ "$CURRENT" != "$DESIRED" ]; then
-      echo "Updating login shell for $USERNAME: ''${CURRENT:-<unset>} -> $DESIRED"
-      # chsh requires the shell to be present in /etc/shells; nix-darwin's environment.shells ensures this.
-      /usr/bin/chsh -s "$DESIRED" "$USERNAME" \
-        || /usr/bin/dscl . -create "/Users/$USERNAME" UserShell "$DESIRED"
-    fi
-  '';
-
-  # The user should already exist, but we need to set this up so Nix knows
-  # what our home directory is (https://github.com/LnL7/nix-darwin/issues/423).
+  # knownUsers lets nix-darwin manage the existing account, which is what
+  # makes it set the login shell. A uid that does not match makes
+  # activation warn and leave the account alone.
+  users.knownUsers = [ "tengjizhang" ];
   users.users.tengjizhang = {
+    uid = 501;
     home = "/Users/tengjizhang";
     shell = pkgs.fish;
   };

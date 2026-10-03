@@ -39,7 +39,6 @@
         format = "ssh";
         ssh.program = "ssh-keygen";
       };
-      commit.gpgsign = true;
       merge.conflictstyle = "diff3";
     };
 
