@@ -91,6 +91,7 @@ let
     "raycast"
     "cleanshot"
     "claude"
+    "anarlog"  # meeting recorder: local transcription, one markdown file per meeting in ~/archive/recordings
 
     # Learning & Research
     "anki"
