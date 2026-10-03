@@ -1,5 +1,4 @@
-# Nix-darwin configuration management
-# Based on Mitchell Hashimoto's approach
+# Build and activate this Mac's flake output.
 
 # The flake output for THIS machine, chosen by LocalHostName so a bare `make`
 # on Sietch can never activate the workstation profile there. Override with
@@ -10,11 +9,6 @@ HOME_ACTIVATION = .\#darwinConfigurations.${NIXNAME}.config.home-manager.users.$
 # Sietch has no GitHub token for the private home-ops input; it reads its own
 # clone (~/home-ops, pulled with a read-only deploy key) instead.
 OVERRIDE = $(if $(filter sietch,${NIXNAME}),--override-input home-ops git+file://${HOME}/home-ops,)
-# --impure and NIXPKGS_ALLOW_UNFREE were redundant with the declarative
-# `nixpkgs.config.allowUnfree = true` (machines/macbook-m4-max.nix +
-# lib/mksystem.nix) — removed 2026-07-20 (audit F5) after verifying a pure
-# `nix build .#darwinConfigurations.macbook-m4-max.system --dry-run`
-# evaluates cleanly with neither flag nor env var set.
 NIXBUILD = nix build "${NIXSYSTEM}" ${OVERRIDE}
 HOMEBUILD = nix build --no-link "${HOME_ACTIVATION}" ${OVERRIDE}
 

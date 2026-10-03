@@ -143,7 +143,7 @@
   # linked out of store from dotfiles.nix — see the Neovim block there.
 
   #---------------------------------------------------------------------
-  # Herdr - agent multiplexer (replaces the tmux/zellij pair)
+  # Herdr - agent multiplexer
   #---------------------------------------------------------------------
   # ui.toast.delivery ships as "off", so a default install does NOT do the one
   # thing herdr was chosen for.
@@ -160,7 +160,7 @@
   # config.toml is APP-OWNED, not store-owned. herdr writes it back at runtime —
   # the TUI persists ui.agent_panel_sort and custom keybindings there — so a
   # /nix/store symlink makes those writes fail with EACCES. Using
-  # programs.herdr.settings did exactly that.
+  # programs.herdr.settings would do exactly that.
   #
   # Seed instead of manage: activation installs these defaults only when the
   # file is absent, so a fresh machine comes up configured and herdr still owns
@@ -169,10 +169,6 @@
 
   home.activation.seedHerdrConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     cfg="$HOME/.config/herdr/config.toml"
-    # Drop a symlink left by the earlier store-managed arrangement.
-    if [ -L "$cfg" ]; then
-      $DRY_RUN_CMD rm -f "$cfg"
-    fi
     if [ ! -e "$cfg" ]; then
       $DRY_RUN_CMD mkdir -p "$(dirname "$cfg")"
       $DRY_RUN_CMD cat > "$cfg" <<'TOML'
