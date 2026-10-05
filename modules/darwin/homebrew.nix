@@ -1,6 +1,5 @@
-# One Homebrew on every Mac: declared equals installed. Zap removes every
-# formula, cask (with its app data) and tap not declared for this host.
-# Activation only materializes; `make brew-upgrade` is the upgrade step.
+# Homebrew on every Mac. Zap removes every formula, cask and tap this host
+# does not declare, and a removed cask's app data with it.
 { ... }:
 
 {

@@ -11,9 +11,8 @@
     HOMEBREW_REPOSITORY = "/opt/homebrew";
   };
 
-  # One PATH entry per owner of tools (README): sessionPath prepends these,
-  # in this order, ahead of the Nix profile that nix-darwin adds. A tool
-  # installed by two owners is shadowed by the earlier one, so none is.
+  # Homebrew's and the vendors' PATH entries. sessionPath prepends them, in
+  # this order, ahead of the Nix profile that nix-darwin adds.
   home.sessionPath = [
     "/opt/homebrew/bin"
     "$HOME/.local/bin"

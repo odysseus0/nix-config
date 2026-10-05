@@ -20,111 +20,74 @@ standalone home-manager                       (the Beads board)
                           (userspace tailscaled + tailscale nc)
 ```
 
-The rest of this file is the handful of rules that keep the flake honest, each
-with the file that enforces it.
+This file holds what no single file can: the shape of the tree and the rules
+that hold across it. The reason for any one line is a comment beside it.
 
 ## A host is its import list
-
-Four directories, each answering one question:
 
 ```
 pkgs/      what this repo builds: one overlay, each package as pkgs.<name>
 modules/   what a machine can have (darwin/ for the OS, home/ for the user)
 hosts/     what each machine has: identity plus import lists
-lib/       how a host file becomes a system (mkDarwin, mkHome)
+lib/       how a host file becomes a system
 ```
 
-Follow Beads through it:
+A host gets a capability by importing its module, never by an enable flag.
+Beads shows the path: [`pkgs/beads.nix`](pkgs/beads.nix) pins bd,
+[`modules/home/beads-client.nix`](modules/home/beads-client.nix) points it at
+Sietch's board, and [`hosts/agent.nix`](hosts/agent.nix) imports that module
+and [`agent-net`](modules/home/agent/tailscaled.nix), and nothing else. An
+option exists only where one shape repeats with different values, as
+[`services.background`](modules/home/background.nix) does for every job
+launchd keeps running.
 
-1. [`pkgs/beads.nix`](pkgs/beads.nix) pins bd 1.3.1 from upstream's release
-   archives for the three platforms. There is one pin because a newer bd
-   migrates the board's schema, after which older clients refuse it; every
-   client therefore moves at once.
-2. [`modules/home/beads-client.nix`](modules/home/beads-client.nix) wraps that
-   bd with a profile pointing at Sietch's board.
-3. [`hosts/agent.nix`](hosts/agent.nix) imports it, plus
-   [`agent-net`](modules/home/agent/tailscaled.nix) to reach Sietch, and
-   nothing else. [`hosts/sietch.nix`](hosts/sietch.nix) imports
-   [`beads-server.nix`](modules/home/beads-server.nix) instead.
+## Everything on a machine has one owner
 
-A host gets a capability by importing its module; there are no enable flags.
-An option exists only where one shape repeats with different values:
-`services.background` (a job launchd keeps running), `services.tailscale-forward`
-(a loopback service published to the tailnet), and
-`programs.beads-client.server` (an agent box points bd at its local forward).
+A tool's owner decides when it changes:
 
-## One owner per tool, and the owner sets the clock
-
-The question for any tool is who updates it, and when:
-
-| Owner | What it owns | When it changes |
+| Owner | Declared in | Changes |
 |---|---|---|
-| Nix (the default) | CLI tools: [`packages.nix`](modules/home/workstation/packages.nix), [`pkgs/`](pkgs) | at a switch, against the lock |
-| Homebrew | GUI and App Store apps, and formulae nixpkgs lacks: [`workstation.nix`](modules/darwin/workstation.nix) | at `make brew-upgrade` |
-| The vendor | tools that ship daily and that nothing builds against (claude, amp, pi) | by their own updater, in `~/.local/bin` |
+| Nix | [`packages.nix`](modules/home/workstation/packages.nix), [`pkgs/`](pkgs) | at a switch, to what `flake.lock` pins; the lock moves weekly, and only if both Macs build against it ([`nix-flake-bump`](pkgs/nix-flake-bump.nix)) |
+| Homebrew | [`workstation.nix`](modules/darwin/workstation.nix): apps, and formulae nixpkgs lacks | at `make brew-upgrade`; a switch installs what is declared and removes the rest |
+| The vendor | nothing: its installer writes `~/.local/bin` | by its own updater (claude, amp, pi) |
+| A project | that project's flake `devShells` | with the project |
 
-The lock itself moves weekly: [`nix-flake-bump`](pkgs/nix-flake-bump.nix)
-commits a new `flake.lock` only if both Macs still build against it.
-A project's toolchain is none of these; it lives in that project's flake
-`devShells`, loaded by direnv.
+`PATH` has one entry per owner
+([`environment.nix`](modules/home/workstation/environment.nix)), so a tool with
+two owners would be silently shadowed; none has two.
 
-`PATH` has one entry per owner, in this order: `/opt/homebrew/bin`,
-`~/.local/bin`, then the Nix profile
-([`environment.nix`](modules/home/workstation/environment.nix)). A tool
-installed by two owners would be silently shadowed by the earlier one, so no
-tool has two. Homebrew runs with `cleanup = "zap"`
-([`homebrew.nix`](modules/darwin/homebrew.nix)), so an app that is not declared
-is uninstalled, and declared equals installed.
+A config file's owner is whoever writes it. A file the app only reads is a
+store symlink. A file the app rewrites, or that I iterate on, is linked out of
+the store into a git working tree (the Neovim config, in `home-ops`). A file
+the app writes at runtime is seeded once and then left to it (herdr's
+`config.toml`).
 
-## Every package has a cache story
+A secret's owner is its one reader: sops-nix decrypts
+[`secrets/secrets.yaml`](secrets/secrets.yaml) into one 0600 file per consumer
+([`secrets.nix`](modules/home/workstation/secrets.nix)). Nothing is exported
+into the shell, where every process, every agent included, would inherit it.
 
-A switch that compiles Rust or C++ takes minutes where a download takes
-seconds, so a package enters only when a cache serves it: nixpkgs from
-`cache.nixos.org`, the agent CLIs from
-[llm-agents.nix](https://github.com/numtide/llm-agents.nix)'s cache, and
-`pkgs/` from upstream release archives (the exception is `feed`, a small Go
-build). llm-agents.nix is consumed without `inputs.nixpkgs.follows`: building
-it against my nixpkgs would change every derivation hash and miss its cache.
-Determinate Nix owns the daemon, so the substituters are declared in
-`determinateNix.customSettings` ([`base.nix`](modules/darwin/base.nix)); a
-`nix.settings` block would be ignored.
+## A switch builds nothing heavy, and stays local
 
-## Activation stays local
+Packages come from caches: nixpkgs from `cache.nixos.org`, the agent CLIs from
+[llm-agents.nix](https://github.com/numtide/llm-agents.nix)'s, and `pkgs/`
+from upstream release archives. What is built locally is small: config
+files, shell wrappers, and `feed`, a Go module. A switch that compiled Rust or C++ would take
+minutes where a download takes seconds.
 
-Activation runs on every switch, so the steps this repo adds to it make no
-network calls and never swallow a failure: seeding herdr's `config.toml`, and
-setting the Beads profile's mode. A switch whose store paths are already built
-works offline, and rolling back a generation rolls back everything Nix wrote.
-Homebrew is the one networked step: activation installs a declared app that is
-missing, but never upgrades one.
-
-## Who writes a file decides where it lives
-
-Nix owns every binary; a config file falls into one of three classes. Intent
-the app only reads is a store symlink. A file the app rewrites, or that I
-iterate on, lives in a git working tree and is linked there with
-`mkOutOfStoreSymlink` (the Neovim tree in `home-ops`). A file the app writes at
-runtime is seeded once and then left to the app (herdr's `config.toml`).
-
-## One secret, one reader
-
-sops-nix decrypts [`secrets/secrets.yaml`](secrets/secrets.yaml) at activation
-into one 0600 file per consumer (`restic.env`, `telegram.env`, `discord.env`;
-[`secrets.nix`](modules/home/workstation/secrets.nix)). Nothing is exported into
-the shell, where every process, every agent included, would inherit it. Agent
-boxes decrypt nothing; their one credential is the Tailscale node key they
-enroll with.
+Activation runs on every switch, so it makes no network calls and never
+swallows a failure. With the store paths built, a switch works offline, and
+rolling back a generation rolls back everything Nix wrote. Homebrew is the one
+exception, as its row above says.
 
 ## Public and private
 
 Anything personal rather than structural (account IDs, private automation, the
 runtime layer that watches the machines) lives in a private flake input,
 `home-ops`. Nix fetches an input only when an output reads it, and the agent
-output never does, so anyone can build it;
+output never does, so anyone can build it:
 [CI](.github/workflows/agent.yml) runs `nix run .#agent` on fresh x86_64 and
-aarch64 Ubuntu runners for every push to main and every pull request. Sietch's tailnet name and port are public
-on purpose ([`lib/facts.nix`](lib/facts.nix)): the tailnet's access policy, not
-obscurity, decides who reaches them.
+aarch64 Ubuntu runners for every push to main and every pull request.
 
 ## Bringing up a machine
 
@@ -138,21 +101,21 @@ agent-net up --auth-key=tskey-auth-...
 bd ready
 ```
 
-`agent-net up` is idempotent: with state left from an earlier run, the node
-resumes without a key. Nothing supervises `tailscaled`, so rerun it after a
-restart.
+After a reboot, run `agent-net up` again; it needs no key the second time.
 
-A Mac needs Determinate Nix, a GitHub token for `home-ops`
-(`access-tokens = github.com=<token>` in `nix.conf`), and the caches above
-seeded into `/etc/nix/nix.custom.conf` before the first build. The first
-switch runs the darwin-rebuild it just built:
+A Mac needs Determinate Nix, a GitHub token that can read `home-ops`
+(`access-tokens = github.com=<token>` in `nix.conf`), and the substituters from
+[`base.nix`](modules/darwin/base.nix) written into `/etc/nix/nix.custom.conf`,
+followed by `sudo launchctl kickstart -k system/systems.determinate.nix-daemon`.
+Without them, the first build compiles the agent CLIs. The first switch runs
+the `darwin-rebuild` it just built:
 
 ```bash
 git clone https://github.com/odysseus0/nix-config ~/nix-config && cd ~/nix-config
 make build && sudo ./result/sw/bin/darwin-rebuild switch --flake .#macbook-m4-max
 ```
 
-After that, `make` activates the home layer without sudo, `make switch` the
+From then on, `make` activates the home layer without sudo, `make switch` the
 whole system, and `make help` lists the rest.
 
 ## Credits

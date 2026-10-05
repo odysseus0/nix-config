@@ -1,9 +1,6 @@
 { config, ... }:
 
-# sops-nix: secrets encrypted in git, decrypted at activation with the age
-# key. One secret, one reader: each consumer gets its own 0600 file, and
-# nothing is exported into the shell environment, where every process
-# (every agent, every npx) would inherit it.
+# Each consumer's secrets, decrypted at activation into its own 0600 file.
 #
 #   Edit:     sops secrets/secrets.yaml
 #   Re-key:   sops updatekeys secrets/secrets.yaml

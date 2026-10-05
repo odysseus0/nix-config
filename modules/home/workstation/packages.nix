@@ -1,9 +1,5 @@
-# The workstation's CLI tools that Nix owns (README §One owner per tool): a
-# switch is the only way one changes. A tool belongs here only if it is used
-# in a directory with no project; a project's toolchain lives in that
-# project's flake devShell, and a one-off is `nix run nixpkgs#<tool>`. Never
-# add a tool the vendor installs in ~/.local/bin: that copy would shadow
-# this one.
+# The workstation's Nix-owned CLI tools: only those used in a directory with
+# no project. A one-off is `nix run nixpkgs#<tool>`.
 { pkgs, inputs, ... }:
 
 let
@@ -63,10 +59,7 @@ in
     rclone
     restic           # snapshot backups to R2 (home-ops/backup)
 
-    # The shared board's client. Every Beads client builds bd from pkgs/,
-    # so they move together: a newer bd migrates the shared schema and
-    # older clients then refuse the database.
-    beads            # mainProgram is `bd`
+    beads            # bd, at the one pin every Beads client shares
 
     # Runtimes for scripts outside any project
     uv

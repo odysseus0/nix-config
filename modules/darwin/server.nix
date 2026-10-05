@@ -1,6 +1,5 @@
 # The headless server's system layer: always on, reachable over the tailnet,
-# and the Codex app for agent threads. Everything declared serves Sietch's
-# role; zap removes anything undeclared.
+# and the Codex app for agent threads.
 { pkgs, ... }:
 
 {

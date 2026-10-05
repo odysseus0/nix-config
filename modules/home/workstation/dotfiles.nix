@@ -1,5 +1,4 @@
-# Config files the workstation's tools read. README §Who writes a file decides
-# where it lives sorts them into store symlinks and out-of-store links.
+# Config files the workstation's tools read.
 { config, pkgs, lib, ... }:
 
 let
