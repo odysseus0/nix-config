@@ -1,0 +1,78 @@
+{
+  "audio_seconds": 149.1125,
+  "chunks": 8,
+  "trials_per_size": 3,
+  "model": "Qwen/Qwen3-ASR-1.7B",
+  "includes_alignment_and_diarization": true,
+  "memory_metric": "MLX peak allocation, not total process memory",
+  "results": {
+    "1": {
+      "seconds": [
+        9.802871959051117,
+        9.956385541940108,
+        10.13849995820783
+      ],
+      "median_sec": 9.956385541940108,
+      "peak_memory_gib": 6.161746634170413,
+      "speakers": [
+        "SPEAKER_00",
+        "SPEAKER_01"
+      ],
+      "words": 424,
+      "truncated": false,
+      "text_matches_batch1": true,
+      "timestamps_match_batch1": true
+    },
+    "2": {
+      "seconds": [
+        7.915061875013635,
+        8.128426917130128,
+        8.536426958162338
+      ],
+      "median_sec": 8.128426917130128,
+      "peak_memory_gib": 6.159710485488176,
+      "speakers": [
+        "SPEAKER_00",
+        "SPEAKER_01"
+      ],
+      "words": 424,
+      "truncated": false,
+      "text_matches_batch1": true,
+      "timestamps_match_batch1": true
+    },
+    "4": {
+      "seconds": [
+        7.768492707982659,
+        8.000131208915263,
+        8.426462250063196
+      ],
+      "median_sec": 8.000131208915263,
+      "peak_memory_gib": 6.372023144736886,
+      "speakers": [
+        "SPEAKER_00",
+        "SPEAKER_01"
+      ],
+      "words": 424,
+      "truncated": false,
+      "text_matches_batch1": true,
+      "timestamps_match_batch1": true
+    },
+    "8": {
+      "seconds": [
+        7.807525125099346,
+        8.092438457999378,
+        8.253978957887739
+      ],
+      "median_sec": 8.092438457999378,
+      "peak_memory_gib": 6.716306718066335,
+      "speakers": [
+        "SPEAKER_00",
+        "SPEAKER_01"
+      ],
+      "words": 424,
+      "truncated": false,
+      "text_matches_batch1": true,
+      "timestamps_match_batch1": true
+    }
+  }
+}
