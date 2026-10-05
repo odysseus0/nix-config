@@ -2,30 +2,25 @@
 { pkgs, ... }: {
   system.stateVersion = 5;
 
-  # This makes it work with the Determinate Nix installer
+  # The GID the Determinate installer gives the nixbld group; nix-darwin
+  # refuses to activate when its expectation differs.
   ids.gids.nixbld = 30000;
 
   # Determinate Nix manages the nix daemon; nix-darwin should not.
   nix.enable = false;
 
-  # Binary caches for pre-built packages (written to /etc/nix/nix.custom.conf)
-  # - cache.nixos.org: Official cache (included by default)
-  # - nix-community.cachix.org: Community packages
-  # - cache.numtide.com: llm-agents.nix (store-owned AI agent CLIs), built and
-  #   pushed daily by numtide CI. Without this, `pi`/`agent-browser`/`qmd`/etc.
-  #   build from source locally instead of fetching the prebuilt binary — see
-  #   llm-agents.nix's own README §Binary Cache. `nixConfig` in that flake's
-  #   flake.nix does NOT propagate automatically to a consumer without
-  #   `--accept-flake-config`, so it must be declared explicitly here too;
-  #   Determinate Nix ignores `nix.settings` (`nix.enable = false` below), so
-  #   this goes through `determinateNix.customSettings` like nix-community.
+  # Caches beyond cache.nixos.org, written to /etc/nix/nix.custom.conf.
+  # cache.numtide.com serves llm-agents.nix, which numtide builds daily;
+  # without it the agent CLIs compile locally. That flake's own nixConfig
+  # reaches a consumer only with --accept-flake-config, so it is declared
+  # here, and here rather than nix.settings, which Determinate ignores.
   determinateNix.customSettings = {
     extra-substituters = "https://nix-community.cachix.org https://cache.numtide.com";
     extra-trusted-public-keys = "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g=";
   };
 
-  # zsh is the default shell on Mac and we want to make sure that we're
-  # configuring the rc correctly with nix-darwin paths.
+  # nix-darwin owns /etc/zshrc and /etc/fish/config.fish, which replaces the
+  # Nix installer's hook in them; each shell sources the daemon profile here.
   programs.zsh.enable = true;
   programs.zsh.shellInit = ''
     # Nix

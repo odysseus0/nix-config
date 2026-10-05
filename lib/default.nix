@@ -1,7 +1,7 @@
 # How hosts are assembled. A host file (hosts/<name>.nix) is identity plus
 # import lists; these functions add what every host shares. Inputs and facts
-# reach every module as specialArgs, and the overlay is applied here and
-# nowhere else.
+# reach every module as specialArgs, not _module.args, which a module cannot
+# use in its own `imports`. The overlay is applied here and nowhere else.
 { inputs }:
 let
   facts = import ./facts.nix;

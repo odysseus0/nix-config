@@ -15,7 +15,7 @@ writeShellScriptBin "nix-flake-bump" ''
   cd "$HOME/nix-config" || exit 1
   echo "=== $(date) flake bump ==="
 
-  # Never fight a session in progress; a dirty tree means George is mid-edit.
+  # A dirty tree means someone is mid-edit; never fight that session.
   if [ -n "$(git status --porcelain)" ]; then
     echo "working tree dirty — skipping"; exit 0
   fi

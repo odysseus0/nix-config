@@ -13,6 +13,5 @@
     shell = pkgs.fish;
   };
 
-  # Required for some settings like homebrew to know what user to apply to.
   system.primaryUser = user;
 }

@@ -1,7 +1,6 @@
-# Store-owned CLI set for the server role. Each entry has a Sietch-specific
-# reason; workstation tooling (modules/home/workstation) is deliberately absent.
-# Sietch is an agent host (remote-execution node): agents run here under
-# herdr and the Codex app (the `chatgpt` cask in modules/darwin/server.nix).
+# The server's Nix-owned CLI tools, each for a reason of Sietch's own; the
+# workstation's set is deliberately absent. Agents run here under herdr and
+# the Codex app (the `chatgpt` cask in modules/darwin/server.nix).
 { inputs, pkgs, ... }:
 
 let
@@ -17,8 +16,8 @@ in
     git-lfs         # the vault clone's media (global git config names its filter)
     herdr           # agent multiplexer for remote sessions
     llmAgents.codex # codex CLI for agent runs outside the desktop app
-    ghostty-bin.terminfo # xterm-ghostty, the TERM George's SSH sessions arrive with
-    ghostty-bin     # George's terminal over Screen Sharing, same config as the MacBook
+    ghostty-bin.terminfo # xterm-ghostty, the TERM SSH sessions from Ghostty arrive with
+    ghostty-bin     # the terminal over Screen Sharing, same config as the MacBook
     nerd-fonts.jetbrains-mono # the font that config names
   ];
 }

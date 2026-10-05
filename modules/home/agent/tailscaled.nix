@@ -6,9 +6,9 @@
 # bd, which reaches Sietch through a local forward (127.0.0.1:<port> to
 # Sietch's Dolt over `tailscale nc`).
 #
-# Nothing supervises these processes; rerun `agent-net up` after a restart.
-# It is idempotent: with state left from an earlier run the node resumes, and
-# on a wiped home `agent-net up --auth-key=...` enrolls a new one.
+# Nothing supervises these processes. `up` is idempotent: with state left
+# from an earlier run the node resumes, and on a wiped home
+# `up --auth-key=...` enrolls a new one.
 { config, lib, pkgs, facts, ... }:
 let
   state = "${config.xdg.stateHome}/tailscale";

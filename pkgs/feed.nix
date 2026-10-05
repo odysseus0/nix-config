@@ -1,4 +1,5 @@
-# feed: George's RSS CLI (github.com/odysseus0/feed), a pure-Go SQLite build.
+# feed, an RSS CLI (github.com/odysseus0/feed): the one package here built
+# from source: a small Go module whose SQLite driver is pure Go.
 { buildGoModule, fetchFromGitHub }:
 buildGoModule {
   pname = "feed";

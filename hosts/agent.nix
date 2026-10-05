@@ -1,8 +1,6 @@
 # Agent boxes: disposable Linux machines that come with a personal agent. The
 # job is to connect them to Beads on Sietch and nothing else; the vendor's
-# image is already tuned for its own agent. Bring one up with
-#   nix run github:odysseus0/nix-config#agent
-#   agent-net up --auth-key=tskey-auth-...   (reusable, ephemeral, tag:beads-client)
+# image is already tuned for its own agent.
 { ... }:
 {
   imports = [

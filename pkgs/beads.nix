@@ -1,5 +1,6 @@
 # bd from the upstream release archives, at the version Sietch's board has
-# been migrated to. Nothing compiles, and every client runs the same binary.
+# been migrated to. Every client runs this one pin: a newer bd migrates the
+# board's schema, after which older clients refuse it.
 { lib, stdenv, fetchurl, autoPatchelfHook }:
 let
   version = "1.3.1";

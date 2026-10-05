@@ -1,5 +1,5 @@
 {
-  description = "George's declarative computing environment — hermetic builds, ownership-tiered tooling";
+  description = "Two Macs and disposable Linux agent boxes, from one flake";
 
   inputs = {
     # One rolling nixpkgs: the lock makes it reproducible between bumps, and
@@ -33,9 +33,7 @@
     llm-agents.url = "github:numtide/llm-agents.nix";
 
     # Private: everything personal rather than structural (README
-    # §Public/private seam). Fetched only by the darwin outputs; private
-    # fetch needs `access-tokens = github.com=<token>` in nix.conf, and
-    # Sietch overrides it with its own clone (Makefile).
+    # §Public and private). Only the darwin outputs read it.
     home-ops.url = "github:odysseus0/home-ops";
   };
 
