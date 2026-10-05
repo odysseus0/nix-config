@@ -50,12 +50,6 @@ if set -q GHOSTTY_RESOURCES_DIR
     source "$GHOSTTY_RESOURCES_DIR/shell-integration/fish/vendor_conf.d/ghostty-shell-integration.fish"
 end
 
-# gh-dash with the config for the current appearance (dotfiles.nix).
-function gh-dash -d "GitHub dashboard with auto light/dark theme"
-    set -l theme (test "$(defaults read -g AppleInterfaceStyle 2>/dev/null)" = "Dark" && echo "dark" || echo "light")
-    command gh-dash --config ~/.config/gh-dash/config-$theme.yml $argv
-end
-
 # Python 3.13 through uv; the system python3 is macOS's 3.9.
 abbr py313 "uv run --python 3.13 python3"
 
