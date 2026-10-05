@@ -11,7 +11,7 @@ HOME_ACTIVATION = .\#darwinConfigurations.${NIXNAME}.config.home-manager.users.$
 OVERRIDE = $(if $(filter sietch,${NIXNAME}),--override-input home-ops git+file://${HOME}/home-ops,)
 
 .DEFAULT_GOAL := home-switch
-.PHONY: home-switch home-build switch build dry-run update update-nixpkgs brew-upgrade help
+.PHONY: home-switch home-build switch build dry-run update update-nixpkgs brew-upgrade transcription-setup help
 
 # The home layer is the home-manager configuration embedded in the darwin
 # output, so activating it alone needs no second source of truth, and no sudo.
@@ -41,6 +41,12 @@ update-nixpkgs: ## Update nixpkgs only
 # networked step.
 brew-upgrade: ## Upgrade Homebrew apps
 	brew update && brew upgrade
+
+# The ASR environment comes from wheels over the network, so it stays out of
+# activation; see tools/transcription.
+transcription-setup: ## Install the locked local ASR environment (MacBook)
+	@bin="$$(nix build --no-link --print-out-paths '.#darwinConfigurations.${NIXNAME}.pkgs.local-transcription' ${OVERRIDE})/bin/transcription-setup"; \
+	"$$bin"
 
 help: ## List the targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{ printf "  %-15s %s\n", $$1, $$2 }'

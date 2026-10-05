@@ -1,3 +1,6 @@
 result
 result-*
 .DS_Store
+
+# A local dev env for tools/transcription; its real env lives under XDG data.
+/tools/transcription/.venv/

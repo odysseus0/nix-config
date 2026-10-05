@@ -19,6 +19,7 @@
       ../modules/home/workstation/dotfiles.nix
       ../modules/home/workstation/environment.nix
       ../modules/home/workstation/secrets.nix
+      ../modules/home/workstation/transcription.nix
       inputs.home-ops.homeManagerModules.default
       inputs.home-ops.homeManagerModules.bird
       # `sietch` and the forwarded `feed`: Sietch owns the X state's databases.

@@ -51,6 +51,7 @@ A tool's owner decides when it changes:
 | Homebrew | [`workstation.nix`](modules/darwin/workstation.nix): apps, and formulae nixpkgs lacks | at `make brew-upgrade`; a switch installs what is declared and removes the rest |
 | The vendor | nothing: its installer writes `~/.local/bin` | by its own updater (claude, amp, pi) |
 | A project | that project's flake `devShells` | with the project |
+| uv, for local ASR | [`tools/transcription`](tools/transcription/README.md)'s `uv.lock`; Nix owns its commands | at `make transcription-setup`, from wheels, never at a switch |
 
 `PATH` has one entry per owner
 ([`environment.nix`](modules/home/workstation/environment.nix)), so a tool with

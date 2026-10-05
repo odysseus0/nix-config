@@ -4,6 +4,7 @@ final: prev: {
   dolt = final.callPackage ./dolt.nix { };
   feed = final.callPackage ./feed.nix { };
   herdr = final.callPackage ./herdr.nix { };
+  local-transcription = final.callPackage ./local-transcription.nix { };
   nix-flake-bump = final.callPackage ./nix-flake-bump.nix { };
   sherlog = final.callPackage ./sherlog.nix { };
 }
