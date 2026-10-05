@@ -23,6 +23,7 @@
       inputs.home-ops.homeManagerModules.bird
       # `sietch` and the forwarded `feed`: Sietch owns the X state's databases.
       inputs.home-ops.homeManagerModules.sietch-client
+      inputs.home-ops.homeManagerModules.gh-dash
     ];
 
     runtime.host = "macbook";

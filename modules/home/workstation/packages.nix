@@ -13,7 +13,6 @@ in
     git
     git-filter-repo  # history rewriting
     gh
-    gh-dash          # TUI dashboard for PRs and issues
     lazygit          # TUI git client
     lefthook         # git hook runner (the vault's hooks)
     ghq              # clones to ~/src/<host>/<owner>/<repo> (programs.git ghq.root)
