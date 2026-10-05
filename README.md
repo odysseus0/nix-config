@@ -103,12 +103,14 @@ bd ready
 
 After a reboot, run `agent-net up` again; it needs no key the second time.
 
-A Mac needs Determinate Nix, a GitHub token that can read `home-ops`
-(`access-tokens = github.com=<token>` in `nix.conf`), and the substituters from
+A Mac needs Determinate Nix, read access to `home-ops` (a GitHub token as
+`access-tokens = github.com=<token>` in `nix.conf`, or on Sietch the clone the
+[Makefile](Makefile) reads), and the substituters from
 [`base.nix`](modules/darwin/base.nix) written into `/etc/nix/nix.custom.conf`,
-followed by `sudo launchctl kickstart -k system/systems.determinate.nix-daemon`.
-Without them, the first build compiles the agent CLIs. The first switch runs
-the `darwin-rebuild` it just built:
+followed by `sudo launchctl kickstart -k system/systems.determinate.nix-daemon`
+(without them, the first build compiles the agent CLIs). The MacBook also
+needs its age key, derived as [`secrets.nix`](modules/home/workstation/secrets.nix)
+shows. The first switch runs the `darwin-rebuild` it just built:
 
 ```bash
 git clone https://github.com/odysseus0/nix-config ~/nix-config && cd ~/nix-config

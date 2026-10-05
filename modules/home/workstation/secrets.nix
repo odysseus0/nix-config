@@ -1,7 +1,5 @@
 { config, ... }:
 
-# Each consumer's secrets, decrypted at activation into its own 0600 file.
-#
 #   Edit:     sops secrets/secrets.yaml
 #   Re-key:   sops updatekeys secrets/secrets.yaml
 #   Bootstrap (after restoring ~/.ssh/id_ed25519 from 1Password):
