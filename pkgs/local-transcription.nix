@@ -70,7 +70,7 @@ let
     name = "transcribe";
     text = ''
       exec ${asr}/bin/mlx-qwen3-asr --diarize --num-speakers 2 \
-        --timestamps --batch-size 4 --output-format json "$@"
+        --timestamps --batch-size 8 --output-format json "$@"
     '';
   };
 in symlinkJoin {

@@ -138,7 +138,7 @@ index 0000000..8e0c874
 +        )))
 +    return generate_batch(model, prompts, features, configs)
 diff --git a/mlx_qwen3_asr/cli.py b/mlx_qwen3_asr/cli.py
-index 7b0149a..5f00922 100644
+index 7b0149a..a68bff2 100644
 --- a/mlx_qwen3_asr/cli.py
 +++ b/mlx_qwen3_asr/cli.py
 @@ -1,4 +1,6 @@
@@ -148,7 +148,43 @@ index 7b0149a..5f00922 100644
  
  from __future__ import annotations
  
-@@ -79,9 +81,18 @@ class _ChunkProgressPrinter:
+@@ -52,15 +54,25 @@ class _ChunkProgressPrinter:
+     def __init__(self, *, enabled: bool, start_time: float):
+         self._enabled = bool(enabled)
+         self._start_time = float(start_time)
++        self._phase_start_time = self._start_time
+ 
+     def __call__(self, payload: dict) -> None:
+         if not self._enabled:
+             return
+         event = str(payload.get("event", ""))
+-        if event not in {"chunk_completed", "completed"}:
++        phase = str(payload.get("phase", ""))
++        if event == "phase_started":
++            self._phase_start_time = time.time()
++            label = {"asr": "Transcribing", "alignment": "Aligning word timestamps",
++                     "diarization": "Labeling speakers"}[phase]
++            print(f"{label}...", file=sys.stderr)
++            return
++        if event not in {"asr_batch_completed", "chunk_completed", "completed"}:
++            return
++        if phase == "assembly":
+             return
+ 
+-        elapsed = max(0.0, time.time() - self._start_time)
++        elapsed = max(0.0, time.time() - self._phase_start_time)
+         progress = float(payload.get("progress", 0.0) or 0.0)
+         total_chunks = int(payload.get("total_chunks", 0) or 0)
+         chunk_index = int(payload.get("chunk_index", 0) or 0)
+@@ -70,6 +82,7 @@ class _ChunkProgressPrinter:
+             eta = max(0.0, (elapsed / progress) - elapsed)
+ 
+         if event == "completed":
++            elapsed = max(0.0, time.time() - self._start_time)
+             print(
+                 (
+                     f"Progress: 100.0% ({_format_duration(total_audio_sec)} audio) "
+@@ -79,9 +92,22 @@ class _ChunkProgressPrinter:
              )
              return
  
@@ -158,7 +194,11 @@ index 7b0149a..5f00922 100644
 +                return
 +            batch_index = (chunk_index + batch_size - 1) // batch_size
 +            batch_total = (total_chunks + batch_size - 1) // batch_size
-+            label = f"batch {batch_index}/{batch_total} (chunk {chunk_index}/{total_chunks})"
++            label = (
++                f"ASR batch {batch_index}/{batch_total} (chunks {chunk_index}/{total_chunks})"
++                if event == "asr_batch_completed"
++                else f"alignment chunks {chunk_index}/{total_chunks}"
++            )
 +        else:
 +            label = f"chunk {chunk_index}/{max(total_chunks, 1)}"
          print(
@@ -168,7 +208,7 @@ index 7b0149a..5f00922 100644
                  f"({progress * 100.0:.1f}%) ETA {_format_duration(eta)}"
              ),
              file=sys.stderr,
-@@ -460,6 +471,10 @@ def _build_parser() -> argparse.ArgumentParser:
+@@ -460,6 +486,10 @@ def _build_parser() -> argparse.ArgumentParser:
              "(default: adaptive 128-512 tokens, ~12 tokens/sec of audio)"
          ),
      )
@@ -179,7 +219,7 @@ index 7b0149a..5f00922 100644
      parser.add_argument(
          "--draft-model",
          default=None,
-@@ -579,6 +594,9 @@ def _validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) ->
+@@ -579,6 +609,9 @@ def _validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) ->
  
      wants_subtitles = any(fmt in {"srt", "vtt"} for fmt in _output_formats(args))
      checks = [
@@ -189,7 +229,7 @@ index 7b0149a..5f00922 100644
          (args.streaming and args.timestamps, "--streaming does not support --timestamps."),
          (args.streaming and args.diarize, "--streaming does not support --diarize."),
          (args.mic and args.timestamps, "--mic does not support --timestamps."),
-@@ -767,6 +785,7 @@ def _transcribe_file(
+@@ -767,6 +800,7 @@ def _transcribe_file(
              forced_aligner=aligner,
              dtype=dtype,
              max_new_tokens=args.max_new_tokens,
@@ -197,6 +237,149 @@ index 7b0149a..5f00922 100644
              num_draft_tokens=args.num_draft_tokens,
              verbose=args.verbose,
              on_progress=_ChunkProgressPrinter(enabled=show_progress, start_time=start_time),
+diff --git a/mlx_qwen3_asr/diarization.py b/mlx_qwen3_asr/diarization.py
+index 43d3a48..08373fa 100644
+--- a/mlx_qwen3_asr/diarization.py
++++ b/mlx_qwen3_asr/diarization.py
+@@ -3,6 +3,7 @@
+ This module keeps the existing transcript attribution contract while delegating
+ speaker-turn inference to pyannote when ``diarize=True``.
+ """
++# Local modifications (2026-10-05): share supported WeSpeaker audio features.
+ 
+ from __future__ import annotations
+ 
+@@ -378,6 +379,9 @@ def _load_pyannote_pipeline(device: str = DEFAULT_DIARIZATION_DEVICE) -> object:
+             resolved_device = "cpu"
+             key = (model_id, token, resolved_device)
+ 
++    from .diarization_embeddings import install_shared_embeddings
++
++    install_shared_embeddings(pipeline)
+     _PYANNOTE_PIPELINE_CACHE[key] = pipeline
+     return pipeline
+ 
+diff --git a/mlx_qwen3_asr/diarization_embeddings.py b/mlx_qwen3_asr/diarization_embeddings.py
+new file mode 100644
+index 0000000..42f91c3
+--- /dev/null
++++ b/mlx_qwen3_asr/diarization_embeddings.py
+@@ -0,0 +1,115 @@
++"""Share WeSpeaker audio features across the speaker masks of each window.
++
++Pyannote's generic pipeline evaluates the waveform once per local speaker.
++WeSpeaker supports all masks in one forward pass: its expensive audio network
++does not depend on the masks, which are applied only at statistics pooling.
++The adaptation is local to a supported pipeline instance; other backends and
++training continue to use pyannote's original implementation.
++"""
++# Local modifications (2026-10-05): reuse speaker-independent audio features.
++
++from __future__ import annotations
++
++import math
++import warnings
++from typing import Any, Callable
++
++import numpy as np
++
++
++def install_shared_embeddings(pipeline: Any) -> None:
++    """Adapt an inference pipeline with the supported native WeSpeaker backend."""
++    embedding = getattr(pipeline, "_embedding", None)
++    if embedding is None:
++        return
++    try:
++        from pyannote.audio.models.embedding.wespeaker import BaseWeSpeakerResNet
++        from pyannote.audio.pipelines.speaker_verification import (
++            PyannoteAudioPretrainedSpeakerEmbedding,
++        )
++    except ImportError:
++        return
++
++    if (
++        not isinstance(embedding, PyannoteAudioPretrainedSpeakerEmbedding)
++        or not isinstance(embedding.model_, BaseWeSpeakerResNet)
++        or isinstance(pipeline.get_embeddings, _SharedEmbeddings)
++    ):
++        return
++    pipeline.get_embeddings = _SharedEmbeddings(pipeline, pipeline.get_embeddings)
++
++
++class _SharedEmbeddings:
++    """A per-pipeline adapter for pyannote's embedding extension point."""
++
++    def __init__(self, pipeline: Any, original: Callable[..., np.ndarray]):
++        self.pipeline = pipeline
++        self.original = original
++
++    def __call__(
++        self,
++        file: Any,
++        binary_segmentations: Any,
++        exclude_overlap: bool = False,
++        hook: Callable[..., Any] | None = None,
++    ) -> np.ndarray:
++        pipeline = self.pipeline
++        if pipeline.training:
++            return self.original(
++                file, binary_segmentations, exclude_overlap=exclude_overlap, hook=hook
++            )
++        embedding = pipeline._embedding
++        num_chunks, num_frames, num_speakers = binary_segmentations.data.shape
++        duration = binary_segmentations.sliding_window.duration
++        min_frames = (
++            math.ceil(
++                num_frames * embedding.min_num_samples / (duration * embedding.sample_rate)
++            )
++            if exclude_overlap
++            else -1
++        )
++        batch_size = pipeline.embedding_batch_size
++        total = math.ceil(num_chunks / batch_size)
++        if hook is not None:
++            hook("embeddings", None, total=total, completed=0)
++        outputs: list[np.ndarray] = []
++        waveforms: list[Any] = []
++        weights: list[np.ndarray] = []
++
++        def flush() -> None:
++            result = _encode_masks(embedding, waveforms, weights)
++            outputs.append(result)
++            waveforms.clear()
++            weights.clear()
++            if hook is not None:
++                hook("embeddings", result, total=total, completed=len(outputs))
++
++        for chunk, masks in binary_segmentations:
++            waveform, _ = pipeline._audio.crop(file, chunk, mode="pad")
++            clean = (
++                masks * (np.sum(masks, axis=1, keepdims=True) < 2)
++                if exclude_overlap
++                else masks
++            )
++            masks = np.nan_to_num(masks, nan=0.0).astype(np.float32)
++            clean = np.nan_to_num(clean, nan=0.0).astype(np.float32)
++            selected = np.where((clean.sum(axis=0) > min_frames)[None, :], clean, masks)
++            waveforms.append(waveform)
++            weights.append(selected.T)
++            if len(waveforms) == batch_size:
++                flush()
++        if waveforms:
++            flush()
++        if not outputs:
++            return np.empty((0, num_speakers, embedding.dimension), dtype=np.float32)
++        return np.concatenate(outputs, axis=0)
++
++
++def _encode_masks(embedding: Any, waveforms: list[Any], masks: list[np.ndarray]) -> np.ndarray:
++    import torch
++
++    with torch.inference_mode(), warnings.catch_warnings():
++        warnings.simplefilter("ignore")
++        audio_batch = torch.stack(waveforms).to(embedding.device)
++        mask_batch = torch.from_numpy(np.stack(masks)).to(embedding.device)
++        return embedding.model_(audio_batch, weights=mask_batch).cpu().numpy()
 diff --git a/mlx_qwen3_asr/session.py b/mlx_qwen3_asr/session.py
 index 93773d7..9149198 100644
 --- a/mlx_qwen3_asr/session.py
@@ -225,7 +408,7 @@ index 93773d7..9149198 100644
              verbose=verbose,
              on_progress=on_progress,
 diff --git a/mlx_qwen3_asr/transcribe.py b/mlx_qwen3_asr/transcribe.py
-index fdf0dbb..2306d6c 100644
+index fdf0dbb..d60b9f8 100644
 --- a/mlx_qwen3_asr/transcribe.py
 +++ b/mlx_qwen3_asr/transcribe.py
 @@ -1,4 +1,6 @@
@@ -300,17 +483,45 @@ index fdf0dbb..2306d6c 100644
          num_draft_tokens=num_draft_tokens,
          verbose=verbose,
          on_progress=on_progress,
-@@ -532,6 +543,9 @@ def _transcribe_loaded_components(
+@@ -532,6 +543,37 @@ def _transcribe_loaded_components(
          },
      )
  
 +    if options.batch_size > 1 and draft_model_obj is not None:
 +        raise ValueError("batch_size > 1 cannot be combined with speculative decoding")
 +    batched_outputs: dict[int, GenerationResult] = {}
++    if options.batch_size > 1:
++        from .batching import decode_chunk_batch
++
++        # Similar durations reduce padding and finished-row work. Only CPU token
++        # results survive each bounded GPU batch; restore chronology below.
++        order = sorted(range(len(chunks)), key=lambda i: len(chunks[i][0]), reverse=True)
++        _emit_progress(on_progress, {"event": "phase_started", "phase": "asr"})
++        decoded_sec = 0.0
++        for start in range(0, len(order), options.batch_size):
++            indices = order[start:start + options.batch_size]
++            outputs = decode_chunk_batch(
++                model_obj, tokenizer, [chunks[i][0] for i in indices],
++                context=context, language=forced_language, dtype=dtype,
++                max_new_tokens=max_new_tokens,
++            )
++            batched_outputs.update(zip(indices, outputs, strict=True))
++            decoded_sec += sum(len(chunks[i][0]) / SAMPLE_RATE for i in indices)
++            _clear_mlx_cache()
++            _emit_progress(on_progress, {
++                "event": "asr_batch_completed", "phase": "asr",
++                "batch_size": options.batch_size,
++                "chunk_index": start + len(indices), "total_chunks": len(chunks),
++                "audio_duration_sec": total_audio_sec,
++                "processed_audio_sec": decoded_sec,
++                "progress": _safe_progress(decoded_sec, total_audio_sec),
++            })
++        if needs_alignment and aligner is not None:
++            _emit_progress(on_progress, {"event": "phase_started", "phase": "alignment"})
      for chunk_idx, (chunk_audio, offset) in enumerate(chunks):
          chunk_duration_sec = float(len(chunk_audio) / SAMPLE_RATE)
          effective_max_new_tokens = resolve_max_new_tokens(
-@@ -563,48 +577,61 @@ def _transcribe_loaded_components(
+@@ -563,48 +605,51 @@ def _transcribe_loaded_components(
                  f"(offset={offset:.1f}s, duration={len(chunk_audio)/SAMPLE_RATE:.1f}s)"
              )
  
@@ -346,16 +557,6 @@ index fdf0dbb..2306d6c 100644
 -                config=gen_config,
 -            )
 +        if options.batch_size > 1:
-+            if not batched_outputs:
-+                from .batching import decode_chunk_batch
-+
-+                group = chunks[chunk_idx:chunk_idx + options.batch_size]
-+                outputs = decode_chunk_batch(
-+                    model_obj, tokenizer, [item[0] for item in group],
-+                    context=context, language=forced_language, dtype=dtype,
-+                    max_new_tokens=max_new_tokens,
-+                )
-+                batched_outputs = dict(enumerate(outputs, start=chunk_idx))
 +            generation_output = batched_outputs.pop(chunk_idx)
          else:
 -            assert draft_audio_features is not None
@@ -412,15 +613,17 @@ index fdf0dbb..2306d6c 100644
          generation = coerce_generation_result(generation_output, gen_config)
          output_tokens = generation.tokens
          all_finish_reasons.append(generation.finish_reason)
-@@ -653,6 +680,7 @@ def _transcribe_loaded_components(
+@@ -653,6 +698,9 @@ def _transcribe_loaded_components(
              on_progress,
              {
                  "event": "chunk_completed",
++                "phase": ("alignment" if needs_alignment else "assembly")
++                if options.batch_size > 1 else "",
 +                "batch_size": options.batch_size,
                  "chunk_index": chunk_idx + 1,
                  "total_chunks": len(chunks),
                  "chunk_offset_sec": float(offset),
-@@ -672,8 +700,10 @@ def _transcribe_loaded_components(
+@@ -672,8 +720,10 @@ def _transcribe_loaded_components(
          # Release large per-chunk GPU tensors so the Metal allocator can reclaim
          # memory before the next chunk.  Without this, processing hour-long audio
          # causes unbounded memory growth (~90 GiB observed).
@@ -433,6 +636,14 @@ index fdf0dbb..2306d6c 100644
          _clear_mlx_cache()
  
      final_language = canonicalize_language(detected_language) or detected_language
+@@ -681,6 +731,7 @@ def _transcribe_loaded_components(
+     speaker_segments: Optional[list[dict]] = None
+     labeled_segments: list[dict] = []
+     if diarization_config is not None:
++        _emit_progress(on_progress, {"event": "phase_started", "phase": "diarization"})
+         speaker_turns = infer_speaker_turns(
+             audio_np,
+             sr=SAMPLE_RATE,
 diff --git a/mlx_qwen3_asr/writers.py b/mlx_qwen3_asr/writers.py
 index 0371e11..1feb047 100644
 --- a/mlx_qwen3_asr/writers.py

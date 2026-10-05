@@ -15,7 +15,7 @@ mlx-qwen3-asr --doctor
 transcribe recording.mp4 --output-dir "$HOME/Downloads"
 ```
 
-`transcribe` defaults to Qwen3-ASR 1.7B, decoder batch size 4, word timestamps,
+`transcribe` defaults to Qwen3-ASR 1.7B, decoder batch size 8, word timestamps,
 two speakers and JSON
 (which includes speaker segments). Audio/video conversion uses the Nix
 FFmpeg. Other CLI flags pass through, and later values override defaults:
@@ -26,7 +26,7 @@ transcribe meeting.m4a --batch-size 1 # sequential fallback
 mlx-qwen3-asr recording.wav --timestamps --output-format txt
 ```
 
-The second command omits diarization. Speaker IDs are anonymous labels,
+The `mlx-qwen3-asr` example omits diarization. Speaker IDs are anonymous labels,
 not identification of people by name. For unknown speaker counts, use
 `mlx-qwen3-asr --diarize --timestamps` without `--num-speakers`.
 
@@ -72,13 +72,23 @@ When upgrading upstream, update the wheel pin/hash in `lib/local-transcription.n
 and rebase/revalidate the patch together with `pyproject.toml` and `uv.lock`.
 
 The patch adds `--batch-size 1..16` for offline greedy decoding. Audio encoding
-and forced alignment preserve the upstream per-chunk behavior. Variable-length
-prompts share a bounded GPU decoder batch, with padding masks, independent
-rotary positions, EOS/repetition stops and token budgets. Diarization still
-runs over the complete recording, keeping speaker IDs consistent. Streaming,
-microphone input and speculative decoding require batch size 1. Progress
-reports decoder batches. `mlx-qwen3-asr` and the Python API retain batch size 1;
-the workstation convenience command `transcribe` selects 4.
+and forced alignment preserve the upstream per-chunk behavior. Similar-duration
+chunks share a bounded GPU decoder batch, with padding masks, independent
+rotary positions, EOS/repetition stops and token budgets. Text, timestamps and
+chunk metadata are restored to chronological order. Only CPU token results
+survive each GPU batch; per-chunk cache cleanup remains in place.
+
+Diarization runs over the complete recording, keeping speaker IDs consistent.
+For pyannote's supported native WeSpeaker backend, the expensive audio network
+is evaluated once per window and reused for all speaker masks at pooling.
+The adapter belongs to that pipeline instance; training and other embedding
+backends use the original implementation. No global patching or concurrent
+GPU workers are added. The native dependency interfaces are pinned by `uv.lock`.
+
+Streaming, microphone input and speculative decoding require batch size 1.
+Progress distinguishes ASR, word alignment and speaker labeling.
+`mlx-qwen3-asr` and the Python API retain batch size 1; the workstation
+convenience command `transcribe` selects 8.
 
 TXT output now has timestamped speaker turns; SRT includes speaker prefixes,
 VTT uses voice tags, and TSV includes a speaker column. JSON already contained
@@ -96,17 +106,31 @@ separate destination.
 ## Validation (2026-10-05)
 
 The 100-clip LibriSpeech test-clean check, sampled across 40 speakers, produced
-identical normalized hypotheses with batch size 4; WER remained 1.9422%.
-On a 149.1-second, two-voice synthetic recording with eight chunks, word
-alignment and diarization enabled, three warm trials per size gave:
+identical normalized hypotheses with grouped batch size 8; WER remained
+1.9422%. That independent quality check completed in 10.6 seconds. The fast
+gate passes 681 tests with 2 optional skips, using MLX 0.32.3.
 
-| Decoder batch | Median seconds | MLX peak GiB |
+For iteration, 16 short clips total just 42.9 seconds. Two complete batches
+with mixed lengths test padding and grouping without a long recording. Models
+stay resident; warm comparisons use bracketed controls, with two trials each:
+
+| Decoder setting | Median seconds | MLX peak GiB |
 |---|---:|---:|
-| 1 | 9.956 | 6.16 |
-| 2 | 8.128 | 6.16 |
-| 4 | 8.000 | 6.37 |
-| 8 | 8.092 | 6.72 |
+| Batch 4, chronological | 0.894 | 4.28 |
+| Batch 8, chronological | 0.688 | 4.41 |
+| Batch 8, duration grouped | 0.654 | 4.41 |
 
-All sizes produced identical text, word timestamps and speaker labels, with
-no truncation. These are local measurements, not a universal speedup promise.
-The peak column measures MLX allocation, not total process/unified memory.
+All fixture outputs match with no truncation. The peak column measures MLX
+allocation, not total process/unified memory. Local timings do not imply a
+fixed speedup for other recordings.
+
+Sharing speaker features preserves the native speaker turns on six fixtures:
+single, two and three voices, overlapping speech, silence and synthetic speech.
+Mask selection, short/empty speaker masks, tail batches and training fallback
+are also checked against pyannote's original implementation.
+
+Larger speaker batches, concurrent ASR/diarization, active decoder-row
+compaction and changing cache-cleanup frequency did not provide repeatable
+benefits; none are included. Increase fixture size only for a specific missing
+signal such as sustained memory behavior, rather than routinely rerunning a
+full recording.
