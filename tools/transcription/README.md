@@ -33,9 +33,12 @@ not identification of people by name. For unknown speaker counts, use
 Qwen3-ASR 1.7B and the forced aligner download on their first use into the
 normal Hugging Face cache. The default local speaker model is
 [pyannote/speaker-diarization-community-1](https://huggingface.co/pyannote/speaker-diarization-community-1).
-Its gated terms must be accepted by the user on Hugging Face. Supply an
-existing authorized read token via `PYANNOTE_AUTH_TOKEN` (or `HF_TOKEN`)
-in the running shell; never add tokens to Nix, this repo, or the lock file.
+Its gated terms must be accepted by the user on Hugging Face. Log in locally
+with `~/.local/share/local-transcription/.venv/bin/hf auth login` and approve
+the browser login yourself. The command automatically uses that cached login;
+explicit `PYANNOTE_AUTH_TOKEN` / `HF_TOKEN` / `HUGGINGFACE_TOKEN` overrides
+take precedence. Credentials stay in Hugging Face's local credential storage,
+never Nix, this repo, or the lock file.
 No setup command accepts model terms or creates credentials. Setting
 `PYANNOTE_MODEL_ID` to an already downloaded local pipeline is also supported
 by upstream. `PYANNOTE_METRICS_ENABLED=0` disables pyannote usage telemetry.

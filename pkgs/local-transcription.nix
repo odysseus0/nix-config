@@ -35,7 +35,7 @@ let
         exit 1
       fi
       exec uv run --project ${project} --locked --no-sync \
-        mlx-qwen3-asr --model Qwen/Qwen3-ASR-1.7B "$@"
+        python ${project}/run.py --model Qwen/Qwen3-ASR-1.7B "$@"
     '';
   };
   transcribe = writeShellApplication {
