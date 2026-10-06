@@ -42,9 +42,9 @@ update-nixpkgs: ## Update nixpkgs only
 brew-upgrade: ## Upgrade Homebrew apps
 	brew update && brew upgrade
 
-# The ASR environment comes from wheels over the network, so it stays out of
-# activation; see tools/transcription.
-transcription-setup: ## Install the locked local ASR environment (MacBook)
+# Native Swift compilation and model downloads stay out of activation;
+# see tools/transcription.
+transcription-setup: ## Build the pinned native transcription command (MacBook)
 	@bin="$$(nix build --no-link --print-out-paths '.#darwinConfigurations.${NIXNAME}.pkgs.local-transcription' ${OVERRIDE})/bin/transcription-setup"; \
 	"$$bin"
 
