@@ -144,7 +144,7 @@ at batch 8 versus 5.12 seconds sequentially, about 22% less. On the 42.9-second
 fixture, the corresponding warm medians were 0.273 and 0.430 seconds.
 The implemented method independently reproduces the saved original hash.
 Tests cover right padding, empty rows, unknown-language exclusion, chronological
-offsets and stage progress. Single-row alignment retains its original path.
+offsets and stage progress. Single-row and batched alignment share one implementation.
 
 The follow-up also measured async decoder lookahead, compiled MLPs, selective
 timestamp projection and speculative decoding. None earned a production change;

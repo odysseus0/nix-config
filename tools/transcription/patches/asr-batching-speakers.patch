@@ -138,7 +138,7 @@ index 0000000..8e0c874
 +        )))
 +    return generate_batch(model, prompts, features, configs)
 diff --git a/mlx_qwen3_asr/cli.py b/mlx_qwen3_asr/cli.py
-index 7b0149a..e7e48b5 100644
+index 7b0149a..60b3ed4 100644
 --- a/mlx_qwen3_asr/cli.py
 +++ b/mlx_qwen3_asr/cli.py
 @@ -1,4 +1,6 @@
@@ -186,21 +186,18 @@ index 7b0149a..e7e48b5 100644
              print(
                  (
                      f"Progress: 100.0% ({_format_duration(total_audio_sec)} audio) "
-@@ -79,9 +94,23 @@ class _ChunkProgressPrinter:
+@@ -79,9 +94,20 @@ class _ChunkProgressPrinter:
              )
              return
  
 +        batch_size = int(payload.get("batch_size", 1))
 +        if batch_size > 1:
-+            if chunk_index % batch_size and chunk_index != total_chunks:
-+                return
 +            batch_index = (chunk_index + batch_size - 1) // batch_size
 +            batch_total = (total_chunks + batch_size - 1) // batch_size
++            stage = "ASR" if event == "asr_batch_completed" else "alignment"
 +            label = (
-+                f"ASR batch {batch_index}/{batch_total} (chunks {chunk_index}/{total_chunks})"
-+                if event == "asr_batch_completed"
-+                else (f"alignment batch {batch_index}/{batch_total} "
-+                      f"(chunks {chunk_index}/{total_chunks})")
++                f"{stage} batch {batch_index}/{batch_total} "
++                f"(chunks {chunk_index}/{total_chunks})"
 +            )
 +        else:
 +            label = f"chunk {chunk_index}/{max(total_chunks, 1)}"
@@ -211,7 +208,7 @@ index 7b0149a..e7e48b5 100644
                  f"({progress * 100.0:.1f}%) ETA {_format_duration(eta)}"
              ),
              file=sys.stderr,
-@@ -460,6 +489,10 @@ def _build_parser() -> argparse.ArgumentParser:
+@@ -460,6 +486,10 @@ def _build_parser() -> argparse.ArgumentParser:
              "(default: adaptive 128-512 tokens, ~12 tokens/sec of audio)"
          ),
      )
@@ -222,7 +219,7 @@ index 7b0149a..e7e48b5 100644
      parser.add_argument(
          "--draft-model",
          default=None,
-@@ -579,6 +612,9 @@ def _validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) ->
+@@ -579,6 +609,9 @@ def _validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) ->
  
      wants_subtitles = any(fmt in {"srt", "vtt"} for fmt in _output_formats(args))
      checks = [
@@ -232,7 +229,7 @@ index 7b0149a..e7e48b5 100644
          (args.streaming and args.timestamps, "--streaming does not support --timestamps."),
          (args.streaming and args.diarize, "--streaming does not support --diarize."),
          (args.mic and args.timestamps, "--mic does not support --timestamps."),
-@@ -767,6 +803,7 @@ def _transcribe_file(
+@@ -767,6 +800,7 @@ def _transcribe_file(
              forced_aligner=aligner,
              dtype=dtype,
              max_new_tokens=args.max_new_tokens,
@@ -264,10 +261,10 @@ index 43d3a48..08373fa 100644
  
 diff --git a/mlx_qwen3_asr/diarization_embeddings.py b/mlx_qwen3_asr/diarization_embeddings.py
 new file mode 100644
-index 0000000..42f91c3
+index 0000000..041255a
 --- /dev/null
 +++ b/mlx_qwen3_asr/diarization_embeddings.py
-@@ -0,0 +1,115 @@
+@@ -0,0 +1,113 @@
 +"""Share WeSpeaker audio features across the speaker masks of each window.
 +
 +Pyannote's generic pipeline evaluates the waveform once per local speaker.
@@ -282,6 +279,7 @@ index 0000000..42f91c3
 +
 +import math
 +import warnings
++from collections.abc import Iterator, Sequence
 +from typing import Any, Callable
 +
 +import numpy as np
@@ -328,6 +326,8 @@ index 0000000..42f91c3
 +            return self.original(
 +                file, binary_segmentations, exclude_overlap=exclude_overlap, hook=hook
 +            )
++        from pyannote.audio.pipelines.speaker_diarization import batchify
++
 +        embedding = pipeline._embedding
 +        num_chunks, num_frames, num_speakers = binary_segmentations.data.shape
 +        duration = binary_segmentations.sliding_window.duration
@@ -343,39 +343,34 @@ index 0000000..42f91c3
 +        if hook is not None:
 +            hook("embeddings", None, total=total, completed=0)
 +        outputs: list[np.ndarray] = []
-+        waveforms: list[Any] = []
-+        weights: list[np.ndarray] = []
 +
-+        def flush() -> None:
++        def iter_windows() -> Iterator[tuple[Any, np.ndarray]]:
++            for chunk, masks in binary_segmentations:
++                waveform, _ = pipeline._audio.crop(file, chunk, mode="pad")
++                clean = (
++                    masks * (np.sum(masks, axis=1, keepdims=True) < 2)
++                    if exclude_overlap
++                    else masks
++                )
++                masks = np.nan_to_num(masks, nan=0.0).astype(np.float32)
++                clean = np.nan_to_num(clean, nan=0.0).astype(np.float32)
++                selected = np.where((clean.sum(axis=0) > min_frames)[None, :], clean, masks)
++                yield waveform, selected.T
++
++        for completed, batch in enumerate(batchify(iter_windows(), batch_size=batch_size), 1):
++            waveforms, weights = zip(*(item for item in batch if item is not None), strict=True)
 +            result = _encode_masks(embedding, waveforms, weights)
 +            outputs.append(result)
-+            waveforms.clear()
-+            weights.clear()
 +            if hook is not None:
-+                hook("embeddings", result, total=total, completed=len(outputs))
-+
-+        for chunk, masks in binary_segmentations:
-+            waveform, _ = pipeline._audio.crop(file, chunk, mode="pad")
-+            clean = (
-+                masks * (np.sum(masks, axis=1, keepdims=True) < 2)
-+                if exclude_overlap
-+                else masks
-+            )
-+            masks = np.nan_to_num(masks, nan=0.0).astype(np.float32)
-+            clean = np.nan_to_num(clean, nan=0.0).astype(np.float32)
-+            selected = np.where((clean.sum(axis=0) > min_frames)[None, :], clean, masks)
-+            waveforms.append(waveform)
-+            weights.append(selected.T)
-+            if len(waveforms) == batch_size:
-+                flush()
-+        if waveforms:
-+            flush()
++                hook("embeddings", result, total=total, completed=completed)
 +        if not outputs:
 +            return np.empty((0, num_speakers, embedding.dimension), dtype=np.float32)
 +        return np.concatenate(outputs, axis=0)
 +
 +
-+def _encode_masks(embedding: Any, waveforms: list[Any], masks: list[np.ndarray]) -> np.ndarray:
++def _encode_masks(
++    embedding: Any, waveforms: Sequence[Any], masks: Sequence[np.ndarray]
++) -> np.ndarray:
 +    import torch
 +
 +    with torch.inference_mode(), warnings.catch_warnings():
@@ -384,7 +379,7 @@ index 0000000..42f91c3
 +        mask_batch = torch.from_numpy(np.stack(masks)).to(embedding.device)
 +        return embedding.model_(audio_batch, weights=mask_batch).cpu().numpy()
 diff --git a/mlx_qwen3_asr/forced_aligner.py b/mlx_qwen3_asr/forced_aligner.py
-index 33462ae..2f73181 100644
+index 33462ae..b7ebb8f 100644
 --- a/mlx_qwen3_asr/forced_aligner.py
 +++ b/mlx_qwen3_asr/forced_aligner.py
 @@ -2,6 +2,7 @@
@@ -404,57 +399,70 @@ index 33462ae..2f73181 100644
          if cls._ko_tokenizer is not None:
              return cls._ko_tokenizer
          if cls._ko_tokenizer_error is not None:
-@@ -346,13 +347,15 @@ class _MLXForcedAlignerBackend:
-             + body
+@@ -325,16 +326,16 @@ class _MLXForcedAlignerBackend:
+         resolved_model_path = _ModelHolder.get_resolved_path(model_path, dtype=dtype)
+         self.tokenizer = _TokenizerHolder.get(resolved_model_path)
+ 
+-        self.timestamp_token_id = self.config.timestamp_token_id
+-        self.timestamp_segment_time = self.config.timestamp_segment_time
+         if self.config.classify_num is None:
+             raise RuntimeError(
+                 "Model config missing classify_num required for forced alignment."
+             )
+-        if self.timestamp_token_id is None or self.timestamp_segment_time is None:
++        if self.config.timestamp_token_id is None or self.config.timestamp_segment_time is None:
+             raise RuntimeError(
+                 "Model config missing timestamp_token_id/timestamp_segment_time."
+             )
++        self.timestamp_token_id = self.config.timestamp_token_id
++        self.timestamp_segment_time = self.config.timestamp_segment_time
+ 
+     @staticmethod
+     def _build_prompt(words: list[str], n_audio_tokens: int) -> str:
+@@ -347,43 +348,53 @@ class _MLXForcedAlignerBackend:
          )
  
--    def align(self, audio: np.ndarray, text: str, language: str) -> list[AlignedWord]:
-+    def _prepare_input(
-+        self, audio: np.ndarray, text: str, language: str
-+    ) -> Optional[tuple[list[str], mx.array, list[int]]]:
-         if text.strip() == "":
+     def align(self, audio: np.ndarray, text: str, language: str) -> list[AlignedWord]:
+-        if text.strip() == "":
 -            return []
-+            return None
- 
-         words = ForcedAlignTextProcessor.tokenize_text(text, language)
-         if not words:
+-
+-        words = ForcedAlignTextProcessor.tokenize_text(text, language)
+-        if not words:
 -            return []
-+            return None
- 
-         mel, feature_lens = compute_features(audio.astype(np.float32))
-         audio_features, _ = self.model.audio_tower(mel.astype(self.dtype), feature_lens)
-@@ -360,6 +363,13 @@ class _MLXForcedAlignerBackend:
- 
-         prompt = self._build_prompt(words, n_audio_tokens)
-         token_ids = self.tokenizer.encode(prompt, add_special_tokens=False)
-+        return words, audio_features, token_ids
+-
+-        mel, feature_lens = compute_features(audio.astype(np.float32))
+-        audio_features, _ = self.model.audio_tower(mel.astype(self.dtype), feature_lens)
+-        n_audio_tokens = int(audio_features.shape[1])
+-
+-        prompt = self._build_prompt(words, n_audio_tokens)
+-        token_ids = self.tokenizer.encode(prompt, add_special_tokens=False)
+-        input_ids = mx.array([token_ids])
+-
+-        seq_len = input_ids.shape[1]
+-        positions = mx.arange(seq_len)[None, :]
+-        position_ids = mx.stack([positions, positions, positions], axis=1)
+-
++        return self.align_batch([(audio, text, language)])[0]
 +
-+    def align(self, audio: np.ndarray, text: str, language: str) -> list[AlignedWord]:
-+        prepared = self._prepare_input(audio, text, language)
-+        if prepared is None:
-+            return []
-+        words, audio_features, token_ids = prepared
-         input_ids = mx.array([token_ids])
- 
-         seq_len = input_ids.shape[1]
-@@ -385,6 +395,47 @@ class _MLXForcedAlignerBackend:
-         timestamp_ms = timestamp_ids.astype(np.float32) * float(self.timestamp_segment_time)
-         return ForcedAlignTextProcessor.parse_timestamp_ms(words, timestamp_ms)
- 
 +    def align_batch(
 +        self, items: list[tuple[np.ndarray, str, str]]
 +    ) -> list[list[AlignedWord]]:
 +        """Align independent chunks together, preserving empty rows and order."""
-+        if len(items) <= 1:
-+            return [self.align(*item) for item in items]
 +        results: list[list[AlignedWord]] = [[] for _ in items]
 +        rows = []
-+        for index, item in enumerate(items):
-+            prepared = self._prepare_input(*item)
-+            if prepared is not None:
-+                words, features, tokens = prepared
-+                mx.eval(features)
-+                rows.append((index, words, features, tokens))
++        for index, (audio, text, language) in enumerate(items):
++            if not text.strip():
++                continue
++            words = ForcedAlignTextProcessor.tokenize_text(text, language)
++            if not words:
++                continue
++            mel, feature_lens = compute_features(audio.astype(np.float32))
++            features, _ = self.model.audio_tower(mel.astype(self.dtype), feature_lens)
++            mx.eval(features)
++            tokens = self.tokenizer.encode(
++                self._build_prompt(words, features.shape[1]), add_special_tokens=False
++            )
++            rows.append((index, words, features, tokens))
 +        if not rows:
 +            return results
 +        width = max(len(tokens) for _, _, _, tokens in rows)
@@ -466,10 +474,25 @@ index 33462ae..2f73181 100644
 +            mx.pad(features, [(0, 0), (0, audio_width - features.shape[1]), (0, 0)])
 +            for _, _, features, _ in rows
 +        ], axis=0)
-+        embeds = self.model.model.embed_tokens(input_ids)
-+        embeds = self.model._inject_audio_features(
+         embeds = self.model.model.embed_tokens(input_ids)
+-        audio_mask = input_ids == self.model.audio_token_id
+         embeds = self.model._inject_audio_features(
+-            embeds, audio_features.astype(embeds.dtype), audio_mask
+-        )
+-        hidden = self.model.model(
+-            inputs_embeds=embeds,
+-            position_ids=position_ids,
+-            attention_mask=None,
+-            cache=None,
 +            embeds, audio_features.astype(embeds.dtype), input_ids == self.model.audio_token_id
-+        )
+         )
+-        logits = self.model.lm_head(hidden)
+-
+-        pred_ids = np.array(mx.argmax(logits, axis=-1))[0]
+-        input_np = np.array(input_ids)[0]
+-        timestamp_ids = pred_ids[input_np == int(self.timestamp_token_id)]
+-        timestamp_ms = timestamp_ids.astype(np.float32) * float(self.timestamp_segment_time)
+-        return ForcedAlignTextProcessor.parse_timestamp_ms(words, timestamp_ms)
 +        # The existing causal mask prevents real tokens from seeing right padding.
 +        hidden = self.model.model(inputs_embeds=embeds, position_ids=positions,
 +                                  attention_mask=None, cache=None)
@@ -481,11 +504,10 @@ index 33462ae..2f73181 100644
 +            timestamp_ms = timestamps.astype(np.float32) * float(self.timestamp_segment_time)
 +            results[index] = ForcedAlignTextProcessor.parse_timestamp_ms(words, timestamp_ms)
 +        return results
-+
+ 
  
  class ForcedAligner:
-     """Word-level forced aligner.
-@@ -430,3 +481,12 @@ class ForcedAligner:
+@@ -430,3 +441,12 @@ class ForcedAligner:
          """Align a transcript against audio and return word-level timestamps."""
          self._ensure_loaded()
          return self._backend.align(audio, text, language)  # type: ignore[union-attr]
@@ -526,7 +548,7 @@ index 93773d7..9149198 100644
              verbose=verbose,
              on_progress=on_progress,
 diff --git a/mlx_qwen3_asr/transcribe.py b/mlx_qwen3_asr/transcribe.py
-index fdf0dbb..38960c5 100644
+index fdf0dbb..c458a62 100644
 --- a/mlx_qwen3_asr/transcribe.py
 +++ b/mlx_qwen3_asr/transcribe.py
 @@ -1,4 +1,6 @@
@@ -606,7 +628,7 @@ index fdf0dbb..38960c5 100644
          num_draft_tokens=num_draft_tokens,
          verbose=verbose,
          on_progress=on_progress,
-@@ -481,6 +492,20 @@ def _resolve_diarization_config(
+@@ -481,6 +492,21 @@ def _resolve_diarization_config(
      )
  
  
@@ -615,6 +637,7 @@ index fdf0dbb..38960c5 100644
 +    generation: GenerationResult
 +    language: str
 +    text: str
++    alignment: tuple[AlignedWord, ...] = ()
 +
 +
 +def _decode_generation_text(
@@ -627,70 +650,62 @@ index fdf0dbb..38960c5 100644
  def _transcribe_loaded_components(
      *,
      audio_np: np.ndarray,
-@@ -532,6 +557,62 @@ def _transcribe_loaded_components(
+@@ -532,6 +558,54 @@ def _transcribe_loaded_components(
          },
      )
  
 +    if options.batch_size > 1 and draft_model_obj is not None:
 +        raise ValueError("batch_size > 1 cannot be combined with speculative decoding")
 +    batched_outputs: dict[int, _DecodedChunk] = {}
-+    batched_alignment: dict[int, list[AlignedWord]] = {}
 +    if options.batch_size > 1:
 +        from .batching import decode_chunk_batch
 +
 +        # Similar durations reduce padding and finished-row work. Only CPU token
 +        # results survive each bounded GPU batch; restore chronology below.
 +        order = sorted(range(len(chunks)), key=lambda i: len(chunks[i][0]), reverse=True)
-+        _emit_progress(on_progress, {"event": "phase_started", "phase": "asr"})
-+        decoded_sec = 0.0
-+        for start in range(0, len(order), options.batch_size):
-+            indices = order[start:start + options.batch_size]
-+            outputs = decode_chunk_batch(
-+                model_obj, tokenizer, [chunks[i][0] for i in indices],
-+                context=context, language=forced_language, dtype=dtype,
-+                max_new_tokens=max_new_tokens,
-+            )
-+            for index, output in zip(indices, outputs, strict=True):
-+                lang, text = _decode_generation_text(output, tokenizer, forced_language)
-+                batched_outputs[index] = _DecodedChunk(output, lang, text)
-+            decoded_sec += sum(len(chunks[i][0]) / SAMPLE_RATE for i in indices)
-+            _clear_mlx_cache()
-+            _emit_progress(on_progress, {
-+                "event": "asr_batch_completed", "phase": "asr",
-+                "batch_size": options.batch_size,
-+                "chunk_index": start + len(indices), "total_chunks": len(chunks),
-+                "audio_duration_sec": total_audio_sec,
-+                "processed_audio_sec": decoded_sec,
-+                "progress": _safe_progress(decoded_sec, total_audio_sec),
-+            })
-+        if needs_alignment and aligner is not None:
-+            _emit_progress(on_progress, {"event": "phase_started", "phase": "alignment"})
-+            aligned_sec = 0.0
++        phases = ["asr", "alignment"] if needs_alignment and aligner is not None else ["asr"]
++        for phase in phases:
++            _emit_progress(on_progress, {"event": "phase_started", "phase": phase})
++            phase_sec = 0.0
 +            for start in range(0, len(order), options.batch_size):
 +                indices = order[start:start + options.batch_size]
-+                eligible = [i for i in indices if batched_outputs[i].text.strip()
-+                            and (forced_language or batched_outputs[i].language)
-+                            not in {"", "unknown"}]
-+                aligned_groups = aligner.align_batch([
-+                    (chunks[i][0], batched_outputs[i].text,
-+                     forced_language or batched_outputs[i].language)
-+                    for i in eligible
-+                ])
-+                batched_alignment.update(zip(eligible, aligned_groups, strict=True))
++                if phase == "asr":
++                    outputs = decode_chunk_batch(
++                        model_obj, tokenizer, [chunks[i][0] for i in indices],
++                        context=context, language=forced_language, dtype=dtype,
++                        max_new_tokens=max_new_tokens,
++                    )
++                    for index, output in zip(indices, outputs, strict=True):
++                        lang, text = _decode_generation_text(output, tokenizer, forced_language)
++                        batched_outputs[index] = _DecodedChunk(output, lang, text)
++                else:
++                    assert aligner is not None
++                    eligible = [i for i in indices if batched_outputs[i].text.strip()
++                                and (forced_language or batched_outputs[i].language)
++                                not in {"", "unknown"}]
++                    aligned_groups = aligner.align_batch([
++                        (chunks[i][0], batched_outputs[i].text,
++                         forced_language or batched_outputs[i].language)
++                        for i in eligible
++                    ])
++                    for index, words in zip(eligible, aligned_groups, strict=True):
++                        batched_outputs[index] = replace(
++                            batched_outputs[index], alignment=tuple(words)
++                        )
 +                _clear_mlx_cache()
-+                aligned_sec += sum(len(chunks[i][0]) / SAMPLE_RATE for i in indices)
++                phase_sec += sum(len(chunks[i][0]) / SAMPLE_RATE for i in indices)
 +                _emit_progress(on_progress, {
-+                    "event": "alignment_batch_completed", "phase": "alignment",
++                    "event": f"{phase}_batch_completed", "phase": phase,
 +                    "batch_size": options.batch_size,
 +                    "chunk_index": start + len(indices), "total_chunks": len(chunks),
 +                    "audio_duration_sec": total_audio_sec,
-+                    "processed_audio_sec": aligned_sec,
-+                    "progress": _safe_progress(aligned_sec, total_audio_sec),
++                    "processed_audio_sec": phase_sec,
++                    "progress": _safe_progress(phase_sec, total_audio_sec),
 +                })
      for chunk_idx, (chunk_audio, offset) in enumerate(chunks):
          chunk_duration_sec = float(len(chunk_audio) / SAMPLE_RATE)
          effective_max_new_tokens = resolve_max_new_tokens(
-@@ -563,55 +644,58 @@ def _transcribe_loaded_components(
+@@ -563,55 +637,58 @@ def _transcribe_loaded_components(
                  f"(offset={offset:.1f}s, duration={len(chunk_audio)/SAMPLE_RATE:.1f}s)"
              )
  
@@ -793,17 +808,17 @@ index fdf0dbb..38960c5 100644
  
          if detected_language == "unknown":
              detected_language = lang
-@@ -635,7 +719,8 @@ def _transcribe_loaded_components(
+@@ -635,7 +712,8 @@ def _transcribe_loaded_components(
          if needs_alignment and aligner is not None and text.strip():
              align_lang = forced_language or lang
              if align_lang and align_lang != "unknown":
 -                aligned = aligner.align(chunk_audio, text, align_lang)
-+                aligned = (batched_alignment.pop(chunk_idx, []) if options.batch_size > 1
++                aligned = (decoded.alignment if options.batch_size > 1
 +                           else aligner.align(chunk_audio, text, align_lang))
                  for item in aligned:
                      all_segments.append(
                          {
-@@ -653,6 +738,8 @@ def _transcribe_loaded_components(
+@@ -653,6 +731,8 @@ def _transcribe_loaded_components(
              on_progress,
              {
                  "event": "chunk_completed",
@@ -812,7 +827,7 @@ index fdf0dbb..38960c5 100644
                  "chunk_index": chunk_idx + 1,
                  "total_chunks": len(chunks),
                  "chunk_offset_sec": float(offset),
-@@ -669,18 +756,20 @@ def _transcribe_loaded_components(
+@@ -669,18 +749,20 @@ def _transcribe_loaded_components(
              },
          )
  

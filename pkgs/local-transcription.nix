@@ -28,6 +28,14 @@ let
     export DYLD_FALLBACK_LIBRARY_PATH="${ffmpeg.lib}/lib:''${DYLD_FALLBACK_LIBRARY_PATH:-/usr/local/lib:/usr/lib}"
     expected_lock="$(sha256sum ${project}/uv.lock | cut -d ' ' -f 1)"
   '';
+  readyState = executable: state + ''
+    if [[ ! -x "$UV_PROJECT_ENVIRONMENT/bin/${executable}" ]] || \
+       [[ ! -f "$UV_PROJECT_ENVIRONMENT/.nix-lock-sha256" ]] || \
+       [[ "$(cat "$UV_PROJECT_ENVIRONMENT/.nix-lock-sha256")" != "$expected_lock" ]]; then
+      echo "Transcription environment missing or changed; run transcription-setup." >&2
+      exit 1
+    fi
+  '';
   setup = writeShellApplication {
     name = "transcription-setup";
     runtimeInputs = [ uv python312 coreutils ];
@@ -42,13 +50,7 @@ let
   asr = writeShellApplication {
     name = "mlx-qwen3-asr";
     runtimeInputs = [ uv ffmpeg coreutils ];
-    text = state + ''
-      if [[ ! -x "$UV_PROJECT_ENVIRONMENT/bin/mlx-qwen3-asr" ]] || \
-         [[ ! -f "$UV_PROJECT_ENVIRONMENT/.nix-lock-sha256" ]] || \
-         [[ "$(cat "$UV_PROJECT_ENVIRONMENT/.nix-lock-sha256")" != "$expected_lock" ]]; then
-        echo "Transcription environment missing or changed; run transcription-setup." >&2
-        exit 1
-      fi
+    text = (readyState "mlx-qwen3-asr") + ''
       exec uv run --project ${project} --locked --no-sync \
         python ${project}/run.py --model Qwen/Qwen3-ASR-1.7B "$@"
     '';
@@ -56,13 +58,7 @@ let
   formatter = writeShellApplication {
     name = "transcription-format";
     runtimeInputs = [ uv coreutils ];
-    text = state + ''
-      if [[ ! -x "$UV_PROJECT_ENVIRONMENT/bin/python" ]] || \
-         [[ ! -f "$UV_PROJECT_ENVIRONMENT/.nix-lock-sha256" ]] || \
-         [[ "$(cat "$UV_PROJECT_ENVIRONMENT/.nix-lock-sha256")" != "$expected_lock" ]]; then
-        echo "Transcription environment missing or changed; run transcription-setup." >&2
-        exit 1
-      fi
+    text = (readyState "python") + ''
       exec uv run --project ${project} --locked --no-sync python ${project}/format.py "$@"
     '';
   };
