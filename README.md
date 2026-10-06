@@ -51,7 +51,7 @@ A tool's owner decides when it changes:
 | Homebrew | [`workstation.nix`](modules/darwin/workstation.nix): apps, and formulae nixpkgs lacks | at `make brew-upgrade`; a switch installs what is declared and removes the rest |
 | The vendor | nothing: its installer writes `~/.local/bin` | by its own updater (claude, amp, pi) |
 | A project | that project's flake `devShells` | with the project |
-| Local transcription | [`tools/transcription`](tools/transcription/README.md); Nix pins FluidAudio and owns its commands | native Swift compilation at `make transcription-setup`, never at a switch |
+| Local transcription | [`tools/transcription`](tools/transcription/README.md); Nix pins the official FluidAudio CLI | native Swift compilation at `make transcription-setup`, never at a switch |
 
 `PATH` has one entry per owner
 ([`environment.nix`](modules/home/workstation/environment.nix)), so a tool with
