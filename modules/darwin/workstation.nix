@@ -64,6 +64,7 @@
       # AI
       "chatgpt"
       "lm-studio"
+      "macwhisper"
       "t3-code"
 
       # Productivity
