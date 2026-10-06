@@ -50,14 +50,11 @@ access. Diarization preflight verifies actual access before ASR starts.
 
 ## Ownership and updates
 
-`make transcription-setup` installs this project alone. `make update-tools`
-also reconciles it on the workstation, outside activation. Changes to Python
+`make transcription-setup` installs this project, outside activation. Changes to Python
 dependencies require an explicit `uv lock --project tools/transcription`,
 review of the lock diff, `make build`, commit, home activation and setup.
 Runtime commands use `--locked --no-sync` and require the active lock's
 installation stamp, so a Nix rollback cannot silently run newer dependencies.
-The environment is separate from `uv tool`; the old global Qwen installation
-is intentionally absent from the global tool manifest.
 
 ## Local patch and readable speaker labels
 
@@ -68,7 +65,7 @@ own the locked native dependencies. No site-packages edits, native source
 compilation, or unpublished remote fork is involved. The original Apache-2.0
 license is retained, and modified files carry a local-change notice.
 Upstream release source: commit `47184b8f5f2544e2337e2e9bfb3c3d9929e56da4`.
-When upgrading upstream, update the wheel pin/hash in `lib/local-transcription.nix`
+When upgrading upstream, update the wheel pin/hash in `pkgs/local-transcription.nix`
 and rebase/revalidate the patch together with `pyproject.toml` and `uv.lock`.
 
 The patch adds `--batch-size 1..16` for offline greedy decoding. Audio encoding
