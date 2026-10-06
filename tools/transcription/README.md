@@ -72,11 +72,15 @@ When upgrading upstream, update the wheel pin/hash in `lib/local-transcription.n
 and rebase/revalidate the patch together with `pyproject.toml` and `uv.lock`.
 
 The patch adds `--batch-size 1..16` for offline greedy decoding. Audio encoding
-and forced alignment preserve the upstream per-chunk behavior. Similar-duration
+retains its per-chunk behavior. Similar-duration
 chunks share a bounded GPU decoder batch, with padding masks, independent
 rotary positions, EOS/repetition stops and token budgets. Text, timestamps and
 chunk metadata are restored to chronological order. Only CPU token results
-survive each GPU batch; per-chunk cache cleanup remains in place.
+survive each GPU batch. Word alignment uses the same bounded, duration-grouped
+batches in the native decoder; causal right padding preserves each prompt.
+Empty rows and unknown languages retain the upstream exclusion behavior.
+GPU caches are released between actual batches and sequential chunks; CPU
+assembly restores chronological offsets.
 
 Diarization runs over the complete recording, keeping speaker IDs consistent.
 For pyannote's supported native WeSpeaker backend, the expensive audio network
@@ -108,7 +112,7 @@ separate destination.
 The 100-clip LibriSpeech test-clean check, sampled across 40 speakers, produced
 identical normalized hypotheses with grouped batch size 8; WER remained
 1.9422%. That independent quality check completed in 10.6 seconds. The fast
-gate passes 681 tests with 2 optional skips, using MLX 0.32.3.
+gate passes 685 tests with 2 optional skips, using MLX 0.32.3.
 
 For iteration, 16 short clips total just 42.9 seconds. Two complete batches
 with mixed lengths test padding and grouping without a long recording. Models
@@ -134,3 +138,21 @@ compaction and changing cache-cleanup frequency did not provide repeatable
 benefits; none are included. Increase fixture size only for a specific missing
 signal such as sustained memory behavior, rather than routinely rerunning a
 full recording.
+
+## Remaining-stage audit (2026-10-05)
+
+Native word alignment batches preserve every original timestamp on all 100
+LibriSpeech clips (2,317 aligned words). The isolated probe took 3.98 seconds
+at batch 8 versus 5.12 seconds sequentially, about 22% less. On the 42.9-second
+fixture, the corresponding warm medians were 0.273 and 0.430 seconds.
+The implemented method independently reproduces the saved original hash.
+Tests cover right padding, empty rows, unknown-language exclusion, chronological
+offsets and stage progress. Single-row alignment retains its original path.
+
+The follow-up also measured async decoder lookahead, compiled MLPs, selective
+timestamp projection and speculative decoding. None earned a production change;
+speculative decoding was over three times slower than batch 8 on the short
+fixture. Q8 retained all 100 normalized hypotheses, but its longer-context
+gain was only about 3%, so fp16 remains the default. A GPU speaker FFT probe
+was faster, but its feature error exceeded the 1e-5 absolute/relative parity
+tolerance; the native frontend's CPU FFT workaround remains intact.
