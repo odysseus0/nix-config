@@ -29,9 +29,8 @@
       ../modules/home/sietch/vault-events.nix
       ../modules/home/sietch/fleet.nix
       ../modules/home/sietch/ssh.nix
-      ../modules/home/sietch/x-jobs.nix
+      ../modules/home/sietch/runtime.nix
       inputs.home-ops.homeManagerModules.default
-      inputs.home-ops.homeManagerModules.bird
     ];
 
     home.stateVersion = "26.05";

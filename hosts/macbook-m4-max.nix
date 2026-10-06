@@ -22,15 +22,11 @@
       ../modules/home/workstation/transcription.nix
       inputs.home-ops.homeManagerModules.default
       inputs.home-ops.homeManagerModules.bird
-      # `sietch` and the forwarded `feed`: Sietch owns the X state's databases.
-      inputs.home-ops.homeManagerModules.sietch-client
       inputs.home-ops.homeManagerModules.gh-dash
     ];
 
     runtime.host = "macbook";
     bird.enable = true;
-    bird.archiveOnSietch = true;
-    sietchClient.enable = true;
 
     home.stateVersion = "26.05";
     programs.home-manager.enable = true;

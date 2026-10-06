@@ -59,6 +59,7 @@ in
     restic           # snapshot backups to R2 (home-ops/backup)
 
     beads            # bd, at the one pin every Beads client shares
+    feed             # George's RSS CLI; Keep up's RSS candidates (pkgs/feed.nix)
 
     # Runtimes for scripts outside any project
     uv
