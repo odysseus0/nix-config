@@ -68,7 +68,6 @@ in
   ]
   ++ (with llmAgents; [
     codex
-    qmd
   ]);
 
   home.file = {
