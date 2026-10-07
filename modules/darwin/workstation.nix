@@ -110,6 +110,7 @@
     ];
 
     masApps = {
+      "Kindle" = 302584613;
       "Xcode" = 497799835;
       "Keynote" = 409183694;
       "Numbers" = 409203825;
