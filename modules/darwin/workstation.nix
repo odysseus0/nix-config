@@ -75,6 +75,7 @@
       "linear"
       "raycast"
       "cleanshot"
+      "fantastical"  # Flexibits website build; license entered in-app
       "claude"
       "anarlog"  # meeting recorder with local transcription
 
